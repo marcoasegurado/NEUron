@@ -1,0 +1,46 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  line-height: var(--text-caption-line);
+  white-space: nowrap;
+}
+
+.neutral {
+  background-color: var(--color-grade-pending-bg);
+  color: var(--color-text-secondary);
+}
+
+.primary {
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary-hover);
+}
+
+.gold {
+  background-color: var(--color-grade-fair-bg);
+  color: var(--color-grade-fair-text);
+}
+
+.success {
+  background-color: var(--color-grade-strong-bg);
+  color: var(--color-grade-strong-text);
+}
+
+.warning {
+  background-color: var(--color-grade-low-bg);
+  color: var(--color-grade-low-text);
+}
+
+.danger {
+  background-color: var(--color-grade-risk-bg);
+  color: var(--color-grade-risk-text);
+}
+
+.pending {
+  background-color: var(--color-grade-pending-bg);
+  color: var(--color-grade-pending-text);
+}
