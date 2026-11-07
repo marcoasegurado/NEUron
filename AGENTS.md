@@ -15,7 +15,7 @@ Create these files at the project root:
 - `PLAN.md` — project purpose, scope, phase order, task checklists, and Done When criteria. Source: Parts 1, 2, 5, 7, and 8.
 - `DESIGN.md` — approved design direction, design tokens, responsive behavior, screen inventories, states, and missing design work. Source: Part 3 and relevant product context.
 - `GRADING_RULES.md` — all finalized grading/GWA rules, formulas, conversion-table requirements, examples, tests, and unresolved grading behavior. Source: Part 4.
-- `DATA_MODEL.md` — logical entities, relationships, Firestore design constraints, ownership, and unresolved data decisions. Source: Part 6 and relevant rules from Parts 1 and 4.
+- `DATA_MODEL.md` — logical entities, relationships, Cloudflare D1 design constraints, ownership, and unresolved data decisions. Source: Part 6 and relevant rules from Parts 1 and 4.
 - `AGENTS.md` — all coding workflow rules, phase discipline, safety restrictions, testing requirements, and documentation-first procedure. Source: Part 9.
 
 After generating the files:
@@ -67,7 +67,7 @@ After generating the files:
 - Do not put business rules in UI components.
 - Do not duplicate grading formulas across pages.
 - Validate inputs both in the UI and in the data-writing layer as appropriate.
-- Enforce data ownership with Firestore Security Rules.
+- Enforce data ownership in the Cloudflare Worker; the browser must never query D1 directly.
 - Do not expose secrets, tokens, service-account credentials, or private keys.
 - Do not create fake data and present it as the user's real academic record.
 - Keep empty, loading, error, incomplete, and success states intentional and accessible.
@@ -90,7 +90,7 @@ At the end of a task, report:
 
 1. **State what changed after the build.** After every build, report the files added, modified, or removed, the behaviors affected, and whether the build succeeded.
 2. **Ask before pushing to GitHub.** Do not push to the GitHub repository until the user explicitly approves that specific push.
-3. **Ask before deploying the app.** Do not deploy (for example, to Cloudflare Pages) until the user explicitly approves that specific deployment.
+3. **Ask before deploying the app.** Do not deploy (for example, to Cloudflare Workers) until the user explicitly approves that specific deployment.
 4. **Test before pushing and deploying.** Run the relevant tests and verify the app before any approved push to GitHub and before any approved deployment, then report the commands and results.
 5. **No test needed for routine file changes.** If the task only modifies or adds files during normal development, testing is not required. Testing becomes mandatory at the push/deploy gate.
 
@@ -101,5 +101,5 @@ Use these files together; do not let one contradict another:
 - `PLAN.md` — purpose, scope, phases, tasks, Done When, tech direction, open decisions.
 - `DESIGN.md` — visual direction, design tokens, responsive layout, components, screens and states.
 - `GRADING_RULES.md` — finalized formulas, validation, conversion table, tests.
-- `DATA_MODEL.md` — entities, relationships, Firestore constraints, unresolved data decisions.
+- `DATA_MODEL.md` — entities, relationships, D1 constraints, unresolved data decisions.
 - `AGENTS.md` — this file; workflow and safety rules.

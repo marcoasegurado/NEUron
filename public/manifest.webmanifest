@@ -1,0 +1,18 @@
+{
+  "name": "NEUron — Grade Monitoring",
+  "short_name": "NEUron",
+  "description": "Grade monitoring for New Era University students.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FFF8EF",
+  "theme_color": "#F26B21",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

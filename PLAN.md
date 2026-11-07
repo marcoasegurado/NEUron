@@ -1,6 +1,6 @@
 # NEUron — Project Plan
 
-**Status:** Planning baseline; Phase 0 documentation lock is being finalized. A React + Vite shell and an untracked grading module already exist in the working tree, but no phase is complete and none should be marked complete yet.
+**Status:** Phases 0 and 1 are complete. The app is deployed on Cloudflare Workers at `https://neuron.marcoeduardo-asegurado.workers.dev`, with static assets, a Worker API, and a Cloudflare D1 binding. Phase 2 is blocked pending an authentication-provider decision.
 **Source of truth:** Consolidated project plan for the NEUron rebuild. It was derived from the original master brief (Parts 1, 2, 5, 7, and 8), which has since been removed at the user's request. This file is now the reference for purpose, scope, phases, and open decisions.
 
 > This document covers the project purpose, scope, phase order, task checklists, Done When criteria, technical direction, and open decisions. Design details live in `DESIGN.md`, grading rules in `GRADING_RULES.md`, data design in `DATA_MODEL.md`, and agent workflow rules in `AGENTS.md`.
@@ -32,7 +32,7 @@ The central product idea is that professors may use different grading categories
 
 - Primary user: an individual NEU student monitoring their own academic records.
 - Each student signs in using a personal account.
-- A student's semesters, subjects, scores, and schedule must be associated with the authenticated Firebase user.
+- A student's semesters, subjects, scores, and schedule must be associated with the authenticated user account.
 - Data from one student must never be readable or writable by another student.
 - The application is not an admin/teacher grade-entry portal in the current scope.
 
@@ -80,7 +80,7 @@ The repository's current README describes an older implementation with:
 - Browser `localStorage` as the current storage mechanism.
 - A demo login rather than real authentication.
 - A green/mint/coral visual direction called **Campus Studio**.
-- A planned Firebase migration.
+- An older planned Firebase migration (now superseded by Cloudflare D1).
 
 That visual direction is outdated for the rebuild. Do not copy its colors, components, layouts, or visual styling into the new implementation.
 
@@ -117,9 +117,10 @@ Implement from `DESIGN.md` together with the screen inventory in this plan. If a
 | Preferred model family | DeepSeek, using the model configured by the user in OpenCode |
 | Secondary assistant | GitHub Copilot, optional; not the primary implementation driver |
 | Frontend | React + Vite |
-| Authentication | Firebase Authentication |
-| Database | Cloud Firestore |
-| Hosting | Cloudflare Pages |
+| Backend API | Cloudflare Worker (server-side D1 access) |
+| Authentication | Provider not yet chosen; Firebase was removed. Must be decided before Phase 2 |
+| Database | Cloudflare D1 database `neuron`, bound as `DB`; SQL schema still needs confirmation |
+| Hosting | Cloudflare Workers; existing URL `https://neuron.marcoeduardo-asegurado.workers.dev` |
 | App format | Responsive web app, progressively enhanced as a PWA |
 | Design reference | `DESIGN.md` (standalone visual specification) |
 
@@ -127,24 +128,24 @@ Do not add a major dependency, framework, backend, state library, component libr
 
 ### 3.2 Environment and secrets
 
-- Use environment variables for Firebase client configuration and any deployment-specific settings.
-- Do not commit `.env`, service-account private keys, admin credentials, tokens, or other secrets.
-- Do not place Firebase Admin credentials in browser code.
-- Add an `.env.example` containing placeholder names only when the actual environment variable names have been agreed.
-- Document local setup and deployment steps in the eventual README.
+- Use Cloudflare bindings (for example, the D1 `DB` binding) and environment variables for any deployment-specific settings.
+- Do not commit `.env`, `.dev.vars`, Cloudflare API tokens, database credentials, session secrets, or other secrets.
+- The browser must never receive D1 credentials or query D1 directly; all database access goes through the Cloudflare Worker.
+- Add a `.dev.vars.example` or `.env.example` containing placeholder names only when the actual variable names have been agreed.
+- Document local setup, D1 binding, and deployment steps in the eventual README.
 
 ### 3.3 Hosting and deployment approach
 
-- Deploy a minimal working React + Vite shell to Cloudflare Pages early in Phase 1.
+- Deploy a minimal working React + Vite shell to Cloudflare Workers at `https://neuron.marcoeduardo-asegurado.workers.dev` early in Phase 1.
 - Verify local development, production build, preview deployment, and production URL before implementing the full app.
-- Keep Firebase Authentication and Firestore configuration separate from frontend source code.
+- Keep the D1 binding and all database access inside the Cloudflare Worker, separate from frontend source code.
 - Do not claim deployment is successful until the deployed URL has been checked.
 
 ### 3.4 Offline and PWA approach
 
-Offline behavior belongs to a dedicated later phase. Before implementation, explicitly choose and document the Firestore web offline-persistence behavior, browser support, and synchronization/conflict expectations.
+Offline behavior belongs to a dedicated later phase. D1 has no built-in browser offline persistence, so the offline strategy (local cache and/or queued writes synced through Worker), browser support, and synchronization/conflict expectations must be chosen and documented before implementation.
 
-Do not assume that offline persistence is enabled automatically. The app should eventually communicate whether it is online, offline, or waiting for pending writes to synchronize.
+Do not assume offline persistence exists automatically. The app should eventually communicate whether it is online, offline, or waiting for pending writes to synchronize.
 
 ---
 
@@ -163,7 +164,7 @@ Tasks:
 - [x] Finalize the grading and GWA formulas/rules in `GRADING_RULES.md`.
 - [x] Split the original master brief into `PLAN.md`, `DESIGN.md`, `GRADING_RULES.md`, `DATA_MODEL.md`, and `AGENTS.md`.
 - [x] Verify that the split files do not contradict one another. Cross-document audit completed 2026-11-06; stale references and the schedule-source citation were corrected.
-- [x] Review the open decisions in Section 5 and identify which block the next phases. None block Phase 1 (foundation), because Phase 1 only needs Firebase configuration, not the final Firestore layout or product decisions. Later-phase decisions stay open in Section 5.
+- [x] Review the open decisions in Section 5 and identify which block the next phases. Phase 1 needs the existing D1 database name/ID (or placeholder binding) but not the final SQL schema or product decisions. Later-phase decisions stay open in Section 5.
 
 **Done when:** All five documentation files exist, agree with one another, and clearly label any still-open decisions. No essential calculation or data behavior is left for the coding agent to invent.
 
@@ -172,26 +173,28 @@ Tasks:
 **Goal:** Create a clean React + Vite foundation and verify deployment early.
 
 Tasks:
-- [ ] Inspect local repository status, current branch, remotes, and uncommitted changes before modifying anything.
-- [ ] Create/use a separate rebuild branch (suggested name: `rebuild`) only after confirming current repository state.
-- [ ] Keep `main` unchanged; do not delete the old application.
-- [ ] Set up React + Vite and an agreed project structure.
-- [ ] Add only the minimum code-quality and test tooling needed.
-- [ ] Add the initial responsive app shell using verified tokens from `DESIGN.md`.
-- [ ] Configure Firebase Authentication and Firestore for local development.
-- [ ] Configure environment variables safely.
-- [ ] Add basic PWA manifest and metadata; full offline behavior belongs to Phase 11.
-- [ ] Deploy the empty but working app to Cloudflare Pages.
-- [ ] Verify local dev server, production build, and deployment.
+- [x] Inspect local repository status, current branch, remotes, and uncommitted changes before modifying anything.
+- [x] Recorded the user's explicit decision to work on `main` instead of a separate `rebuild` branch (commit `0eb4b27`).
+- [x] Recorded the user's explicit decision to replace the legacy app; legacy files were removed in commit `0eb4b27`.
+- [x] Set up React + Vite and an agreed project structure.
+- [x] Add only the minimum code-quality and test tooling needed.
+- [x] Add the initial responsive app shell using verified tokens from `DESIGN.md`.
+- [x] Create the dedicated D1 database `neuron` and configure the `DB` binding for local development.
+- [x] Add a minimal Cloudflare Worker API for server-side D1 access.
+- [x] Configure bindings and secrets safely; keep D1 out of the browser bundle.
+- [x] Add basic PWA manifest and metadata; full offline behavior belongs to Phase 11.
+- [x] Deploy the empty but working app to Cloudflare Workers.
+- [x] Verify the local Cloudflare dev server and production build.
+- [x] Verify the Cloudflare Workers deployment, including `/api/health`, SPA routing, and the PWA manifest.
 
-**Done when:** The app runs locally, production build succeeds, Cloudflare Pages URL loads, Firebase config is separated from source code, and `main` has not been overwritten.
+**Done when:** The app runs locally, production build succeeds, the Cloudflare Workers URL loads, D1 is reachable only through the Worker, and the agreed Git branch policy is respected.
 
 ### Phase 2 — Authentication
 
 **Goal:** Give each student a secure personal account.
 
 Tasks:
-- [ ] Implement Login using Firebase Authentication.
+- [ ] Implement Login using the approved authentication provider.
 - [ ] Implement Register.
 - [ ] Implement Forgot Password/password reset.
 - [ ] Add loading, validation, success, and error states.
@@ -213,7 +216,7 @@ Tasks:
 - [ ] Add custom grading categories per subject.
 - [ ] Allow category weights to be edited and show live total.
 - [ ] Prevent saving unless active category weights total 100%.
-- [ ] Save semester and subject configuration to Firestore under the authenticated user.
+- [ ] Save semester and subject configuration to D1 through the Worker API under the authenticated user.
 - [ ] Support reviewing/editing configuration where approved.
 
 **Done when:** A student can create a semester with multiple subjects; each subject retains units, optional professor, categories, and weights; invalid totals cannot be saved; data persists and remains account-isolated; setup matches the `DESIGN.md` spec at phone and desktop sizes.
@@ -248,7 +251,7 @@ Tasks:
 - [ ] Show incomplete subjects clearly.
 - [ ] Implement Add Score interaction from Home.
 - [ ] Validate score entries and associate each with the correct subject/category.
-- [ ] Persist changes to Firestore and refresh calculated values.
+- [ ] Persist changes to D1 through the Worker API and refresh calculated values.
 
 **Done when:** Home is responsive and visually checked against the `DESIGN.md` spec; score entries save correctly; invalid data is blocked; all grade values match the grading engine; refresh preserves saved records.
 
@@ -333,7 +336,7 @@ Tasks:
 **Goal:** Support temporary connectivity loss and reliable multi-device behavior.
 
 Tasks:
-- [ ] Choose and document Firestore web offline persistence and supported browser behavior.
+- [ ] Choose and document the offline cache/queue strategy for D1-backed data and supported browser behavior.
 - [ ] Add online/offline/sync-status indicators.
 - [ ] Implement the agreed offline read/write behavior.
 - [ ] Define conflict handling when the same record is edited on multiple devices.
@@ -350,12 +353,12 @@ Tasks:
 Tasks:
 - [ ] Test register, sign in, create semester, add scores, view grades, manage subjects, view schedule, and sign out.
 - [ ] Test complete/incomplete subject grades and GWA states.
-- [ ] Test account data isolation and Firestore security rules.
+- [ ] Test account data isolation and Worker/D1 authorization checks.
 - [ ] Test phone, tablet, and desktop layouts.
 - [ ] Test refresh, browser restart, and supported offline scenarios.
 - [ ] Check labels, keyboard navigation, focus indicators, and readable contrast.
 - [ ] Check console errors, failed requests, and production build output.
-- [ ] Deploy release build to Cloudflare Pages and verify the production URL.
+- [ ] Deploy release build to Cloudflare Workers and verify the production URL.
 - [ ] Update README with actual features, stack, local setup, environment variables, and deployment.
 
 **Done when:** Critical flows pass; no known critical data-loss, access-control, or grading defects remain; production deployment is verified; README describes the rebuilt app accurately.
@@ -368,6 +371,8 @@ These are intentionally unresolved. The coding agent must not silently choose an
 
 | Decision | Current status | Needed before |
 |---|---|---|
+| D1 schema and migrations | The `neuron` database is created and bound as `DB`, but it has no application tables yet | Phase 3 / data-model approval |
+| Authentication provider | Firebase was removed; no replacement provider has been chosen | Phase 2 |
 | Official NEU percentage-to-grade thresholds | Not yet verified; old repository values are not approved defaults | Phase 4 / Phase 10 |
 | Register and Forgot Password UI | No dedicated frames identified in the reviewed inventory | Phase 2 |
 | Settings page and controls | Settings navigation exists; complete page design not identified | Phase 10 |
@@ -404,7 +409,11 @@ Do not block unrelated work on decisions that are only needed in a later phase. 
 - GWA is weighted by subject units.
 - GWA stays pending until every active subject has a computed grade.
 - GWA display uses two decimal places.
-- Preferred stack: React + Vite, Firebase Authentication, Cloud Firestore, Cloudflare Pages.
+- Preferred stack: React + Vite, Cloudflare Workers with static assets, and Cloudflare D1.
+- Deployment URL: `https://neuron.marcoeduardo-asegurado.workers.dev`.
+- Phase 1 deployment verified: `/`, `/home`, `/manifest.webmanifest`, and `/api/health` return 200 on the production URL.
+- Firebase Authentication and Firestore are no longer part of the stack.
+- Authentication provider is not yet confirmed.
 - Preferred coding workflow: OpenCode with DeepSeek in VS Code; GitHub Copilot may be secondary.
 - Work one phase at a time and do not modify GitHub remotely without explicit instruction.
 
@@ -419,6 +428,7 @@ Do not block unrelated work on decisions that are only needed in a later phase. 
 - Dropped/withdrawn subject treatment in GWA.
 - Schedule overlap behavior.
 - Category deletion behavior when activities already exist.
-- Exact Firestore document/collection layout.
+- Exact D1 SQL schema and migrations.
+- Authentication provider and its Login/Register/password-reset behavior.
 
-**Current instruction:** The Phase 0 documentation audit is complete and no open decision blocks Phase 1. Do not start a new phase or mark one complete without user instruction; Phase 1 is the recommended next task.
+**Current instruction:** Phase 1 is complete and deployed. Phase 2 cannot start until an authentication provider is chosen; that decision determines the Login, Register, password-reset, and session design.
