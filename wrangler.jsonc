@@ -3,6 +3,9 @@
   "name": "neuron",
   "main": "src/worker.ts",
   "compatibility_date": "2026-11-06",
+  "build": {
+    "command": "npm run build"
+  },
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
