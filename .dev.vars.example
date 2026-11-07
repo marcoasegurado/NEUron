@@ -1,0 +1,6 @@
+# Copy to .dev.vars for local Worker development. Never commit .dev.vars.
+RESEND_API_KEY=re_replace_me
+AUTH_EMAIL_FROM="NEUron <noreply@your-verified-domain.example>"
+
+# Optional: force the password-reset link origin (useful behind a proxy).
+# APP_ORIGIN=https://neuron.marcoeduardo-asegurado.workers.dev

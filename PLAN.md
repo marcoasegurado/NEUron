@@ -1,6 +1,6 @@
 # NEUron — Project Plan
 
-**Status:** Phases 0 and 1 are complete. The app is deployed on Cloudflare Workers at `https://neuron.marcoeduardo-asegurado.workers.dev`, with static assets, a Worker API, and a Cloudflare D1 binding. Phase 2 is blocked pending an authentication-provider decision.
+**Status:** Phases 0 and 1 are complete. The app is deployed on Cloudflare Workers at `https://neuron.marcoeduardo-asegurado.workers.dev`, with static assets, a Worker API, and a Cloudflare D1 binding. Phase 2 authentication is implemented, migrated to remote D1, deployed, and smoke-tested in production. It is pending Resend configuration, password-reset email delivery verification, and final phone/desktop QA.
 **Source of truth:** Consolidated project plan for the NEUron rebuild. It was derived from the original master brief (Parts 1, 2, 5, 7, and 8), which has since been removed at the user's request. This file is now the reference for purpose, scope, phases, and open decisions.
 
 > This document covers the project purpose, scope, phase order, task checklists, Done When criteria, technical direction, and open decisions. Design details live in `DESIGN.md`, grading rules in `GRADING_RULES.md`, data design in `DATA_MODEL.md`, and agent workflow rules in `AGENTS.md`.
@@ -47,7 +47,8 @@ The approved design direction includes:
 
 Additional planned capabilities:
 
-- Login, Register, and Forgot Password.
+- Login with username or email, and Forgot Password.
+- Manual account creation; no public registration screen.
 - Multi-step semester setup.
 - Semester GWA display.
 - Target Grade Calculator.
@@ -118,8 +119,10 @@ Implement from `DESIGN.md` together with the screen inventory in this plan. If a
 | Secondary assistant | GitHub Copilot, optional; not the primary implementation driver |
 | Frontend | React + Vite |
 | Backend API | Cloudflare Worker (server-side D1 access) |
-| Authentication | Provider not yet chosen; Firebase was removed. Must be decided before Phase 2 |
-| Database | Cloudflare D1 database `neuron`, bound as `DB`; SQL schema still needs confirmation |
+| Authentication | Custom email/password auth in the Worker; D1-backed sessions; manual account creation (no public registration); login accepts username or email; any valid email domain; Resend for password-reset email |
+| Password hashing | PBKDF2-HMAC-SHA256, 10,000 iterations, per-user random salt; stored as `pbkdf2-sha256$iterations$salt$hash` |
+| Sessions | Random 32-byte token in an `HttpOnly`, `SameSite=Lax`, `Secure` (HTTPS) cookie; SHA-256 token hash in D1; 7-day lifetime |
+| Database | Cloudflare D1 `neuron`, bound as `DB`; auth tables defined in `migrations/0001_auth.sql` and `migrations/0002_add_username.sql`; remaining application schema still needs confirmation |
 | Hosting | Cloudflare Workers; existing URL `https://neuron.marcoeduardo-asegurado.workers.dev` |
 | App format | Responsive web app, progressively enhanced as a PWA |
 | Design reference | `DESIGN.md` (standalone visual specification) |
@@ -133,6 +136,7 @@ Do not add a major dependency, framework, backend, state library, component libr
 - The browser must never receive D1 credentials or query D1 directly; all database access goes through the Cloudflare Worker.
 - Add a `.dev.vars.example` or `.env.example` containing placeholder names only when the actual variable names have been agreed.
 - Document local setup, D1 binding, and deployment steps in the eventual README.
+- Auth configuration: `RESEND_API_KEY` is a Worker secret; `AUTH_EMAIL_FROM` is the verified Resend sender; `APP_ORIGIN` is optional and overrides the reset-link origin.
 
 ### 3.3 Hosting and deployment approach
 
@@ -194,15 +198,26 @@ Tasks:
 **Goal:** Give each student a secure personal account.
 
 Tasks:
-- [ ] Implement Login using the approved authentication provider.
-- [ ] Implement Register.
-- [ ] Implement Forgot Password/password reset.
-- [ ] Add loading, validation, success, and error states.
-- [ ] Protect authenticated routes.
-- [ ] Add sign-out behavior.
-- [ ] Design/spec missing auth screens before implementing their exact UI.
+- [x] Implement Login using the approved authentication provider.
+- [x] Support login with a unique username or any valid email.
+- [x] Replace public registration with manual account creation.
+- [x] Implement Forgot Password/password reset.
+- [x] Add loading, validation, success, and error states.
+- [x] Protect authenticated routes.
+- [x] Add sign-out behavior.
+- [x] Design/spec missing auth screens before implementing their exact UI.
 
-**Done when:** A new user can register and sign in; an existing user can sign in/out; password reset works; signed-out users cannot access private student data; phone and desktop layouts pass QA.
+Implementation status:
+- Auth API, D1 schema, session cookies, manual account creation, React screens, route guards, and sign-out are implemented.
+- Login accepts a unique username or any valid email address; public registration is removed and `/register` redirects to `/login`.
+- Local verification passed for login by username/email, logout, invalid credentials, session lookup, password reset, reset-token reuse, cross-origin rejection, and SPA route serving.
+- `0001_auth.sql` and `0002_add_username.sql` are applied to the remote `neuron` D1 database.
+- The Worker is deployed at `https://neuron.marcoeduardo-asegurado.workers.dev` (version `60c701b1-9ba7-4609-9c1a-5f6c04217942`).
+- Production smoke test passed for the new flow: username login, email login, session lookup, logout, wrong-password rejection, public-registration `404`, forgot-password `202` for an arbitrary email, and the `Secure`/`HttpOnly`/`SameSite=Lax` cookie. The temporary QA account was deleted; production has `0` users and `0` sessions.
+- Pending before Phase 2 is complete: configure Resend (`RESEND_API_KEY`, verified `AUTH_EMAIL_FROM`), verify real reset-email delivery, and complete phone/desktop QA.
+- The reduced PBKDF2 cost is below common OWASP guidance; add login rate limiting and revisit the cost if the Workers plan changes.
+
+**Done when:** A manually created account can sign in by username or email; the account can sign out; password reset works; signed-out users cannot access private student data; phone and desktop layouts pass QA.
 
 ### Phase 3 — Semester setup and subject configuration
 
@@ -351,7 +366,7 @@ Tasks:
 **Goal:** Verify the complete app before calling the rebuild ready.
 
 Tasks:
-- [ ] Test register, sign in, create semester, add scores, view grades, manage subjects, view schedule, and sign out.
+- [ ] Test account sign-in by username/email, create semester, add scores, view grades, manage subjects, view schedule, and sign out.
 - [ ] Test complete/incomplete subject grades and GWA states.
 - [ ] Test account data isolation and Worker/D1 authorization checks.
 - [ ] Test phone, tablet, and desktop layouts.
@@ -371,10 +386,14 @@ These are intentionally unresolved. The coding agent must not silently choose an
 
 | Decision | Current status | Needed before |
 |---|---|---|
-| D1 schema and migrations | The `neuron` database is created and bound as `DB`, but it has no application tables yet | Phase 3 / data-model approval |
-| Authentication provider | Firebase was removed; no replacement provider has been chosen | Phase 2 |
+| D1 application schema and migrations | Auth tables are defined in `migrations/0001_auth.sql` and `migrations/0002_add_username.sql`; semester, subject, activity, schedule, and conversion-table tables are still undefined | Phase 3 / data-model approval |
+| Authentication provider | Resolved: custom email/password in the Worker with D1 sessions, manual accounts, username-or-email login, any valid email domain, and Resend reset email | Resolved |
+| Account provisioning | Resolved: the owner creates accounts manually; no public registration. Use `npm run cf:account:create -- --email <email> --username <username> --name <name>` | Resolved |
+| Password hashing and session policy | Resolved baseline: PBKDF2-HMAC-SHA256 at 10,000 iterations, 7-day sessions, 1-hour reset tokens | Resolved |
+| Cloudflare Workers plan and auth CPU cost | User chose the lower-iteration path to fit the Workers Free CPU budget. Production login succeeded with 10,000 iterations. This is below common OWASP guidance, so add rate limiting before relying on it for real accounts | Resolved for Phase 2; rate limiting remains a hardening task |
+| Resend account and sender | Resend API key and a verified sender (`AUTH_EMAIL_FROM`) are not configured yet | Before password-reset production test |
 | Official NEU percentage-to-grade thresholds | Not yet verified; old repository values are not approved defaults | Phase 4 / Phase 10 |
-| Register and Forgot Password UI | No dedicated frames identified in the reviewed inventory | Phase 2 |
+| Login and Forgot Password UI | Resolved: both reuse the auth layout and are specified in `DESIGN.md`; there is no public Register screen | Resolved |
 | Settings page and controls | Settings navigation exists; complete page design not identified | Phase 10 |
 | GWA card/section design | Not identified in reviewed frames | Phase 8 |
 | Target Grade Calculator assumptions | Not finalized | Phase 9 |
@@ -412,8 +431,17 @@ Do not block unrelated work on decisions that are only needed in a later phase. 
 - Preferred stack: React + Vite, Cloudflare Workers with static assets, and Cloudflare D1.
 - Deployment URL: `https://neuron.marcoeduardo-asegurado.workers.dev`.
 - Phase 1 deployment verified: `/`, `/home`, `/manifest.webmanifest`, and `/api/health` return 200 on the production URL.
+- Phase 2 auth is deployed and production-smoke-tested; the temporary test account was removed.
 - Firebase Authentication and Firestore are no longer part of the stack.
-- Authentication provider is not yet confirmed.
+- Authentication is custom email/password in the Worker with D1-backed sessions.
+- Any valid email domain is allowed.
+- Accounts are created manually by the owner; there is no public registration. Each account has a unique username, display name, email, and password.
+- Login accepts either the username or the email, plus the password.
+- Passwords are hashed with PBKDF2-HMAC-SHA256 at 10,000 iterations and a per-user salt. This is below common OWASP guidance; login rate limiting is still required, and the cost should be revisited if the Workers plan changes.
+- Sessions use a random token in an `HttpOnly`, `SameSite=Lax`, `Secure` (HTTPS) cookie and expire after 7 days.
+- Password-reset emails are sent through Resend; reset tokens expire after 1 hour and are single-use.
+- Login, Forgot Password, and Reset Password reuse the specified auth layout.
+- Auth tables are in `migrations/0001_auth.sql`; `migrations/0002_add_username.sql` adds the unique username used for login.
 - Preferred coding workflow: OpenCode with DeepSeek in VS Code; GitHub Copilot may be secondary.
 - Work one phase at a time and do not modify GitHub remotely without explicit instruction.
 
@@ -423,12 +451,13 @@ Do not block unrelated work on decisions that are only needed in a later phase. 
 - Whether conversion-table ownership is per student or centrally managed.
 - Whether changing conversion thresholds recalculates historical semesters or preserves old versions.
 - Whether Schedule includes Saturday.
-- Detailed Register, Forgot Password, Settings, GWA, and Target Calculator screen designs.
+- Settings, GWA, and Target Calculator screen designs.
 - Target Grade Calculator assumptions.
 - Dropped/withdrawn subject treatment in GWA.
 - Schedule overlap behavior.
 - Category deletion behavior when activities already exist.
-- Exact D1 SQL schema and migrations.
-- Authentication provider and its Login/Register/password-reset behavior.
+- Remaining D1 schema and migrations for semesters, subjects, categories, activities, schedules, and conversion tables.
+- Whether login rate limiting and email-ownership verification are required before real accounts.
+- Resend account, verified sender, and API key configuration.
 
-**Current instruction:** Phase 1 is complete and deployed. Phase 2 cannot start until an authentication provider is chosen; that decision determines the Login, Register, password-reset, and session design.
+**Current instruction:** Phase 2 auth is deployed and production-smoke-tested. Next: add the Resend secret and verified sender, verify reset-email delivery, and complete phone/desktop QA. Do not mark Phase 2 complete until those steps pass.

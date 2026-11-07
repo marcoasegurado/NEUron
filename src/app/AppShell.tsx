@@ -1,5 +1,6 @@
-import type { ComponentType, SVGProps } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { useState, type ComponentType, type SVGProps } from 'react'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useAuth } from '../features/auth/useAuth'
 import { cx } from '../lib/cx'
 import {
   HomeIcon,
@@ -52,6 +53,24 @@ function NavItemLink({
 }
 
 export function AppShell() {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const [signingOut, setSigningOut] = useState(false)
+  const initial = user?.displayName.trim().charAt(0).toUpperCase() || 'N'
+
+  async function handleSignOut() {
+    if (signingOut) {
+      return
+    }
+    setSigningOut(true)
+    try {
+      await logout()
+      navigate('/login', { replace: true })
+    } finally {
+      setSigningOut(false)
+    }
+  }
+
   return (
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
@@ -77,17 +96,43 @@ export function AppShell() {
 
         <div className={styles.profile}>
           <span className={styles.avatar} aria-hidden="true">
-            S
+            {initial}
           </span>
-          <div>
-            <p className={styles.profileName}>Student</p>
-            <p className={styles.profileMeta}>Signed out</p>
+          <div className={styles.profileText}>
+            <p className={styles.profileName}>
+              {user?.displayName ?? 'Student'}
+            </p>
+            <p className={styles.profileMeta}>{user?.email ?? ''}</p>
           </div>
+          <button
+            type="button"
+            className={styles.signOut}
+            onClick={handleSignOut}
+            disabled={signingOut}
+          >
+            {signingOut ? 'Signing out…' : 'Sign out'}
+          </button>
         </div>
       </aside>
 
       <main className={styles.main}>
         <div className={styles.content}>
+          <div className={styles.mobileBar}>
+            <div className={styles.mobileBrand}>
+              <span className={styles.mobileBrandMark} aria-hidden="true">
+                N
+              </span>
+              <span>NEUron</span>
+            </div>
+            <button
+              type="button"
+              className={styles.signOut}
+              onClick={handleSignOut}
+              disabled={signingOut}
+            >
+              {signingOut ? 'Signing out…' : 'Sign out'}
+            </button>
+          </div>
           <Outlet />
         </div>
       </main>

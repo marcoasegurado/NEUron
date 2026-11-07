@@ -10,6 +10,10 @@
   color: var(--color-text-secondary);
 }
 
+.control {
+  position: relative;
+}
+
 .input {
   width: 100%;
   min-height: 44px;
@@ -23,8 +27,21 @@
     box-shadow var(--duration-fast) var(--ease-out);
 }
 
+.inputWithTrailing {
+  padding-right: 5.25rem;
+}
+
 .input::placeholder {
   color: var(--color-text-muted);
+}
+
+.trailing {
+  position: absolute;
+  top: 50%;
+  right: var(--space-2);
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
 }
 
 .input:focus {

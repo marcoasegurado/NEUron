@@ -1,9 +1,9 @@
 # NEUron — Data Model
 
-**Status:** Logical entities and relationships are identified. The storage target is Cloudflare D1, and the `neuron` database is created and bound as `DB`. Exact SQL schema/migrations and global conversion-table ownership still need review before implementation.
+**Status:** Logical entities and relationships are identified. The storage target is Cloudflare D1, and the `neuron` database is created and bound as `DB`. The auth schema is defined in `migrations/0001_auth.sql` and `migrations/0002_add_username.sql`; both are applied locally and remotely. The remaining application schema and global conversion-table ownership still need review before implementation.
 **Source of truth:** Consolidated data model for the NEUron rebuild. Derived from the original master brief (Part 6 and relevant rules from Parts 1 and 4), which has since been removed at the user's request. This file is now the reference for entities, relationships, and data decisions.
 
-> Turn this into concrete D1 tables and migrations only after reviewing the current `neuron` schema and confirming the unresolved decisions with the user. Do not choose a schema that makes unresolved decisions difficult to change.
+> Add remaining D1 tables and migrations only after reviewing the current `neuron` schema and confirming the unresolved decisions with the user. Do not choose a schema that makes unresolved decisions difficult to change.
 
 ---
 
@@ -20,15 +20,40 @@
 
 ### 2.1 User
 
-- Authenticated user ID — primary identity. The authentication provider is still undecided; its stable user identifier is the owner key.
-- Display name.
-- Email address.
-- Created/updated timestamps.
+- `id` — UUID primary key and ownership key for all student data.
+- `username` — unique, case-insensitive, normalized to lowercase; 3-32 characters using letters, numbers, dots, underscores, or hyphens; usable as a login identifier.
+- `email` — unique, case-insensitive, normalized to lowercase; any valid email domain.
+- `display_name` — trimmed display name, 1-80 characters.
+- `password_hash` — encoded PBKDF2-HMAC-SHA256 hash: `pbkdf2-sha256$iterations$salt$hash`.
+- `created_at`, `updated_at` — ISO timestamps.
 - User preferences only when their behavior has been specified.
 
-Do not store plaintext passwords. Credentials belong to the approved authentication provider. If a custom provider is chosen, store only an approved password hash and document the algorithm.
+Accounts are provisioned manually by the owner. There is no public registration endpoint or Register screen. Each account is separate and owns its own student data; D1 does not need to be resized for the current single-user scope. Login accepts either `username` or `email`.
 
-### 2.2 Semester
+Do not store plaintext passwords. The current custom provider stores only the encoded PBKDF2 hash with a per-user random salt. The baseline is 10,000 iterations, chosen by the user to fit the Workers Free CPU budget; this is below common OWASP guidance, so add login rate limiting and revisit the cost if the plan changes. Changing the iteration count requires a documented migration or rehash-on-login strategy.
+
+### 2.2 Session
+
+- `id` — UUID primary key.
+- `user_id` — foreign key to `users.id` with cascade delete.
+- `token_hash` — SHA-256 hash of the random session token; the raw token exists only in the browser cookie.
+- `created_at`, `expires_at` — ISO timestamps; baseline lifetime is 7 days.
+- Indexed by `token_hash`, `user_id`, and `expires_at`.
+
+The session cookie is `neuron_session`, `HttpOnly`, `SameSite=Lax`, `Secure` on HTTPS, and `Path=/`. Signing out deletes the session row and clears the cookie. Password reset deletes all sessions for the user.
+
+### 2.3 Password reset token
+
+- `id` — UUID primary key.
+- `user_id` — foreign key to `users.id` with cascade delete.
+- `token_hash` — SHA-256 hash of the emailed reset token; raw tokens are never stored.
+- `created_at`, `expires_at` — ISO timestamps; baseline lifetime is 1 hour.
+- `used_at` — nullable audit field; tokens are deleted after a successful reset.
+- Indexed by `token_hash`, `user_id`, and `expires_at`.
+
+Requesting a new reset link deletes the user's previous reset tokens. Reset links are single-use, and a successful reset ends all existing sessions.
+
+### 2.4 Semester
 
 - Semester ID.
 - Academic year (for example, `2026–2027`).
@@ -39,7 +64,7 @@ Do not store plaintext passwords. Credentials belong to the approved authenticat
 
 A user can have multiple semesters. Historical semesters must remain separated and accessible.
 
-### 2.3 Subject
+### 2.5 Subject
 
 - Subject ID.
 - Subject name.
@@ -50,7 +75,7 @@ A user can have multiple semesters. Historical semesters must remain separated a
 
 Each subject belongs to one semester and has its own grading categories and activities.
 
-### 2.4 Grading Category
+### 2.6 Grading Category
 
 - Category ID.
 - Category name (for example, Quizzes, Exams, Projects, Attendance, or custom names).
@@ -60,7 +85,7 @@ Each subject belongs to one semester and has its own grading categories and acti
 
 Each category belongs to one subject. Active category weights for that subject must total 100%.
 
-### 2.5 Activity / Score
+### 2.7 Activity / Score
 
 - Activity ID.
 - Activity name.
@@ -72,7 +97,7 @@ Each category belongs to one subject. Active category weights for that subject m
 
 Each activity belongs to one subject and one category. Preserve the parent relationship so access rules can validate ownership.
 
-### 2.6 Class Meeting / Schedule Entry
+### 2.8 Class Meeting / Schedule Entry
 
 - Schedule entry ID.
 - Related subject ID, where applicable.
@@ -84,7 +109,7 @@ Each activity belongs to one subject and one category. Preserve the parent relat
 
 The day range and overlap rules are not yet finalized. A recurring class may meet on multiple days; confirm the desired shape before implementation.
 
-### 2.7 Percentage-to-Grade Conversion Table
+### 2.9 Percentage-to-Grade Conversion Table
 
 - A list of minimum percentage thresholds and corresponding numerical grades.
 - One table is shared by every subject within its confirmed ownership scope.
@@ -114,6 +139,11 @@ When designing concrete tables and migrations:
 - Review the existing D1 database before adding or changing tables; do not assume it is empty.
 - Do not store calculated values as a second source of truth unless there is a clear reason. Prefer deriving grades from validated source records; if cached values are used, define how they stay consistent.
 - Never put Cloudflare API tokens, D1 credentials, session secrets, or privileged data in client-readable code or responses.
+- Store only hashes of session and password-reset tokens; never store or log raw tokens.
+- Normalize and validate emails and usernames before lookup or insert; enforce uniqueness in the Worker and D1 indexes.
+- Use same-origin checks for state-changing auth requests in addition to `SameSite=Lax` cookies.
+- Auth rate limiting and account lockout are not implemented yet; add Cloudflare rate limiting or equivalent before production if brute-force protection is required.
+- Manual provisioning relies on the owner-supplied email and does not prove ownership of the mailbox. Add email verification if that risk must be closed.
 
 ## 5. Unresolved data decisions
 
@@ -121,9 +151,14 @@ These must be resolved with the user before the dependent implementation work:
 
 | Decision | Current status | Needed before |
 |---|---|---|
-| D1 database and binding | `neuron` created in APAC and bound as `DB`; it currently has no application tables | Phase 1 / Phase 3 |
-| Exact D1/SQL schema and migrations | Not defined | Phase 3 / data-model approval (not needed for the Phase 1 binding) |
-| Authentication provider and stable user ID | Firebase removed; no replacement chosen | Phase 2 |
+| D1 database and binding | `neuron` created in APAC and bound as `DB`; `0001_auth.sql` and `0002_add_username.sql` are applied locally and remotely | Resolved for Phase 2 |
+| Exact D1/SQL schema and migrations | Auth schema is defined in `migrations/0001_auth.sql` and `0002_add_username.sql`; semester, subject, category, activity, schedule, and conversion tables are still undefined | Phase 3 / data-model approval |
+| Authentication provider and stable user ID | Resolved: custom email/password with UUID user IDs and D1 sessions | Resolved |
+| Password hashing and session lifetime | Resolved baseline: PBKDF2-HMAC-SHA256 at 10,000 iterations; 7-day sessions; 1-hour reset tokens | Resolved |
+| Workers plan and hashing CPU cost | Lower-iteration path chosen for Workers Free; production login succeeded with 10,000 iterations. Add rate limiting before relying on it for real accounts | Resolved for Phase 2; rate limiting remains a hardening task |
+| Account provisioning | Resolved: no public registration; the owner creates separate accounts manually with `npm run cf:account:create`. Any valid email domain is allowed, and login accepts username or email | Resolved |
+| Resend account and sender | API key and verified `AUTH_EMAIL_FROM` are not configured | Before password-reset production test |
+| Auth rate limiting / email ownership verification | Not specified or implemented | Before hardening / production if required |
 | Conversion table ownership | One shared table across subjects is confirmed; whether per account or central across users is not | Phase 10 / data-model approval |
 | Historical conversion table changes | Recalculate past semesters or preserve prior table version is undecided | Phase 10 |
 | Dropped/withdrawn subjects | Whether/how excluded from GWA is undecided | Phase 8 / Phase 10 |

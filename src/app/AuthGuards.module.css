@@ -1,0 +1,26 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 100vh;
+  background-color: var(--color-bg-page);
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-tile);
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+}
+
+.text {
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+}

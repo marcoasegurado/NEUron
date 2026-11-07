@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "cf:dev": "npm run build && wrangler dev",
     "cf:deploy": "npm run build && wrangler deploy",
-    "cf:d1:list": "wrangler d1 list"
+    "cf:d1:list": "wrangler d1 list",
+    "cf:account:create": "node scripts/create-account.mjs"
   },
   "dependencies": {
     "react": "^19.3.1",

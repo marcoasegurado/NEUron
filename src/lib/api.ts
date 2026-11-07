@@ -18,6 +18,7 @@ export async function apiRequest<T>(
 ): Promise<T> {
   const response = await fetch(path, {
     ...init,
+    credentials: 'same-origin',
     headers: {
       Accept: 'application/json',
       ...init.headers,
@@ -39,7 +40,12 @@ export async function apiRequest<T>(
     throw new ApiError(message, response.status)
   }
 
-  return (await response.json()) as T
+  if (response.status === 204) {
+    return undefined as T
+  }
+
+  const text = await response.text()
+  return (text ? JSON.parse(text) : undefined) as T
 }
 
 export interface DatabaseHealth {

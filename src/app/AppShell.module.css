@@ -143,14 +143,73 @@
   font-weight: var(--weight-bold);
 }
 
+.profileText {
+  flex: 1;
+  min-width: 0;
+}
+
 .profileName {
+  overflow: hidden;
   font-size: var(--text-small);
   font-weight: var(--weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .profileMeta {
-  font-size: var(--text-caption);
+  overflow: hidden;
   color: var(--color-text-muted);
+  font-size: var(--text-caption);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signOut {
+  flex-shrink: 0;
+  padding: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background-color: transparent;
+  color: var(--color-primary-hover);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+}
+
+.signOut:hover:not(:disabled) {
+  background-color: var(--color-primary-soft);
+}
+
+.signOut:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.mobileBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.mobileBrand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
+}
+
+.mobileBrandMark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
 }
 
 @media (min-width: 1024px) {
@@ -175,6 +234,10 @@
   }
 
   .bottomNav {
+    display: none;
+  }
+
+  .mobileBar {
     display: none;
   }
 }

@@ -235,6 +235,11 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 - Active item orange; inactive muted brown.
 - Safe-area aware; never cover content or dialogs.
 
+**Phone account bar (proposal)**
+- Authenticated phone screens show a compact bar above the page header with the NEUron mark and a text Sign out action, so sign-out is reachable without adding a fourth bottom-nav item.
+- Hidden on desktop, where the sidebar profile block owns sign-out.
+- This is a proposal recorded during Phase 2; remove or restyle it if a dedicated profile/menu treatment is approved later.
+
 ### Semester switcher
 
 - Compact pill/select in the page header.
@@ -290,16 +295,32 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 
 Each screen must be implemented for the listed layouts and states. Screens marked **needs spec** must receive an approved written specification before implementation.
 
+### Auth layout baseline
+- Login, Forgot Password, and Reset Password share one frame.
+- **Phone:** stacked brand mark header, form card, supporting links. `16px` form padding, `20px` card radius.
+- **Desktop (1024px+):** two-panel layout — orange/cream brand panel on one side, form panel on the other. Brand panel keeps the product name, a short encouraging line, and the mascot area.
+- **Mascot note:** the cat mascot artwork is not yet in the repository. Use the existing orange `N` brand mark in the mascot area until approved artwork exists; this is a temporary, recorded deviation.
+- All fields use the shared `Input` component, `44px` minimum control height, visible labels, and field-level errors.
+- Auth screens never reveal whether an email is registered.
+
 ### Login
-- **Phone:** stacked brand mark/mascot header, email field, password field with visibility control, primary Log in button, create-account link.
+- **Phone:** stacked brand mark/mascot header, email-or-username field, password field with visibility control, primary Log in button, forgot-password link. No create-account link.
 - **Desktop:** two-panel layout — orange/cream brand panel with mascot on one side, form panel on the other.
 - **States:** default, field-level validation, submitting, invalid credentials, success redirect, network error.
 
-### Register — needs spec
-- Must be specified before implementation. Do not infer the layout only from Login.
+### Manual account creation
+- There is no public Register screen. `/register` redirects to `/login`.
+- The owner creates accounts with `npm run cf:account:create`; the script collects a display name, unique username, email, and password.
+- A new account receives no automatic session and signs in through the Login screen.
 
-### Forgot Password / reset — needs spec
-- Must be specified before implementation, including request-sent and reset states.
+### Forgot Password / reset
+- **Approved baseline:** reuse the Auth layout.
+- **Request step:** email field, primary Send reset link, back-to-login link.
+- **Request-sent state:** always shows the same generic confirmation, whether or not the email exists, with a back-to-login action.
+- **Reset step:** opens from the emailed link, shows new password and confirm password with visibility controls, primary Update password.
+- **Reset success:** confirmation with a Sign in action. All existing sessions are ended.
+- **Invalid/expired link:** dedicated message and a link to request a new reset email.
+- **States:** default, field-level validation, submitting, request-sent, reset success, invalid/expired token, network error.
 
 ### Semester setup
 - **Phone:** three steps — (1) semester name and number of subjects; (2) subject details and editable grading categories/weights; (3) readiness summary and save.
@@ -366,8 +387,6 @@ Every data surface must intentionally handle:
 
 These still need approved specifications before implementation:
 
-- Register.
-- Forgot Password / password reset.
 - Settings page and controls.
 - Semester GWA card/section and states.
 - Target Grade Calculator.
