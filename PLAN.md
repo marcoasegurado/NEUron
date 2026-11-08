@@ -369,9 +369,11 @@ Tasks:
 - [ ] Show `GWA Pending` if any active subject has no computed grade.
 - [ ] Show an empty state if there are no subjects; do not show zero.
 - [ ] Display GWA to two decimal places.
-- [ ] Design the GWA card/section before implementation if it is not yet in `DESIGN.md`.
+- [ ] Add the approved Semester GWA card to Home, above the subject grid, with complete, pending, empty, loading, and error states from `DESIGN.md`.
+- [ ] Reuse the shared GWA function from `src/lib/grading/grading.ts`; do not compute the formula inline.
+- [ ] Test the complete state with a fixture conversion table and the pending state against the unconfigured production thresholds.
 
-**Done when:** GWA matches the `GRADING_RULES.md` examples; incomplete subjects cause pending state; activity/weight/unit/conversion changes update GWA.
+**Done when:** The Home card matches the `DESIGN.md` spec; GWA matches the `GRADING_RULES.md` examples; incomplete subjects cause pending state; activity/weight/unit/conversion changes update GWA.
 
 ### Phase 9 — Target Grade Calculator
 
@@ -453,7 +455,7 @@ These are intentionally unresolved. The coding agent must not silently choose an
 | Official NEU percentage-to-grade thresholds | Not yet verified; old repository values are not approved defaults | Phase 4 / Phase 10 |
 | Login and Forgot Password UI | Resolved: both reuse the auth layout and are specified in `DESIGN.md`; there is no public Register screen | Resolved |
 | Settings page and controls | Settings navigation exists; complete page design not identified | Phase 10 |
-| GWA card/section design | Not identified in reviewed frames | Phase 8 |
+| GWA card/section design | Resolved: Home card above the subject grid with complete, pending, empty, loading, and error states specified in `DESIGN.md` | Resolved |
 | Target Grade Calculator assumptions | Not finalized | Phase 9 |
 | Schedule day range | Resolved: Monday–Saturday, stored as `day_of_week` `1`–`6` | Resolved |
 | Conversion table ownership | One shared table across subjects is confirmed; whether per account or central across users is not | Phase 10 / data-model approval |
@@ -518,7 +520,7 @@ Do not block unrelated work on decisions that are only needed in a later phase. 
 - Official NEU percentage-to-grade threshold values.
 - Whether conversion-table ownership is per student or centrally managed.
 - Whether changing conversion thresholds recalculates historical semesters or preserves old versions.
-- Settings, GWA, and Target Calculator screen designs.
+- Settings and Target Calculator screen designs.
 - Target Grade Calculator assumptions.
 - Dropped/withdrawn subject treatment in GWA.
 - Category deletion behavior when activities already exist.
@@ -526,4 +528,4 @@ Do not block unrelated work on decisions that are only needed in a later phase. 
 - Whether login rate limiting and email-ownership verification are required before real accounts.
 - Resend account, verified sender, and API key configuration.
 
-**Current instruction:** Phases 0–7 are complete and deployed; Phase 7 passed authenticated production CRUD QA and phone/desktop visual checks. Next: design the GWA card/section in `DESIGN.md`, then implement Phase 8 — Semester GWA. Phases 5 and 6 still need authenticated production QA and phone/desktop visual checks. Do not mark Phase 8 complete until its Done When criteria pass.
+**Current instruction:** Phases 0–7 are complete and deployed; Phase 7 passed authenticated production CRUD QA and phone/desktop visual checks. The Semester GWA card is approved in `DESIGN.md` (Home, above the subject grid, with complete/pending/empty states). Next: implement Phase 8 — Semester GWA using the shared grading function. Phases 5 and 6 still need authenticated production QA and phone/desktop visual checks. Do not mark Phase 8 complete until its Done When criteria pass.

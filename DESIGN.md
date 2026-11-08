@@ -329,9 +329,9 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 - **Implemented (Phase 3):** phone renders all three steps; desktop combines subjects and review in step 2, with a sticky review column beside the subject cards. Subject fields become two columns at `640px+`; the term uses a native select styled as the shared control. This is the current visual baseline.
 
 ### Home
-- **Phone:** page title, active semester, compact grade rows/cards, bottom navigation, Add Score.
-- **Desktop:** page title/description, status banner, semester switcher, Add Score, multi-column grade cards.
-- **States:** complete grades, incomplete subject, no subjects, no scores, loading, error, Add Score default/validation/saved.
+- **Phone:** page title, active semester, Semester GWA card, compact grade rows/cards, bottom navigation, Add Score.
+- **Desktop:** page title/description, status banner, semester switcher, Add Score, Semester GWA card, multi-column grade cards.
+- **States:** complete grades, incomplete subject, pending/complete/empty Semester GWA, no subjects, no scores, loading, error, Add Score default/validation/saved.
 - **Implemented (Phase 5):** the header holds the semester switcher and Add Score. A persistent status banner states that percentages are exact while numeric grades are pending official NEU thresholds. Subject cards show the exact percentage, a `Grade Pending` chip, and category-completion progress; incomplete subjects show `No Grade Yet` plus the categories still missing scores. The grid uses one column on phone, two at `720px`, and three at `1024px`. Add Score opens a centered dialog on desktop and a bottom sheet below `600px`, with Escape/overlay close and contained keyboard focus. At `640px+` the header Add Score control uses a compact `40px` height so it sits closer to the semester switcher; phone keeps the `44px` touch target. On phone widths the page header — title, semester context, switcher, and Add Score — sticks to the top of the viewport. Once the dashboard is scrolled past roughly `64px`, the sticky header collapses to a single row with the title and Add Score; the semester context and switcher hide until the user scrolls back to the top. This is the current visual baseline.
 
 ### Subjects
@@ -356,8 +356,18 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 ### Settings — needs spec
 - Only the navigation entry is confirmed. Full page content and controls must be specified before implementation.
 
-### Semester GWA — needs spec
-- Placement, card design, and detailed states must be specified. Rules are in `GRADING_RULES.md`.
+### Semester GWA
+- **Placement:** Home, directly below the page header and status banner and above the subject grid. Phone and desktop use the same card; only the internal arrangement changes. No GWA navigation item is added.
+- **Content:** heading `Semester GWA`, the primary value, a supporting stats line, and a reason line when the value is pending.
+- **Complete state:** the converted GWA to two decimals (for example `1.80`), without a percent sign. The supporting line reads `<units> units · <n> subjects`. The caption names the active semester. Never show more than two decimals.
+- **Pending state:** the value reads `GWA Pending` with a `Pending` badge. The reason line names the subjects still missing grades. If the blocker is that official NEU grade thresholds are not configured, the reason line says so instead; do not name subjects that are only waiting on the thresholds. Never show a partial GWA or a placeholder number.
+- **Empty state:** when the semester has no subjects, the card reads `Add subjects to calculate your GWA` with a setup action. Never show `0.00`.
+- **Loading and error:** use the existing Home page-level loading and error states; the card does not render a skeleton or fallback value.
+- **Visual:** cream card surface, soft orange border, and an orange accent (icon or left bar). The GWA value uses neutral body text, not the percentage grade-tone colors, because GWA is on a different scale and its color thresholds are not approved. Pending is conveyed by the badge text plus the reason line, never by color alone.
+- **Phone:** full-width card; heading, value, stats, and reason stack vertically. The value uses the display size.
+- **Desktop:** wide card; heading and reason span the full width, the value sits at the left, and the units/subject stats align to the right.
+- **Calculation:** rules and examples are in `GRADING_RULES.md` §7. The card reads from a shared GWA function; it does not compute a formula inline.
+- **Dependency:** until the official NEU percentage-to-grade thresholds are configured, every subject grade is pending, so the card correctly stays at `GWA Pending`. The complete state is still implemented and tested with a fixture conversion table.
 
 ### Target Grade Calculator — needs spec
 - Screen, inputs, assumptions, result states, and unreachable-target messaging must be specified before implementation.
@@ -399,7 +409,6 @@ Every data surface must intentionally handle:
 These still need approved specifications before implementation:
 
 - Settings page and controls.
-- Semester GWA card/section and states.
 - Target Grade Calculator.
 - Tablet-specific refinements.
 - Conversion-table management UI.
