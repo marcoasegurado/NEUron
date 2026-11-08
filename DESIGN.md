@@ -135,7 +135,7 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 - Sidebar structure: brand/mascot at top, primary nav in the middle, student/profile block pinned near the bottom.
 - Main content: max width ~1120px, page padding 32–48px.
 - Page header: title and supporting text at upper-left; semester switcher and primary action at upper-right on the same row where space allows.
-- Home uses a responsive card grid (2–3 columns). Subjects uses a single expandable list. Schedule uses a wide calendar grid.
+- Home uses a responsive card grid (2–3 columns). Subjects uses a single expandable list. Schedule uses a wide calendar grid at `1024px` and above, and a week strip plus day agenda below that.
 
 ### Phone
 
@@ -343,7 +343,15 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 ### Schedule
 - **Phone:** week/day view; empty day; add-class form (subject, day, start, end, room); class details.
 - **Desktop:** weekly calendar grid; add-class dialog; empty week.
-- **States:** populated week, empty day, empty week, conflict/overlap (behavior pending), invalid time range, saving, error.
+- **States:** populated week, empty day, empty week, conflict/overlap warning, invalid time range, saving, deleting, error.
+- **Implemented (Phase 7):** the week runs Monday–Saturday. The page header shows the active semester label and class count with a compact Add class action, and sticks to the top on phone widths.
+  - **Phone (below `1024px`):** a six-column day strip shows each short day name and its class count; the current day is marked with a gold dot and the selected day uses the soft-orange active treatment. Below it, the selected day's agenda lists class tiles with start/end time, subject, optional room, and an overlap note. Tapping a tile opens class details. An empty day shows `No classes on <Day>.` with its own Add class action, and the rest of the week stays reachable.
+  - **Desktop (`1024px`+):** the day strip and agenda are replaced by a weekly grid: a time column of hour labels, six day columns, and absolutely positioned class blocks sized to their start/end times. The grid scales from the earliest class start to the latest end, using `8:00 AM`–`6:00 PM` when the week is empty. Blocks show time, subject, and optional room; the current day header is orange.
+  - **Subject tones:** five soft background/border pairs (orange, green, gold, terracotta, blue) assigned by subject order so the same subject keeps the same color in both views.
+  - **Conflict warning:** overlapping classes are saved. Each involved class shows an `Overlaps with <subject>` note in the agenda, an `!` badge in the grid, and a conflict paragraph in the details dialog. Nothing blocks the save.
+  - **Add/edit dialog:** subject, day, start time, end time, and optional room (`120` characters maximum). The subject must belong to the active semester; the end time must be later than the start time. A live overlap warning appears as soon as a draft conflicts. The dialog reuses the shared modal and becomes a bottom sheet below `600px`.
+  - **Details and delete:** details show day, time, and room with Close, Edit, and Delete. Delete opens a confirmation modal that repeats the subject, day, time, and room. Successful changes refetch the schedule and recalculate conflicts.
+  - This is the current visual baseline; it follows the shared tokens and reuses the shared `Card`, `Modal`, `Input`, `Select`, `Button`, `Badge`, and `EmptyState` components.
 
 ### Settings — needs spec
 - Only the navigation entry is confirmed. Full page content and controls must be specified before implementation.
@@ -395,5 +403,4 @@ These still need approved specifications before implementation:
 - Target Grade Calculator.
 - Tablet-specific refinements.
 - Conversion-table management UI.
-- Schedule overlap and conflict presentation.
 - Exact final token values (colors, typography, shadows) if the proposed baselines are not approved.

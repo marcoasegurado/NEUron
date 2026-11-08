@@ -2,6 +2,7 @@ import { handleActivityRequest } from './server/activities'
 import { handleAuthRequest } from './server/auth'
 import type { Env } from './server/db'
 import { HttpError, json } from './server/http'
+import { handleScheduleRequest } from './server/schedule'
 import { handleSemesterRequest } from './server/semesters'
 
 async function databaseHealth(env: Env): Promise<Response> {
@@ -53,6 +54,11 @@ export default {
         const semesterResponse = await handleSemesterRequest(request, env)
         if (semesterResponse) {
           return semesterResponse
+        }
+
+        const scheduleResponse = await handleScheduleRequest(request, env)
+        if (scheduleResponse) {
+          return scheduleResponse
         }
 
         const activityResponse = await handleActivityRequest(request, env)

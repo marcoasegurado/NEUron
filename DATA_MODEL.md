@@ -1,6 +1,6 @@
 # NEUron — Data Model
 
-**Status:** Logical entities and relationships are identified. The storage target is Cloudflare D1, and the `neuron` database is created and bound as `DB`. Auth is defined in `migrations/0001_auth.sql` and `migrations/0002_add_username.sql`; academic structure is defined in `migrations/0003_academic_structure.sql`; activities are defined in `migrations/0004_activities.sql`. Auth, academic structure, and activities are applied locally and remotely, and the Phase 3 and Phase 5 APIs are deployed. Schedule and conversion-table schema and global conversion-table ownership still need review before implementation.
+**Status:** Logical entities and relationships are identified. The storage target is Cloudflare D1, and the `neuron` database is created and bound as `DB`. Auth is defined in `migrations/0001_auth.sql` and `migrations/0002_add_username.sql`; academic structure is defined in `migrations/0003_academic_structure.sql`; activities are defined in `migrations/0004_activities.sql`; schedules are defined in `migrations/0005_schedule.sql`. Auth, academic structure, and activities are applied locally and remotely; the Phase 3 and Phase 5 APIs are deployed, and Phase 6 is deployed. `0005_schedule.sql` still needs to be applied locally and remotely. The conversion-table schema and global conversion-table ownership still need review before implementation.
 **Source of truth:** Consolidated data model for the NEUron rebuild. Derived from the original master brief (Part 6 and relevant rules from Parts 1 and 4), which has since been removed at the user's request. This file is now the reference for entities, relationships, and data decisions.
 
 > Add remaining D1 tables and migrations only after reviewing the current `neuron` schema and confirming the unresolved decisions with the user. Do not choose a schema that makes unresolved decisions difficult to change.
@@ -104,14 +104,18 @@ Each activity belongs to one category, and ownership is validated through catego
 ### 2.8 Class Meeting / Schedule Entry
 
 - Schedule entry ID.
-- Related subject ID, where applicable.
-- Day or days of the week.
-- Start time.
-- End time.
-- Room/location (optional text).
+- Semester ID, so a schedule read is scoped to one semester.
+- Required subject ID from that same semester.
+- Day of the week: `1`–`6` for Monday–Saturday.
+- Start time and end time stored as `HH:MM` (`00:00`–`23:59`); the end time must be later than the start time.
+- Room/location (optional text, up to 120 characters).
 - Created/updated timestamps.
 
-The day range and overlap rules are not yet finalized. A recurring class may meet on multiple days; confirm the desired shape before implementation.
+One record represents one meeting. A class that meets Monday, Wednesday, and Friday becomes three entries and is edited or deleted one meeting at a time.
+
+**Implemented (Phase 7):** `migrations/0005_schedule.sql` creates `class_schedules` with `id`, `semester_id`, `subject_id`, `day_of_week`, `start_time`, `end_time`, `room`, and created/updated timestamps. Checks enforce `day_of_week BETWEEN 1 AND 6` and `start_time < end_time`. `semester_id` and `subject_id` cascade on delete so removing a semester or subject cannot leave orphan classes, and indexes cover `(semester_id, day_of_week, start_time)` and `subject_id`. `src/server/schedule.ts` enforces ownership through semester → user and verifies that the subject belongs to the same semester before a write. `src/server/schedule-validation.ts` rejects malformed times and inverted ranges and normalizes a blank room to `null`.
+
+**Overlap policy (confirmed):** overlaps are stored normally, not rejected. Conflict detection is derived on read: two entries conflict when they share `day_of_week` and their time ranges intersect (`a.start < b.end` and `b.start < a.end`). Both views and the editor surface the conflicting subject names, but no database constraint or Worker rejection blocks the save. Nothing is cached, so editing or deleting an entry immediately changes the conflict set on the next read.
 
 ### 2.9 Percentage-to-Grade Conversion Table
 
@@ -156,7 +160,7 @@ These must be resolved with the user before the dependent implementation work:
 | Decision | Current status | Needed before |
 |---|---|---|
 | D1 database and binding | `neuron` created in APAC and bound as `DB`; `0001_auth.sql` and `0002_add_username.sql` are applied locally and remotely; `0003_academic_structure.sql` is applied locally and remotely; `0004_activities.sql` is applied locally and remotely | Resolved for Phase 5 |
-| Exact D1/SQL schema and migrations | Auth, academic-structure, and activity schemas are defined; schedule and conversion tables are still undefined | Phase 4+ / data-model approval |
+| Exact D1/SQL schema and migrations | Auth, academic-structure, activity, and schedule schemas are defined in `0001`–`0005`; the conversion table is still undefined | Phase 4+ / data-model approval |
 | Authentication provider and stable user ID | Resolved: custom email/password with UUID user IDs and D1 sessions | Resolved |
 | Password hashing and session lifetime | Resolved baseline: PBKDF2-HMAC-SHA256 at 10,000 iterations; 7-day sessions; 1-hour reset tokens | Resolved |
 | Workers plan and hashing CPU cost | Lower-iteration path chosen for Workers Free; production login succeeded with 10,000 iterations. Add rate limiting before relying on it for real accounts | Resolved for Phase 2; rate limiting remains a hardening task |
@@ -166,8 +170,10 @@ These must be resolved with the user before the dependent implementation work:
 | Conversion table ownership | One shared table across subjects is confirmed; whether per account or central across users is not | Phase 10 / data-model approval |
 | Historical conversion table changes | Recalculate past semesters or preserve prior table version is undecided | Phase 10 |
 | Dropped/withdrawn subjects | Whether/how excluded from GWA is undecided | Phase 8 / Phase 10 |
-| Schedule day range | `DESIGN.md` does not specify the day range; the old README says Monday–Saturday | Phase 7 |
-| Schedule overlap behavior | Not finalized | Phase 7 |
+| Schedule day range | Resolved: Monday–Saturday, stored as `day_of_week` `1`–`6` | Resolved |
+| Schedule overlap behavior | Resolved: overlaps are saved and flagged; no blocking constraint | Resolved |
+| Multi-day class storage | Resolved: one `class_schedules` row per meeting day | Resolved |
+| Schedule subject link | Resolved: `subject_id` is required and must belong to the same semester | Resolved |
 | Category deletion with existing activities | Not finalized | Phase 3 / Phase 6 |
 | Categories/activities: separate tables vs JSON columns | Not decided | Data-model approval / Phase 3 |
 | Cached computed values vs always-derived grades | Not decided | Data-model approval / Phase 4 |

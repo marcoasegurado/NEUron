@@ -335,14 +335,26 @@ Implementation status:
 **Goal:** Let students manage and view weekly classes.
 
 Tasks:
-- [ ] Resolve whether schedule includes Monday–Friday or Monday–Saturday before implementation.
-- [ ] Implement weekly schedule for phone and desktop.
-- [ ] Add a class linked to an existing subject where appropriate.
-- [ ] Store day(s), start time, end time, and optional room/location.
-- [ ] Implement class details, edit/delete, and empty states.
-- [ ] Validate time range and implement approved overlap behavior.
+- [x] Resolve the day range: Monday–Saturday.
+- [x] Implement weekly schedule for phone and desktop.
+- [x] Require every class to link to an existing subject in the active semester.
+- [x] Store day, start time, end time, and optional room/location.
+- [x] Implement class details, edit/delete, and empty states.
+- [x] Validate the time range and warn about, but allow, overlapping classes.
 
-**Done when:** Students can add/view/edit/delete classes; agreed day range and time placement work correctly; phone and desktop match approved references.
+Implementation status:
+- Migration `migrations/0005_schedule.sql` creates `class_schedules` with `id`, `semester_id`, `subject_id`, `day_of_week` (`1`–`6` for Monday–Saturday), `start_time` and `end_time` as `HH:MM`, optional `room`, and timestamps. Checks enforce the day range and `start_time < end_time`; both foreign keys cascade on delete and indexes cover semester/day ordering and subject lookups.
+- `src/server/schedule.ts` serves `GET /api/semesters/:id/schedule`, `POST /api/schedule`, `PATCH /api/schedule/:id`, and `DELETE /api/schedule/:id`. Every handler resolves ownership through semester → user, and create/update reject a subject that does not belong to that semester.
+- `src/server/schedule-validation.ts` rejects missing IDs, days outside `1`–`6`, malformed times, an end time that is not later than the start time, and rooms longer than 120 characters. An omitted or blank room becomes `null`.
+- `src/lib/academic-api.ts` exposes `getSchedule`, `createScheduleClass`, `updateScheduleClass`, and `deleteScheduleClass`.
+- `src/features/schedule/ClassDialog.tsx` creates and edits one meeting: subject, day, start time, end time, and optional room. It validates before submitting and shows a live overlap warning while still allowing the save.
+- `src/features/schedule/SchedulePage.tsx` loads the active semester, its subjects, and its schedule. Phones use a six-day week strip and the selected day's agenda; from `1024px` the same data renders as a weekly grid with time rows and subject-colored blocks. Class details offer Edit and Delete, and delete requires confirmation in a modal.
+- `src/features/schedule/view-model.ts` owns day/time formatting, sorting, conflict detection, and grid positioning. `src/features/schedule/class-form.ts` owns form defaults, validation, payloads, and draft conflicts.
+- Empty states cover no active semester, a semester without subjects, and a week without classes; a single empty day shows its own message without hiding the rest of the week.
+- Overlaps are stored normally and marked in both views with the conflicting subject names. Nothing blocks a conflict.
+- Test coverage was added in `src/features/schedule/view-model.test.ts`, `src/features/schedule/class-form.test.ts`, `src/features/schedule/SchedulePage.test.tsx`, and `src/server/schedule-validation.test.ts`.
+
+**Done when:** Students can add/view/edit/delete classes; the Monday–Saturday range and time placement work correctly; phone and desktop match the `DESIGN.md` spec.
 
 ### Phase 8 — Semester GWA
 
@@ -430,7 +442,7 @@ These are intentionally unresolved. The coding agent must not silently choose an
 
 | Decision | Current status | Needed before |
 |---|---|---|
-| D1 application schema and migrations | Auth tables are defined in `0001_auth.sql` and `0002_add_username.sql`; semester, subject, and category tables are defined in `0003_academic_structure.sql` and applied remotely; activity, schedule, and conversion-table tables are still undefined | Phase 4+ / data-model approval |
+| D1 application schema and migrations | Auth tables are defined in `0001_auth.sql` and `0002_add_username.sql`; academic structure is in `0003_academic_structure.sql`; activities are in `0004_activities.sql`; schedules are in `0005_schedule.sql`. The conversion-table table is still undefined | Phase 4+ / data-model approval |
 | Authentication provider | Resolved: custom email/password in the Worker with D1 sessions, manual accounts, username-or-email login, any valid email domain, and Resend reset email | Resolved |
 | Account provisioning | Resolved: the owner creates accounts manually; no public registration. Use `npm run cf:account:create -- --email <email> --username <username> --name <name>` | Resolved |
 | Password hashing and session policy | Resolved baseline: PBKDF2-HMAC-SHA256 at 10,000 iterations, 7-day sessions, 1-hour reset tokens | Resolved |
@@ -441,11 +453,14 @@ These are intentionally unresolved. The coding agent must not silently choose an
 | Settings page and controls | Settings navigation exists; complete page design not identified | Phase 10 |
 | GWA card/section design | Not identified in reviewed frames | Phase 8 |
 | Target Grade Calculator assumptions | Not finalized | Phase 9 |
-| Schedule day range | `DESIGN.md` does not specify the day range; the old README says Monday–Saturday | Phase 7 |
+| Schedule day range | Resolved: Monday–Saturday, stored as `day_of_week` `1`–`6` | Resolved |
 | Conversion table ownership | One shared table across subjects is confirmed; whether per account or central across users is not | Phase 10 / data-model approval |
 | Historical conversion table changes | Recalculate past semesters or preserve prior table version is undecided | Phase 10 |
 | Dropped/withdrawn subjects | Whether/how excluded from GWA is undecided | Phase 8 / Phase 10 |
-| Schedule overlap behavior | Not finalized | Phase 7 |
+| Schedule overlap behavior | Resolved: overlaps are allowed and saved, with a visible conflict warning in both views and the editor | Resolved |
+| Multi-day class storage | Resolved: one entry per day; a MWF class is three entries | Resolved |
+| Schedule subject link | Resolved: every class must reference a subject in the same semester | Resolved |
+| Phone schedule layout | Resolved: week strip plus the selected day's agenda | Resolved |
 | Category deletion with existing activities | Not finalized | Phase 3 / Phase 6 |
 | Target grade calculation method | Future score assumptions and category behavior need agreement | Phase 9 |
 | Tablet layout | No dedicated tablet frames identified | Phase 12 |
@@ -487,6 +502,10 @@ Do not block unrelated work on decisions that are only needed in a later phase. 
 - Login, Forgot Password, and Reset Password reuse the specified auth layout.
 - Auth tables are in `migrations/0001_auth.sql`; `migrations/0002_add_username.sql` adds the unique username used for login.
 - Semester, subject, and grading-category tables are defined in `migrations/0003_academic_structure.sql`. Category weights accept decimal percentages; each user can have only one active semester.
+- Activity scores are stored in `migrations/0004_activities.sql`; weekly classes are stored in `migrations/0005_schedule.sql`.
+- The weekly schedule covers Monday–Saturday (`day_of_week` `1`–`6`), stores one entry per meeting day, and requires a subject from the same semester.
+- Overlapping classes are saved normally and flagged with a conflict warning rather than rejected.
+- The phone schedule uses a six-day week strip plus the selected day's agenda; from `1024px` it becomes a weekly time grid.
 - Preferred coding workflow: OpenCode with DeepSeek in VS Code; GitHub Copilot may be secondary.
 - Work one phase at a time and do not modify GitHub remotely without explicit instruction.
 
@@ -495,13 +514,11 @@ Do not block unrelated work on decisions that are only needed in a later phase. 
 - Official NEU percentage-to-grade threshold values.
 - Whether conversion-table ownership is per student or centrally managed.
 - Whether changing conversion thresholds recalculates historical semesters or preserves old versions.
-- Whether Schedule includes Saturday.
 - Settings, GWA, and Target Calculator screen designs.
 - Target Grade Calculator assumptions.
 - Dropped/withdrawn subject treatment in GWA.
-- Schedule overlap behavior.
 - Category deletion behavior when activities already exist.
-- Remaining D1 schema and migrations for semesters, subjects, categories, activities, schedules, and conversion tables.
+- D1 schema and migration for the shared conversion table.
 - Whether login rate limiting and email-ownership verification are required before real accounts.
 - Resend account, verified sender, and API key configuration.
 

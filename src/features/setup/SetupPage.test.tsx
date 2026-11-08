@@ -56,7 +56,11 @@ async function setAcademicYear(
 }
 
 async function fillValidSubject(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(screen.getByLabelText('Subject name'), 'Mathematics')
+  // The step change can commit after the click resolves on a loaded machine.
+  await user.type(
+    await screen.findByLabelText('Subject name'),
+    'Mathematics',
+  )
   await user.type(screen.getByLabelText('Units'), '3')
   await user.type(screen.getByLabelText('Category 1'), 'Quizzes')
   await user.type(screen.getByLabelText('Weight %'), '40')

@@ -42,6 +42,18 @@ export interface ActivityRow {
   updated_at: string
 }
 
+export interface ScheduleClassRow {
+  id: string
+  semester_id: string
+  subject_id: string
+  day_of_week: number
+  start_time: string
+  end_time: string
+  room: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Semester {
   id: string
   userId: string
@@ -82,6 +94,18 @@ export interface Activity {
   scoreEarned: number
   totalPoints: number
   date: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ScheduleClass {
+  id: string
+  semesterId: string
+  subjectId: string
+  dayOfWeek: number
+  startTime: string
+  endTime: string
+  room: string | null
   createdAt: string
   updatedAt: string
 }
@@ -148,6 +172,20 @@ export function toActivity(row: ActivityRow): Activity {
     scoreEarned: row.score_earned,
     totalPoints: row.total_points,
     date: row.activity_date,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+export function toScheduleClass(row: ScheduleClassRow): ScheduleClass {
+  return {
+    id: row.id,
+    semesterId: row.semester_id,
+    subjectId: row.subject_id,
+    dayOfWeek: row.day_of_week,
+    startTime: row.start_time,
+    endTime: row.end_time,
+    room: row.room,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }

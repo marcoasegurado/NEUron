@@ -51,6 +51,18 @@ export interface SemesterSetup {
   subjects: Subject[]
 }
 
+export interface ScheduleClass {
+  id: string
+  semesterId: string
+  subjectId: string
+  dayOfWeek: number
+  startTime: string
+  endTime: string
+  room: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 export interface CreateSemesterInput {
   academicYear: string
   term: string
@@ -80,6 +92,23 @@ export interface UpdateActivityInput {
   scoreEarned: number
   totalPoints: number
   date?: string
+}
+
+export interface CreateScheduleClassInput {
+  semesterId: string
+  subjectId: string
+  dayOfWeek: number
+  startTime: string
+  endTime: string
+  room?: string | null
+}
+
+export interface UpdateScheduleClassInput {
+  subjectId: string
+  dayOfWeek: number
+  startTime: string
+  endTime: string
+  room?: string | null
 }
 
 export function listSemesters(): Promise<{ semesters: Semester[] }> {
@@ -146,6 +175,48 @@ export function deleteActivity(activityId: string): Promise<void> {
     `/api/activities/${encodeURIComponent(activityId)}`,
     { method: 'DELETE' },
   )
+}
+
+export function getSchedule(
+  semesterId: string,
+): Promise<{ classes: ScheduleClass[] }> {
+  return apiRequest<{ classes: ScheduleClass[] }>(
+    `/api/semesters/${encodeURIComponent(semesterId)}/schedule`,
+  )
+}
+
+export function createScheduleClass(
+  input: CreateScheduleClassInput,
+): Promise<{ class: ScheduleClass }> {
+  return apiRequest<{ class: ScheduleClass }>('/api/schedule', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(input),
+  })
+}
+
+export function updateScheduleClass(
+  classId: string,
+  input: UpdateScheduleClassInput,
+): Promise<{ class: ScheduleClass }> {
+  return apiRequest<{ class: ScheduleClass }>(
+    `/api/schedule/${encodeURIComponent(classId)}`,
+    {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(input),
+    },
+  )
+}
+
+export function deleteScheduleClass(classId: string): Promise<void> {
+  return apiRequest<void>(`/api/schedule/${encodeURIComponent(classId)}`, {
+    method: 'DELETE',
+  })
 }
 
 export function academicErrorMessage(
