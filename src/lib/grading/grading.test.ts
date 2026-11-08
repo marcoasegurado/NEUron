@@ -6,6 +6,7 @@ import {
   calculateSubjectPercentage,
   convertPercentage,
   formatNumber,
+  roundForDisplay,
   validateActivity,
   validateConversionTable,
   validateWeights,
@@ -117,6 +118,29 @@ describe('activity validation', () => {
   it('accepts a score equal to the maximum', () => {
     expect(validateActivity(activity('a', 'c', 10, 10)).valid).toBe(true)
   })
+
+  it('rejects negative and non-finite scores or totals', () => {
+    expect(validateActivity(activity('a', 'c', -1, 10)).valid).toBe(false)
+    expect(
+      validateActivity(activity('a', 'c', Number.NaN, 10)).valid,
+    ).toBe(false)
+    expect(
+      validateActivity(activity('a', 'c', Number.POSITIVE_INFINITY, 10)).valid,
+    ).toBe(false)
+    expect(
+      validateActivity(activity('a', 'c', 10, Number.NaN)).valid,
+    ).toBe(false)
+    expect(
+      validateActivity(activity('a', 'c', 10, Number.POSITIVE_INFINITY)).valid,
+    ).toBe(false)
+  })
+
+  it('accepts decimal scores and requires an activity name', () => {
+    expect(validateActivity(activity('a', 'c', 9.5, 10)).valid).toBe(true)
+    expect(
+      validateActivity({ ...activity('a', 'c', 1, 2), name: '   ' }).valid,
+    ).toBe(false)
+  })
 })
 
 describe('weight validation', () => {
@@ -146,6 +170,20 @@ describe('weight validation', () => {
     ])
     expect(result.valid).toBe(true)
     expect(result.total).toBe(100)
+  })
+
+  it('rejects zero, negative, and non-finite weights', () => {
+    expect(validateWeights([category('a', 'A', 0)]).valid).toBe(false)
+    expect(validateWeights([category('a', 'A', -10)]).valid).toBe(false)
+    expect(validateWeights([category('a', 'A', Number.NaN)]).valid).toBe(false)
+  })
+
+  it('requires at least one active category', () => {
+    const result = validateWeights([category('a', 'Old', 100, false)])
+    expect(result.valid).toBe(false)
+    expect(result.errors).toContain(
+      'At least one active grading category is required.',
+    )
   })
 })
 
@@ -190,6 +228,85 @@ describe('subject percentage', () => {
       expect(result.percentage).toBeCloseTo(90.371428, 5)
     }
   })
+
+  it('reaches 100% when every activity is perfect', () => {
+    const result = calculateSubjectPercentage(
+      subject(
+        's',
+        3,
+        [category('a', 'Quizzes', 40), category('b', 'Exams', 60)],
+        [activity('a1', 'a', 20, 20), activity('b1', 'b', 60, 60)],
+      ),
+    )
+
+    expect(result.status).toBe('graded')
+    if (result.status === 'graded') {
+      expect(result.percentage).toBe(100)
+    }
+  })
+
+  it('returns pending when there are no active categories', () => {
+    const result = calculateSubjectPercentage(
+      subject('s', 3, [category('a', 'Old', 100, false)], []),
+    )
+
+    expect(result).toMatchObject({
+      status: 'pending',
+      reason: 'no-categories',
+    })
+  })
+
+  it('returns pending when the active weights are invalid', () => {
+    const result = calculateSubjectPercentage(
+      subject(
+        's',
+        3,
+        [category('a', 'Quizzes', 90)],
+        [activity('a1', 'a', 9, 10)],
+      ),
+    )
+
+    expect(result).toMatchObject({
+      status: 'pending',
+      reason: 'invalid-weights',
+    })
+  })
+
+  it('returns pending when an active category has an invalid activity', () => {
+    const result = calculateSubjectPercentage(
+      subject(
+        's',
+        3,
+        [category('a', 'Quizzes', 100)],
+        [activity('a1', 'a', 10, 0)],
+      ),
+    )
+
+    expect(result).toMatchObject({
+      status: 'pending',
+      reason: 'invalid-activities',
+    })
+  })
+
+  it('ignores inactive categories and their activities', () => {
+    const result = calculateSubjectPercentage(
+      subject(
+        's',
+        3,
+        [category('a', 'Active', 100), category('b', 'Old', 0, false)],
+        [
+          activity('a1', 'a', 90, 100),
+          // Invalid on purpose: an inactive category must not affect grading.
+          activity('b1', 'b', 10, 0),
+        ],
+      ),
+    )
+
+    expect(result.status).toBe('graded')
+    if (result.status === 'graded') {
+      expect(result.percentage).toBe(90)
+    }
+  })
 })
 
 describe('conversion table', () => {
@@ -214,6 +331,59 @@ describe('conversion table', () => {
       { minimumPercentage: 0, grade: 5 },
     ])
     expect(result.valid).toBe(false)
+  })
+
+  it('accepts the inclusive 1.0 and 5.0 grade bounds', () => {
+    const result = validateConversionTable([
+      { minimumPercentage: 100, grade: 1.0 },
+      { minimumPercentage: 0, grade: 5.0 },
+    ])
+    expect(result.valid).toBe(true)
+  })
+
+  it('rejects grades outside the NEU 1.0-5.0 scale', () => {
+    const result = validateConversionTable([
+      { minimumPercentage: 100, grade: 0.99 },
+      { minimumPercentage: 50, grade: 2.5 },
+      { minimumPercentage: 0, grade: 5.01 },
+    ])
+    expect(result.valid).toBe(false)
+    expect(
+      result.errors.filter((error) => error.includes('NEU grades')),
+    ).toHaveLength(2)
+  })
+
+  it('rejects thresholds outside the 0-100 range', () => {
+    const result = validateConversionTable([
+      { minimumPercentage: -1, grade: 1 },
+      { minimumPercentage: 101, grade: 5 },
+      { minimumPercentage: 0, grade: 5 },
+    ])
+    expect(result.valid).toBe(false)
+    expect(
+      result.errors.filter((error) => error.includes('between 0 and 100')),
+    ).toHaveLength(2)
+  })
+
+  it('sorts an unordered table before converting', () => {
+    const unordered: ConversionRow[] = [
+      { minimumPercentage: 0, grade: 5.0 },
+      { minimumPercentage: 95, grade: 1.25 },
+      { minimumPercentage: 90, grade: 1.5 },
+      { minimumPercentage: 98, grade: 1.0 },
+    ]
+
+    expect(convertPercentage(95, unordered)).toBe(1.25)
+    expect(convertPercentage(93, unordered)).toBe(1.5)
+  })
+
+  it('returns null for percentages outside 0-100 or an invalid table', () => {
+    expect(convertPercentage(-0.1, testTable)).toBeNull()
+    expect(convertPercentage(100.1, testTable)).toBeNull()
+    expect(convertPercentage(Number.NaN, testTable)).toBeNull()
+    expect(
+      convertPercentage(95, [{ minimumPercentage: 95, grade: 1.25 }]),
+    ).toBeNull()
   })
 })
 
@@ -262,6 +432,19 @@ describe('semester GWA', () => {
 
   it('returns empty when there are no active subjects', () => {
     expect(calculateSemesterGwa([], testTable)).toEqual({ status: 'empty' })
+
+    const inactive: Subject = {
+      ...subject(
+        'inactive',
+        3,
+        [category('c', 'All', 100)],
+        [activity('a', 'c', 90, 100)],
+      ),
+      active: false,
+    }
+    expect(calculateSemesterGwa([inactive], testTable)).toEqual({
+      status: 'empty',
+    })
   })
 
   it('converts each subject before weighting and keeps exact values', () => {
@@ -281,6 +464,71 @@ describe('semester GWA', () => {
       expect(result.grade).toBe(1.75)
     }
   })
+
+  it('treats a recorded zero as complete for the subject', () => {
+    const result = calculateSubjectGrade(
+      subject(
+        's',
+        3,
+        [category('c', 'All', 100)],
+        [activity('a', 'c', 0, 10)],
+      ),
+      testTable,
+    )
+
+    expect(result.status).toBe('graded')
+    if (result.status === 'graded') {
+      expect(result.percentage).toBe(0)
+      expect(result.grade).toBe(5.0)
+    }
+  })
+
+  it('returns pending when a subject has invalid units', () => {
+    const complete = subject(
+      'complete',
+      3,
+      [category('c', 'All', 100)],
+      [activity('a', 'c', 90, 100)],
+    )
+    const invalidUnits = subject(
+      'invalid-units',
+      0,
+      [category('c2', 'All', 100)],
+      [activity('a2', 'c2', 90, 100)],
+    )
+
+    const result = calculateSemesterGwa([complete, invalidUnits], testTable)
+
+    expect(result.status).toBe('pending')
+    if (result.status === 'pending') {
+      expect(result.pendingSubjectIds).toEqual(['invalid-units'])
+    }
+  })
+
+  it('retains the exact GWA and rounds only for display', () => {
+    const preciseTable: ConversionRow[] = [
+      { minimumPercentage: 0, grade: 1.804 },
+    ]
+    const perfect = (id: string, units: number) =>
+      subject(
+        id,
+        units,
+        [category(`${id}-c`, 'All', 100)],
+        [activity(`${id}-a`, `${id}-c`, 100, 100)],
+      )
+
+    const result = calculateSemesterGwa(
+      [perfect('a', 3), perfect('b', 7)],
+      preciseTable,
+    )
+
+    expect(result.status).toBe('graded')
+    if (result.status === 'graded') {
+      expect(result.gwa).toBeCloseTo(1.804, 12)
+      expect(result.gwa).not.toBe(1.8)
+      expect(formatNumber(result.gwa, 2)).toBe('1.80')
+    }
+  })
 })
 
 describe('display rounding', () => {
@@ -288,5 +536,10 @@ describe('display rounding', () => {
     const exact = 1.804
     expect(formatNumber(exact, 2)).toBe('1.80')
     expect(exact).toBe(1.804)
+  })
+
+  it('rounds only the display copy', () => {
+    expect(roundForDisplay(1.804, 2)).toBe(1.8)
+    expect(roundForDisplay(1.805, 2)).toBe(1.81)
   })
 })

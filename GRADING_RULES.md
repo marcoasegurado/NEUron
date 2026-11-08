@@ -1,6 +1,6 @@
 # NEUron — Grading and GWA Rules
 
-**Status:** Calculation rules are finalized for implementation. The official NEU percentage-to-grade threshold values still require verification and are not approved for hard-coding.
+**Status:** Calculation rules are finalized and implemented in `src/lib/grading/` with automated tests. The official NEU percentage-to-grade threshold values still require verification and are not approved for hard-coding; no production conversion defaults exist.
 **Source of truth:** Consolidated grading and GWA rules for the NEUron rebuild. Derived from the original master brief (Part 4), which has since been removed at the user's request. This file is now the reference for grading behavior.
 
 > This section is authoritative. All screens and features must call the same reusable grading logic. UI components must not implement their own formulas.

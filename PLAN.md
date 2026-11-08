@@ -1,6 +1,6 @@
 # NEUron — Project Plan
 
-**Status:** Phases 0 and 1 are complete. The app is deployed on Cloudflare Workers at `https://neuron.marcoeduardo-asegurado.workers.dev`, with static assets, a Worker API, and a Cloudflare D1 binding. Phase 2 authentication is implemented, migrated to remote D1, deployed, and smoke-tested in production. It is pending Resend configuration, password-reset email delivery verification, and final phone/desktop QA. Phase 3 is implemented, migrated to remote D1, deployed as version `56a065d7-3419-494b-9493-a70486c876a1`, and smoke-tested in production. The authenticated production setup flow still needs testing with a real account.
+**Status:** Phases 0 and 1 are complete. The app is deployed on Cloudflare Workers at `https://neuron.marcoeduardo-asegurado.workers.dev`, with static assets, a Worker API, and a Cloudflare D1 binding. Phase 2 authentication is implemented, migrated to remote D1, deployed, and smoke-tested in production. It is pending Resend configuration, password-reset email delivery verification, and final phone/desktop QA. Phase 3 is implemented, migrated to remote D1, deployed as version `56a065d7-3419-494b-9493-a70486c876a1`, and smoke-tested in production. The authenticated production setup flow still needs testing with a real account. Phase 4's grading engine is implemented in `src/lib/grading/` with automated tests; no production conversion thresholds are set.
 **Source of truth:** Consolidated project plan for the NEUron rebuild. It was derived from the original master brief (Parts 1, 2, 5, 7, and 8), which has since been removed at the user's request. This file is now the reference for purpose, scope, phases, and open decisions.
 
 > This document covers the project purpose, scope, phase order, task checklists, Done When criteria, technical direction, and open decisions. Design details live in `DESIGN.md`, grading rules in `GRADING_RULES.md`, data design in `DATA_MODEL.md`, and agent workflow rules in `AGENTS.md`.
@@ -252,17 +252,28 @@ Implementation status:
 **Goal:** Implement calculations independently of the UI.
 
 Tasks:
-- [ ] Implement the rules in `GRADING_RULES.md` as reusable functions.
-- [ ] Validate finite, non-negative earned score; positive total points; earned score not greater than total in v1.
-- [ ] Calculate points-weighted category averages.
-- [ ] Treat recorded zero as a real score and missing score as missing.
-- [ ] Mark subject `No Grade Yet` if any active category has no scores.
-- [ ] Calculate exact weighted subject percentage without rounding before conversion.
-- [ ] Implement one global conversion table shared by all subjects.
-- [ ] Validate table coverage and thresholds.
-- [ ] Keep full precision internally; round only for display.
-- [ ] Add automated tests for all `GRADING_RULES.md` test cases.
-- [ ] Do not set production conversion defaults until official NEU thresholds are verified.
+- [x] Implement the rules in `GRADING_RULES.md` as reusable functions.
+- [x] Validate finite, non-negative earned score; positive total points; earned score not greater than total in v1.
+- [x] Calculate points-weighted category averages.
+- [x] Treat recorded zero as a real score and missing score as missing.
+- [x] Mark subject `No Grade Yet` if any active category has no scores.
+- [x] Calculate exact weighted subject percentage without rounding before conversion.
+- [x] Implement one global conversion table shared by all subjects.
+- [x] Validate table coverage and thresholds.
+- [x] Keep full precision internally; round only for display.
+- [x] Add automated tests for all `GRADING_RULES.md` test cases.
+- [x] Do not set production conversion defaults until official NEU thresholds are verified.
+
+Implementation status:
+- `src/lib/grading/grading.ts` provides the centralized category-average, subject-percentage, subject-grade, conversion, and semester-GWA functions; `types.ts` defines their inputs and result states.
+- Activity validation rejects negative or non-finite scores, non-positive or non-finite totals, and scores above the total. Recorded zero remains valid and counts as complete.
+- Weight validation ignores inactive categories and rejects active totals outside 100% and invalid weights.
+- Conversion validation enforces the 0–100 threshold range, unique thresholds, full coverage from 0%, and NEU grades within 1.0–5.0. Evaluation uses the highest inclusive threshold at or below the exact percentage.
+- Subject results are `pending` for missing categories, invalid weights, invalid activities, incomplete categories, or an unusable conversion table. Inactive categories and their activities do not affect grading.
+- Semester GWA ignores inactive subjects, is units-weighted, preserves full precision, and returns pending or empty states instead of partial or zero values.
+- `src/lib/grading/grading.test.ts` has 38 passing tests covering all 11 required cases plus validation and edge cases.
+- No production conversion table or default thresholds exist; ownership stays unresolved until the user decides.
+- Phase 5, 6, and 8 UI work must import these functions rather than reimplementing formulas.
 
 **Done when:** All grading tests pass; formulas are centralized; invalid settings/scores are rejected; official conversion thresholds are approved before becoming production defaults.
 

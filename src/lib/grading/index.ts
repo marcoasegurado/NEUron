@@ -1,4 +1,6 @@
 export {
+  MAX_GRADE,
+  MIN_GRADE,
   WEIGHT_TOLERANCE,
   WEIGHT_TOTAL,
   activeCategories,

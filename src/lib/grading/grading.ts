@@ -13,6 +13,8 @@ import type {
 
 export const WEIGHT_TOTAL = 100
 export const WEIGHT_TOLERANCE = 1e-9
+export const MIN_GRADE = 1
+export const MAX_GRADE = 5
 
 export function isCategoryActive(category: GradingCategory): boolean {
   return category.active !== false
@@ -154,8 +156,14 @@ export function validateConversionTable(
       errors.push('Thresholds must be finite percentages between 0 and 100.')
     }
 
-    if (!Number.isFinite(row.grade) || row.grade <= 0) {
-      errors.push('Grades must be positive finite numbers.')
+    if (
+      !Number.isFinite(row.grade) ||
+      row.grade < MIN_GRADE ||
+      row.grade > MAX_GRADE
+    ) {
+      errors.push(
+        `Grades must be finite NEU grades between ${MIN_GRADE.toFixed(1)} and ${MAX_GRADE.toFixed(1)}.`,
+      )
     }
 
     if (seen.has(row.minimumPercentage)) {
@@ -215,8 +223,11 @@ export function calculateSubjectPercentage(
     }
   }
 
+  const activeCategoryIds = new Set(active.map((category) => category.id))
   const invalidActivity = subject.activities.some(
-    (activity) => !validateActivity(activity).valid,
+    (activity) =>
+      activeCategoryIds.has(activity.categoryId) &&
+      !validateActivity(activity).valid,
   )
   if (invalidActivity) {
     return {
