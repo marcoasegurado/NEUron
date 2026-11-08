@@ -1,6 +1,6 @@
 # NEUron — Project Plan
 
-**Status:** Phases 0 and 1 are complete. The app is deployed on Cloudflare Workers at `https://neuron.marcoeduardo-asegurado.workers.dev`, with static assets, a Worker API, and a Cloudflare D1 binding. Phase 2 authentication is implemented, migrated to remote D1, deployed, and smoke-tested in production. It is pending Resend configuration, password-reset email delivery verification, and final phone/desktop QA.
+**Status:** Phases 0 and 1 are complete. The app is deployed on Cloudflare Workers at `https://neuron.marcoeduardo-asegurado.workers.dev`, with static assets, a Worker API, and a Cloudflare D1 binding. Phase 2 authentication is implemented, migrated to remote D1, deployed, and smoke-tested in production. It is pending Resend configuration, password-reset email delivery verification, and final phone/desktop QA. Phase 3 is implemented, migrated to remote D1, deployed as version `56a065d7-3419-494b-9493-a70486c876a1`, and smoke-tested in production. The authenticated production setup flow still needs testing with a real account.
 **Source of truth:** Consolidated project plan for the NEUron rebuild. It was derived from the original master brief (Parts 1, 2, 5, 7, and 8), which has since been removed at the user's request. This file is now the reference for purpose, scope, phases, and open decisions.
 
 > This document covers the project purpose, scope, phase order, task checklists, Done When criteria, technical direction, and open decisions. Design details live in `DESIGN.md`, grading rules in `GRADING_RULES.md`, data design in `DATA_MODEL.md`, and agent workflow rules in `AGENTS.md`.
@@ -224,15 +224,26 @@ Implementation status:
 **Goal:** Let a student create a semester and configure all subjects.
 
 Tasks:
-- [ ] Follow the approved setup flow: three steps on phone and two on desktop.
-- [ ] Collect academic year/term and semester label.
-- [ ] Add/remove subjects during setup.
-- [ ] Collect subject name and units; professor remains optional.
-- [ ] Add custom grading categories per subject.
-- [ ] Allow category weights to be edited and show live total.
-- [ ] Prevent saving unless active category weights total 100%.
-- [ ] Save semester and subject configuration to D1 through the Worker API under the authenticated user.
-- [ ] Support reviewing/editing configuration where approved.
+- [x] Follow the approved setup flow: three steps on phone and two on desktop.
+- [x] Collect academic year/term and semester label.
+- [x] Add/remove subjects during setup.
+- [x] Collect subject name and units; professor remains optional.
+- [x] Add custom grading categories per subject.
+- [x] Allow category weights to be edited and show live total.
+- [x] Prevent saving unless active category weights total 100%.
+- [x] Save semester and subject configuration to D1 through the Worker API under the authenticated user.
+- [x] Support reviewing/editing configuration where approved.
+
+Implementation status:
+- `migrations/0003_academic_structure.sql` defines `semesters`, `subjects`, and `grading_categories`, with cascade ownership and one active semester per user.
+- The migration is applied locally and remotely; its uniqueness, active-semester, and cascade constraints are verified locally.
+- `src/server/academic.ts` defines the D1 row types, API-facing types, and row mappers.
+- `src/server/academic-validation.ts` validates semester fields, subjects, units, duplicate names, decimal weights, and the 100% total.
+- `src/server/semesters.ts` implements `POST /api/semesters`, `GET /api/semesters`, and `GET /api/semesters/:id` with atomic batch writes and automatic activation.
+- `src/features/setup/` implements the phone three-step and desktop two-step setup UI, live weight totals, validation, review, unsaved-changes warning, saving, and success states.
+- `npm run build`, `npm run lint`, and `npm test` pass (59 tests, including setup draft and setup-page integration tests).
+- Local API smoke tests pass: create `201`, list/detail, decimal weights and units, duplicate `409`, invalid weights `400`, active-semester switching, and unknown semester `404`.
+- Production deployment `56a065d7-3419-494b-9493-a70486c876a1` serves the app and rejects signed-out semester requests; authenticated setup still needs a real-account check.
 
 **Done when:** A student can create a semester with multiple subjects; each subject retains units, optional professor, categories, and weights; invalid totals cannot be saved; data persists and remains account-isolated; setup matches the `DESIGN.md` spec at phone and desktop sizes.
 
@@ -386,7 +397,7 @@ These are intentionally unresolved. The coding agent must not silently choose an
 
 | Decision | Current status | Needed before |
 |---|---|---|
-| D1 application schema and migrations | Auth tables are defined in `migrations/0001_auth.sql` and `migrations/0002_add_username.sql`; semester, subject, activity, schedule, and conversion-table tables are still undefined | Phase 3 / data-model approval |
+| D1 application schema and migrations | Auth tables are defined in `0001_auth.sql` and `0002_add_username.sql`; semester, subject, and category tables are defined in `0003_academic_structure.sql` and applied remotely; activity, schedule, and conversion-table tables are still undefined | Phase 4+ / data-model approval |
 | Authentication provider | Resolved: custom email/password in the Worker with D1 sessions, manual accounts, username-or-email login, any valid email domain, and Resend reset email | Resolved |
 | Account provisioning | Resolved: the owner creates accounts manually; no public registration. Use `npm run cf:account:create -- --email <email> --username <username> --name <name>` | Resolved |
 | Password hashing and session policy | Resolved baseline: PBKDF2-HMAC-SHA256 at 10,000 iterations, 7-day sessions, 1-hour reset tokens | Resolved |
@@ -442,6 +453,7 @@ Do not block unrelated work on decisions that are only needed in a later phase. 
 - Password-reset emails are sent through Resend; reset tokens expire after 1 hour and are single-use.
 - Login, Forgot Password, and Reset Password reuse the specified auth layout.
 - Auth tables are in `migrations/0001_auth.sql`; `migrations/0002_add_username.sql` adds the unique username used for login.
+- Semester, subject, and grading-category tables are defined in `migrations/0003_academic_structure.sql`. Category weights accept decimal percentages; each user can have only one active semester.
 - Preferred coding workflow: OpenCode with DeepSeek in VS Code; GitHub Copilot may be secondary.
 - Work one phase at a time and do not modify GitHub remotely without explicit instruction.
 

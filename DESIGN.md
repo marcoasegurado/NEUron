@@ -326,6 +326,7 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 - **Phone:** three steps — (1) semester name and number of subjects; (2) subject details and editable grading categories/weights; (3) readiness summary and save.
 - **Desktop:** two-step equivalent with wider forms and multi-column subject configuration.
 - **States:** step progress, add/remove subject, invalid weight total, missing required fields, saving, success, unsaved-changes warning.
+- **Implemented (Phase 3):** phone renders all three steps; desktop combines subjects and review in step 2, with a sticky review column beside the subject cards. Subject fields become two columns at `640px+`; the term uses a native select styled as the shared control. This is the current visual baseline.
 
 ### Home
 - **Phone:** page title, active semester, compact grade rows/cards, bottom navigation, Add Score.

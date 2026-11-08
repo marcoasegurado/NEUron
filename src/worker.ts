@@ -1,6 +1,7 @@
 import { handleAuthRequest } from './server/auth'
 import type { Env } from './server/db'
 import { HttpError, json } from './server/http'
+import { handleSemesterRequest } from './server/semesters'
 
 async function databaseHealth(env: Env): Promise<Response> {
   try {
@@ -46,6 +47,11 @@ export default {
         const authResponse = await handleAuthRequest(request, env)
         if (authResponse) {
           return authResponse
+        }
+
+        const semesterResponse = await handleSemesterRequest(request, env)
+        if (semesterResponse) {
+          return semesterResponse
         }
 
         return json({ error: 'API route not found.' }, 404)
