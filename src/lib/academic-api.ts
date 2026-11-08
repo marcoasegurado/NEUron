@@ -75,6 +75,13 @@ export interface CreateActivityInput {
   date?: string
 }
 
+export interface UpdateActivityInput {
+  name: string
+  scoreEarned: number
+  totalPoints: number
+  date?: string
+}
+
 export function listSemesters(): Promise<{ semesters: Semester[] }> {
   return apiRequest<{ semesters: Semester[] }>('/api/semesters')
 }
@@ -116,6 +123,29 @@ export function createActivity(
     },
     body: JSON.stringify(input),
   })
+}
+
+export function updateActivity(
+  activityId: string,
+  input: UpdateActivityInput,
+): Promise<{ activity: Activity }> {
+  return apiRequest<{ activity: Activity }>(
+    `/api/activities/${encodeURIComponent(activityId)}`,
+    {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(input),
+    },
+  )
+}
+
+export function deleteActivity(activityId: string): Promise<void> {
+  return apiRequest<void>(
+    `/api/activities/${encodeURIComponent(activityId)}`,
+    { method: 'DELETE' },
+  )
 }
 
 export function academicErrorMessage(

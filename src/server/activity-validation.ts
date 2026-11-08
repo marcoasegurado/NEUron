@@ -4,13 +4,16 @@ import { HttpError } from './http'
 const MAX_NAME = 120
 const MAX_ID = 64
 
-export interface ActivityInput {
-  subjectId: string
-  categoryId: string
+export interface ActivityScoreInput {
   name: string
   scoreEarned: number
   totalPoints: number
   date: string
+}
+
+export interface ActivityInput extends ActivityScoreInput {
+  subjectId: string
+  categoryId: string
 }
 
 function requireId(value: unknown, field: string): string {
@@ -51,13 +54,10 @@ function parseDate(value: unknown, now: Date): string {
   return value.trim()
 }
 
-export function parseActivityInput(
+function parseScoreFields(
   body: Record<string, unknown>,
-  now = new Date(),
-): ActivityInput {
-  const subjectId = requireId(body.subjectId, 'subject')
-  const categoryId = requireId(body.categoryId, 'grading category')
-
+  now: Date,
+): ActivityScoreInput {
   const name = typeof body.name === 'string' ? body.name.trim() : ''
   if (name.length > MAX_NAME) {
     throw new HttpError(
@@ -74,7 +74,7 @@ export function parseActivityInput(
   // Reuse the grading engine's activity rules so the API and calculations agree.
   const validation = validateActivity({
     id: 'pending',
-    categoryId,
+    categoryId: 'pending',
     name,
     scoreEarned,
     totalPoints,
@@ -84,11 +84,27 @@ export function parseActivityInput(
   }
 
   return {
-    subjectId,
-    categoryId,
     name,
     scoreEarned,
     totalPoints,
     date: parseDate(body.date, now),
   }
+}
+
+export function parseActivityInput(
+  body: Record<string, unknown>,
+  now = new Date(),
+): ActivityInput {
+  return {
+    subjectId: requireId(body.subjectId, 'subject'),
+    categoryId: requireId(body.categoryId, 'grading category'),
+    ...parseScoreFields(body, now),
+  }
+}
+
+export function parseActivityUpdate(
+  body: Record<string, unknown>,
+  now = new Date(),
+): ActivityScoreInput {
+  return parseScoreFields(body, now)
 }

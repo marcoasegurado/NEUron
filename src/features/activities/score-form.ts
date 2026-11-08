@@ -1,4 +1,9 @@
-import type { CreateActivityInput, Subject } from '../../lib/academic-api'
+import type {
+  Activity,
+  CreateActivityInput,
+  Subject,
+  UpdateActivityInput,
+} from '../../lib/academic-api'
 
 export interface ScoreFormValues {
   subjectId: string
@@ -43,13 +48,31 @@ export function activeCategories(subject: Subject | undefined) {
   return subject?.categories.filter((category) => category.isActive) ?? []
 }
 
+export interface ScoreFormDefaults {
+  subjectId?: string
+  categoryId?: string
+}
+
 export function createScoreForm(
   subjects: Subject[],
   now = new Date(),
+  defaults: ScoreFormDefaults = {},
 ): ScoreFormValues {
+  const requestedSubject = defaults.subjectId
+    ? subjects.find((entry) => entry.id === defaults.subjectId)
+    : undefined
   const subject =
-    subjects.find((entry) => activeCategories(entry).length > 0) ?? subjects[0]
-  const category = activeCategories(subject)[0]
+    requestedSubject && activeCategories(requestedSubject).length > 0
+      ? requestedSubject
+      : (subjects.find((entry) => activeCategories(entry).length > 0) ??
+        subjects[0])
+
+  const requestedCategory = defaults.categoryId
+    ? activeCategories(subject).find(
+        (category) => category.id === defaults.categoryId,
+      )
+    : undefined
+  const category = requestedCategory ?? activeCategories(subject)[0]
 
   return {
     subjectId: subject?.id ?? '',
@@ -59,6 +82,39 @@ export function createScoreForm(
     totalPoints: '',
     date: localToday(now),
   }
+}
+
+export type EditableActivity = Pick<
+  Activity,
+  | 'id'
+  | 'categoryId'
+  | 'name'
+  | 'scoreEarned'
+  | 'totalPoints'
+  | 'date'
+>
+
+export function createEditScoreForm(
+  subjects: Subject[],
+  activity: EditableActivity,
+): ScoreFormValues {
+  for (const subject of subjects) {
+    const category = subject.categories.find(
+      (entry) => entry.id === activity.categoryId,
+    )
+    if (category) {
+      return {
+        subjectId: subject.id,
+        categoryId: category.id,
+        name: activity.name,
+        scoreEarned: String(activity.scoreEarned),
+        totalPoints: String(activity.totalPoints),
+        date: activity.date,
+      }
+    }
+  }
+
+  return createScoreForm(subjects)
 }
 
 function parseNumber(value: string): number {
@@ -123,6 +179,17 @@ export function buildActivityInput(
   return {
     subjectId: values.subjectId,
     categoryId: values.categoryId,
+    name: values.name.trim(),
+    scoreEarned: Number(values.scoreEarned),
+    totalPoints: Number(values.totalPoints),
+    date: values.date.trim() || undefined,
+  }
+}
+
+export function buildActivityUpdate(
+  values: ScoreFormValues,
+): UpdateActivityInput {
+  return {
     name: values.name.trim(),
     scoreEarned: Number(values.scoreEarned),
     totalPoints: Number(values.totalPoints),

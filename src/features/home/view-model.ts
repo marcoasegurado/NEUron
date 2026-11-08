@@ -1,12 +1,12 @@
 import type { Subject as ApiSubject } from '../../lib/academic-api'
+import { toGradingSubject } from '../../lib/academic-grading'
 import {
   calculateCategoryAverage,
   calculateSubjectPercentage,
 } from '../../lib/grading/grading'
-import type {
-  Subject as GradingSubject,
-  SubjectPendingReason,
-} from '../../lib/grading/types'
+import type { SubjectPendingReason } from '../../lib/grading/types'
+
+export { toGradingSubject } from '../../lib/academic-grading'
 
 export interface SubjectSummary {
   id: string
@@ -23,32 +23,6 @@ export interface SubjectSummary {
 
 export interface HomeView {
   subjects: SubjectSummary[]
-}
-
-export function toGradingSubject(subject: ApiSubject): GradingSubject {
-  return {
-    id: subject.id,
-    name: subject.name,
-    units: subject.units,
-    professor: subject.professor ?? undefined,
-    categories: subject.categories.map((category) => ({
-      id: category.id,
-      name: category.name,
-      weight: category.weightPercent,
-      active: category.isActive,
-      sortOrder: category.sortOrder,
-    })),
-    activities: subject.categories.flatMap((category) =>
-      category.activities.map((activity) => ({
-        id: activity.id,
-        name: activity.name,
-        categoryId: category.id,
-        scoreEarned: activity.scoreEarned,
-        totalPoints: activity.totalPoints,
-        date: activity.date,
-      })),
-    ),
-  }
 }
 
 function formatList(values: string[]): string {

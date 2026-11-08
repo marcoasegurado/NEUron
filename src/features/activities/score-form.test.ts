@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import type { GradingCategory, Subject } from '../../lib/academic-api'
 import {
   buildActivityInput,
+  buildActivityUpdate,
+  createEditScoreForm,
   createScoreForm,
   hasScoreErrors,
   localToday,
@@ -77,6 +79,50 @@ describe('score form', () => {
     })
   })
 
+  it('honours requested subject and category defaults when they are active', () => {
+    const form = createScoreForm(
+      [subject([category('quizzes'), category('exams')])],
+      new Date(2026, 10, 8),
+      { subjectId: 'subject-1', categoryId: 'exams' },
+    )
+
+    expect(form.subjectId).toBe('subject-1')
+    expect(form.categoryId).toBe('exams')
+  })
+
+  it('falls back to the first active category when a default is unusable', () => {
+    const form = createScoreForm(
+      [subject([category('old', false), category('quizzes')])],
+      new Date(2026, 10, 8),
+      { subjectId: 'subject-1', categoryId: 'old' },
+    )
+
+    expect(form.categoryId).toBe('quizzes')
+  })
+
+  it('loads an existing activity into the edit form', () => {
+    const form = createEditScoreForm(
+      [subject([category('quizzes')])],
+      {
+        id: 'q1',
+        categoryId: 'quizzes',
+        name: 'Quiz 1',
+        scoreEarned: 18,
+        totalPoints: 20,
+        date: '2026-11-08',
+      },
+    )
+
+    expect(form).toEqual({
+      subjectId: 'subject-1',
+      categoryId: 'quizzes',
+      name: 'Quiz 1',
+      scoreEarned: '18',
+      totalPoints: '20',
+      date: '2026-11-08',
+    })
+  })
+
   it('accepts a valid score', () => {
     expect(hasScoreErrors(validateScoreForm(validValues()))).toBe(false)
   })
@@ -131,6 +177,15 @@ describe('score form', () => {
       scoreEarned: 18,
       totalPoints: 20,
       date: undefined,
+    })
+  })
+
+  it('builds an update payload without subject or category IDs', () => {
+    expect(buildActivityUpdate(validValues())).toEqual({
+      name: 'Quiz 1',
+      scoreEarned: 18,
+      totalPoints: 20,
+      date: '2026-11-08',
     })
   })
 })

@@ -1,6 +1,6 @@
 # NEUron — Project Plan
 
-**Status:** Phases 0 and 1 are complete. The app is deployed on Cloudflare Workers at `https://neuron.marcoeduardo-asegurado.workers.dev`, with static assets, a Worker API, and a Cloudflare D1 binding. Phase 2 authentication is implemented, migrated to remote D1, deployed, and smoke-tested in production. It is pending Resend configuration, password-reset email delivery verification, and final phone/desktop QA. Phase 3 is implemented, migrated to remote D1, deployed as version `56a065d7-3419-494b-9493-a70486c876a1`, and smoke-tested in production. The authenticated production setup flow still needs testing with a real account. Phase 4's grading engine is implemented in `src/lib/grading/` with automated tests; no production conversion thresholds are set. Phase 5's Home dashboard and score-entry API are implemented, and `migrations/0004_activities.sql` is applied locally and remotely. Production is deployed as version `ad69da18-a1fa-4cba-a796-a6edf883d5f1` with unauthenticated smoke tests passing; authenticated production QA and phone/desktop visual checks are still pending.
+**Status:** Phases 0 and 1 are complete. The app is deployed on Cloudflare Workers at `https://neuron.marcoeduardo-asegurado.workers.dev`, with static assets, a Worker API, and a Cloudflare D1 binding. Phase 2 authentication is implemented, migrated to remote D1, deployed, and smoke-tested in production. It is pending Resend configuration, password-reset email delivery verification, and final phone/desktop QA. Phase 3 is implemented, migrated to remote D1, deployed as version `56a065d7-3419-494b-9493-a70486c876a1`, and smoke-tested in production. The authenticated production setup flow still needs testing with a real account. Phase 4's grading engine is implemented in `src/lib/grading/` with automated tests; no production conversion thresholds are set. Phase 5's Home dashboard and score-entry API are implemented, and `migrations/0004_activities.sql` is applied locally and remotely. Production is deployed as version `ad69da18-a1fa-4cba-a796-a6edf883d5f1` with unauthenticated smoke tests passing; authenticated production QA and phone/desktop visual checks are still pending. Phase 6 is implemented locally: Subjects lists expandable subject details, category averages, activity history, and score add/edit/delete through new `PATCH`/`DELETE` activity endpoints. It is not yet committed, pushed, or deployed.
 **Source of truth:** Consolidated project plan for the NEUron rebuild. It was derived from the original master brief (Parts 1, 2, 5, 7, and 8), which has since been removed at the user's request. This file is now the reference for purpose, scope, phases, and open decisions.
 
 > This document covers the project purpose, scope, phase order, task checklists, Done When criteria, technical direction, and open decisions. Design details live in `DESIGN.md`, grading rules in `GRADING_RULES.md`, data design in `DATA_MODEL.md`, and agent workflow rules in `AGENTS.md`.
@@ -296,6 +296,7 @@ Implementation status:
 - `POST /api/semesters/:id/activate` switches the single active semester for the authenticated account.
 - Semester detail responses include each category's activities so `src/features/home/view-model.ts` can derive percentages from the Phase 4 engine on every read.
 - Home shows exact percentages, a shared `Grade Pending` banner, `No Grade Yet` for incomplete subjects, category completion progress, and per-subject pending explanations. No numeric grade or GWA is shown while official thresholds are unverified.
+- The Home header sticks to the top on phone widths and collapses to the title plus Add Score once the page is scrolled, hiding the semester switcher until the user returns to the top. The desktop Add Score control is compact so it aligns with the semester switcher. The same opt-in sticky header is used on Subjects.
 - The Add Score dialog collects subject, active category, activity name, earned score, total points, and an optional date that defaults to today. It validates before submitting, supports Escape/overlay close and keyboard focus containment, and refreshes Home after saving.
 - `src/features/home/HomePage.test.tsx`, `view-model.test.ts`, `score-form.test.ts`, and `src/server/activity-validation.test.ts` cover the dashboard, switching, form validation, payloads, mapping, and API validation.
 - Migration `0004` is applied locally and remotely. The Phase 5 build is deployed as version `ad69da18-a1fa-4cba-a796-a6edf883d5f1`; production health, asset delivery, and unauthenticated API rejection were verified. Authenticated production score entry and phone/desktop visual checks remain.
@@ -307,14 +308,25 @@ Implementation status:
 **Goal:** Provide detailed category and activity history for each subject.
 
 Tasks:
-- [ ] Implement Subjects based on the phone and desktop specs in `DESIGN.md`.
-- [ ] Display subjects with current percentage and converted grade/status.
-- [ ] Implement expand/collapse.
-- [ ] Display categories, weights, averages, and activities.
-- [ ] Add, edit, and delete activity scores.
-- [ ] Add/edit subject details only as permitted by approved data rules.
-- [ ] Implement empty-score and delete-confirmation states.
-- [ ] Recalculate values after every change.
+- [x] Implement Subjects based on the phone and desktop specs in `DESIGN.md`.
+- [x] Display subjects with current percentage and converted grade/status.
+- [x] Implement expand/collapse.
+- [x] Display categories, weights, averages, and activities.
+- [x] Add, edit, and delete activity scores.
+- [ ] Add/edit subject details only as permitted by approved data rules. Subject editing remains unapproved and is not implemented.
+- [x] Implement empty-score and delete-confirmation states.
+- [x] Recalculate values after every change.
+
+Implementation status:
+- `PATCH /api/activities/:id` and `DELETE /api/activities/:id` were added to `src/server/activities.ts`. Both resolve ownership through activity → category → subject → semester → user, so a signed-in account cannot change another account's score. Updates accept only name, earned score, total points, and date; subject and category stay fixed.
+- `src/server/activity-validation.ts` now exposes `parseActivityUpdate`, reusing the same score, name, and date rules as creation.
+- `src/lib/academic-api.ts` exposes `updateActivity` and `deleteActivity`; `src/lib/academic-grading.ts` holds the single API-to-grading adapter used by both Home and Subjects.
+- The score dialog moved to `src/features/activities/ActivityDialog.tsx` and now supports create and edit modes on top of the shared `Modal` component. Edit mode shows the subject and category as locked context. Home imports the same dialog.
+- `src/features/subjects/view-model.ts` derives each subject summary from the Home view model and adds category averages plus newest-first activity percentages, so Home and Subjects cannot disagree.
+- `src/features/subjects/SubjectsPage.tsx` renders collapsed subject cards that expand into categories and activities. Each active category has an Add score action; each activity has Edit and Delete actions. Delete requires confirmation in a modal. Empty categories show an explicit no-scores state.
+- Every successful create, update, or delete refetches the active semester from the Worker API, so the Subjects view and later Home visits recalculate from the Phase 4 engine.
+- Numeric grades and GWA remain deferred. Subjects shows exact percentages with `Grade Pending` while official NEU thresholds are unverified.
+- Test coverage was added in `src/features/subjects/view-model.test.ts`, `src/features/subjects/SubjectsPage.test.tsx`, `src/features/activities/score-form.test.ts`, and `src/server/activity-validation.test.ts`.
 
 **Done when:** Subject details/history are accurate; add/edit/delete persists; Home and Subjects show the same grade; phone and desktop layouts match the `DESIGN.md` spec.
 

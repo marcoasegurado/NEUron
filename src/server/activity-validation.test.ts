@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { parseActivityInput } from './activity-validation'
+import {
+  parseActivityInput,
+  parseActivityUpdate,
+} from './activity-validation'
 
 function validBody() {
   return {
@@ -81,6 +84,40 @@ describe('activity validation', () => {
     ).toThrow('Use a valid activity date (YYYY-MM-DD).')
     expect(() =>
       parseActivityInput({ ...validBody(), date: '2026-02-30' }, now),
+    ).toThrow('Use a valid activity date (YYYY-MM-DD).')
+  })
+
+  it('validates an update without requiring subject or category IDs', () => {
+    expect(
+      parseActivityUpdate(
+        {
+          name: '  Quiz 1 retake  ',
+          scoreEarned: 19,
+          totalPoints: 20,
+          date: '2026-11-09',
+        },
+        now,
+      ),
+    ).toEqual({
+      name: 'Quiz 1 retake',
+      scoreEarned: 19,
+      totalPoints: 20,
+      date: '2026-11-09',
+    })
+  })
+
+  it('applies the same score and date rules to updates', () => {
+    expect(() =>
+      parseActivityUpdate(
+        { name: 'Quiz', scoreEarned: 21, totalPoints: 20 },
+        now,
+      ),
+    ).toThrow('Earned score cannot exceed total possible points.')
+    expect(() =>
+      parseActivityUpdate(
+        { name: 'Quiz', scoreEarned: 1, totalPoints: 2, date: 'bad' },
+        now,
+      ),
     ).toThrow('Use a valid activity date (YYYY-MM-DD).')
   })
 })

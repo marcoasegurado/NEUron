@@ -1,4 +1,10 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -9,8 +15,8 @@ import type {
   SemesterSetup,
   Subject,
 } from '../../lib/academic-api'
+import { localToday } from '../activities/score-form'
 import { HomePage } from './HomePage'
-import { localToday } from './score-form'
 
 const fetchMock = vi.fn()
 
@@ -164,6 +170,10 @@ beforeEach(() => {
 afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
+  Object.defineProperty(window, 'scrollY', {
+    configurable: true,
+    value: 0,
+  })
 })
 
 describe('HomePage', () => {
@@ -241,6 +251,40 @@ describe('HomePage', () => {
       totalPoints: 20,
       date: localToday(),
     })
+  })
+
+  it('collapses the phone header to the title and Add Score after scrolling', async () => {
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn((query: string) => ({
+        matches: true,
+        media: query,
+        onchange: null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    )
+    mockReady()
+    renderHome()
+
+    await screen.findByText('Mathematics')
+    expect(screen.getByLabelText('Semester')).toBeInTheDocument()
+
+    Object.defineProperty(window, 'scrollY', {
+      configurable: true,
+      value: 200,
+    })
+    fireEvent.scroll(window)
+
+    await waitFor(() => {
+      expect(screen.queryByLabelText('Semester')).not.toBeInTheDocument()
+    })
+    expect(
+      screen.getByRole('button', { name: 'Add Score' }),
+    ).toBeInTheDocument()
   })
 
   it('activates a semester selected from the switcher', async () => {

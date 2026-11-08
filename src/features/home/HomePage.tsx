@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '../../app/PageHeader'
+import { usePhoneScrolled } from '../../app/usePhoneScrolled'
 import {
   Badge,
   Button,
@@ -19,7 +20,7 @@ import {
   type SemesterSetup,
 } from '../../lib/academic-api'
 import { formatNumber } from '../../lib/grading/grading'
-import { AddScoreDialog } from './AddScoreDialog'
+import { ActivityDialog } from '../activities/ActivityDialog'
 import { buildHomeView } from './view-model'
 import styles from './HomePage.module.css'
 
@@ -43,6 +44,7 @@ export function HomePage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const [switching, setSwitching] = useState(false)
+  const compactHeader = usePhoneScrolled()
 
   useEffect(() => {
     let cancelled = false
@@ -207,23 +209,28 @@ export function HomePage() {
         description={`${state.setup.semester.label} · ${subjectCount} ${
           subjectCount === 1 ? 'subject' : 'subjects'
         }`}
+        stickyOnPhone
+        compactOnPhone={compactHeader}
         actions={
           <>
-            <Select
-              label="Semester"
-              value={state.setup.semester.id}
-              onChange={(event) => void handleSwitch(event.target.value)}
-              disabled={switching || state.semesters.length < 2}
-              className={styles.switcher}
-            >
-              {state.semesters.map((semester) => (
-                <option key={semester.id} value={semester.id}>
-                  {semester.label}
-                  {semester.isActive ? ' (active)' : ''}
-                </option>
-              ))}
-            </Select>
+            {compactHeader ? null : (
+              <Select
+                label="Semester"
+                value={state.setup.semester.id}
+                onChange={(event) => void handleSwitch(event.target.value)}
+                disabled={switching || state.semesters.length < 2}
+                className={styles.switcher}
+              >
+                {state.semesters.map((semester) => (
+                  <option key={semester.id} value={semester.id}>
+                    {semester.label}
+                    {semester.isActive ? ' (active)' : ''}
+                  </option>
+                ))}
+              </Select>
+            )}
             <Button
+              className={styles.addScoreButton}
               onClick={() => setDialogOpen(true)}
               disabled={subjectCount === 0}
             >
@@ -319,7 +326,7 @@ export function HomePage() {
       )}
 
       {dialogOpen ? (
-        <AddScoreDialog
+        <ActivityDialog
           subjects={state.setup.subjects}
           onClose={closeDialog}
           onSaved={(activity) => void handleSaved(activity)}

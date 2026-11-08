@@ -99,6 +99,8 @@ Each activity belongs to one category, and ownership is validated through catego
 
 **Implemented (Phase 5):** `activities` stores `id`, `category_id`, `name`, `score_earned`, `total_points`, `activity_date`, and created/updated timestamps. Checks enforce `score_earned >= 0`, `total_points > 0`, and `score_earned <= total_points`; the category foreign key cascades on delete. The API defaults an omitted date to today and only accepts active categories. Subject percentages and pending states are derived on every read rather than cached.
 
+**Implemented (Phase 6):** `PATCH /api/activities/:id` updates only `name`, `score_earned`, `total_points`, and `activity_date`; the parent category cannot be changed. `DELETE /api/activities/:id` removes the activity. Both endpoints validate ownership through activity → category → subject → semester → user and return `404` when the activity is not owned. Reads continue to derive category and subject percentages on every request, so no cached totals need invalidation after edits or deletes.
+
 ### 2.8 Class Meeting / Schedule Entry
 
 - Schedule entry ID.
