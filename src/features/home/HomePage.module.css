@@ -1,0 +1,227 @@
+.switcher {
+  min-width: 220px;
+}
+
+.loading {
+  color: var(--color-text-secondary);
+}
+
+.loadError {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-tile);
+  background-color: var(--color-grade-risk-bg);
+  color: var(--color-danger);
+}
+
+.errorActions {
+  margin-top: var(--space-4);
+}
+
+.notice {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-tile);
+  background-color: var(--color-grade-strong-bg);
+  color: var(--color-grade-strong-text);
+  font-size: var(--text-small);
+  line-height: var(--text-small-line);
+}
+
+.statusBanner {
+  margin-bottom: var(--space-5);
+  background-color: var(--color-bg-elevated);
+}
+
+.statusCopy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+
+.statusTitle {
+  font-size: var(--text-h2);
+  line-height: var(--text-h2-line);
+  font-weight: var(--weight-bold);
+}
+
+.statusText {
+  max-width: 70ch;
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+  line-height: var(--text-small-line);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+.subjectCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.subjectHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.subjectCopy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.subjectName {
+  font-size: var(--text-h3);
+  line-height: var(--text-h3-line);
+  font-weight: var(--weight-bold);
+  overflow-wrap: anywhere;
+}
+
+.subjectMeta {
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+}
+
+.percentageBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.percentage {
+  font-size: var(--text-h2);
+  line-height: var(--text-h2-line);
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.pendingReason {
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+  line-height: var(--text-small-line);
+}
+
+.gradedNote {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: var(--text-small-line);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background-color: var(--color-overlay);
+  overflow-y: auto;
+}
+
+.dialog {
+  width: 100%;
+  max-width: 520px;
+  max-height: calc(100vh - var(--space-8));
+  padding: var(--space-5);
+  overflow-y: auto;
+  border-radius: var(--radius-dialog);
+  background-color: var(--color-bg-surface);
+  box-shadow: var(--shadow-raised);
+}
+
+.dialogHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+
+.dialogTitle {
+  font-size: var(--text-h2);
+  line-height: var(--text-h2-line);
+  font-weight: var(--weight-bold);
+}
+
+.dialogDescription {
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+  line-height: var(--text-small-line);
+}
+
+.dialogForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.dialogRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.submitError {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-tile);
+  background-color: var(--color-grade-risk-bg);
+  color: var(--color-danger);
+  font-size: var(--text-small);
+  line-height: var(--text-small-line);
+}
+
+@media (max-width: 599px) {
+  .switcher {
+    width: 100%;
+  }
+
+  .overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .dialog {
+    max-width: none;
+    max-height: 92vh;
+    padding: var(--space-5) var(--space-4)
+      calc(var(--space-5) + env(safe-area-inset-bottom));
+    border-radius: var(--radius-dialog) var(--radius-dialog) 0 0;
+  }
+
+  .dialogActions {
+    flex-direction: column-reverse;
+  }
+
+  .dialogActions > * {
+    width: 100%;
+  }
+}
+
+@media (min-width: 720px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

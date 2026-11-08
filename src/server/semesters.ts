@@ -8,10 +8,13 @@ import {
   readJson,
 } from './http'
 import {
+  toActivity,
   toGradingCategory,
   toSemester,
   toSubject,
-  type GradingCategory,
+  type Activity,
+  type ActivityRow,
+  type GradingCategoryWithActivities,
   type GradingCategoryRow,
   type SemesterRow,
   type SemesterSetup,
@@ -60,7 +63,7 @@ async function loadSemesterSetup(
         .all<SubjectRow>()
     ).results ?? []
 
-  const categoriesBySubject = new Map<string, GradingCategory[]>()
+  const categoriesBySubject = new Map<string, GradingCategoryWithActivities[]>()
 
   if (subjectRows.length > 0) {
     const placeholders = subjectRows.map(() => '?').join(', ')
@@ -78,9 +81,37 @@ async function loadSemesterSetup(
           .all<GradingCategoryRow>()
       ).results ?? []
 
+    const activitiesByCategory = new Map<string, Activity[]>()
+
+    if (categoryRows.length > 0) {
+      const categoryPlaceholders = categoryRows.map(() => '?').join(', ')
+      const activityRows =
+        (
+          await db
+            .prepare(
+              `SELECT id, category_id, name, score_earned, total_points,
+                      activity_date, created_at, updated_at
+               FROM activities
+               WHERE category_id IN (${categoryPlaceholders})
+               ORDER BY activity_date, created_at`,
+            )
+            .bind(...categoryRows.map((category) => category.id))
+            .all<ActivityRow>()
+        ).results ?? []
+
+      for (const row of activityRows) {
+        const activities = activitiesByCategory.get(row.category_id) ?? []
+        activities.push(toActivity(row))
+        activitiesByCategory.set(row.category_id, activities)
+      }
+    }
+
     for (const row of categoryRows) {
       const categories = categoriesBySubject.get(row.subject_id) ?? []
-      categories.push(toGradingCategory(row))
+      categories.push({
+        ...toGradingCategory(row),
+        activities: activitiesByCategory.get(row.id) ?? [],
+      })
       categoriesBySubject.set(row.subject_id, categories)
     }
   }
@@ -232,6 +263,54 @@ async function handleCreateSemester(
   return json(setup, 201)
 }
 
+async function handleActivateSemester(
+  request: Request,
+  env: Env,
+  semesterId: string,
+): Promise<Response> {
+  assertSameOrigin(request)
+  const user = await requireUser(request, env)
+
+  const semesterRow = await env.DB.prepare(
+    `SELECT id, user_id, academic_year, term, label, is_active,
+            created_at, updated_at
+     FROM semesters
+     WHERE id = ? AND user_id = ?`,
+  )
+    .bind(semesterId, user.id)
+    .first<SemesterRow>()
+
+  if (!semesterRow) {
+    throw new HttpError(404, 'Semester not found.')
+  }
+
+  if (semesterRow.is_active === 1) {
+    return json({ semester: toSemester(semesterRow) })
+  }
+
+  const now = new Date().toISOString()
+  await env.DB.batch([
+    env.DB.prepare(
+      `UPDATE semesters
+       SET is_active = 0, updated_at = ?
+       WHERE user_id = ? AND is_active = 1`,
+    ).bind(now, user.id),
+    env.DB.prepare(
+      `UPDATE semesters
+       SET is_active = 1, updated_at = ?
+       WHERE id = ? AND user_id = ?`,
+    ).bind(now, semesterId, user.id),
+  ])
+
+  return json({
+    semester: toSemester({
+      ...semesterRow,
+      is_active: 1,
+      updated_at: now,
+    }),
+  })
+}
+
 export async function handleSemesterRequest(
   request: Request,
   env: Env,
@@ -257,6 +336,18 @@ export async function handleSemesterRequest(
 
   if (parts.length === 3 && method === 'GET') {
     return handleGetSemester(request, env, decodeURIComponent(parts[2]))
+  }
+
+  if (
+    parts.length === 4 &&
+    parts[3] === 'activate' &&
+    method === 'POST'
+  ) {
+    return handleActivateSemester(
+      request,
+      env,
+      decodeURIComponent(parts[2]),
+    )
   }
 
   return null

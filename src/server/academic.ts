@@ -31,6 +31,17 @@ export interface GradingCategoryRow {
   updated_at: string
 }
 
+export interface ActivityRow {
+  id: string
+  category_id: string
+  name: string
+  score_earned: number
+  total_points: number
+  activity_date: string
+  created_at: string
+  updated_at: string
+}
+
 export interface Semester {
   id: string
   userId: string
@@ -64,8 +75,23 @@ export interface GradingCategory {
   updatedAt: string
 }
 
+export interface Activity {
+  id: string
+  categoryId: string
+  name: string
+  scoreEarned: number
+  totalPoints: number
+  date: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface GradingCategoryWithActivities extends GradingCategory {
+  activities: Activity[]
+}
+
 export interface SubjectWithCategories extends Subject {
-  categories: GradingCategory[]
+  categories: GradingCategoryWithActivities[]
 }
 
 export interface SemesterSetup {
@@ -109,6 +135,19 @@ export function toGradingCategory(
     weightPercent: row.weight_percent,
     isActive: row.is_active === 1,
     sortOrder: row.sort_order,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+export function toActivity(row: ActivityRow): Activity {
+  return {
+    id: row.id,
+    categoryId: row.category_id,
+    name: row.name,
+    scoreEarned: row.score_earned,
+    totalPoints: row.total_points,
+    date: row.activity_date,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }

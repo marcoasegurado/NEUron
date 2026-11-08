@@ -1,6 +1,6 @@
 # NEUron — Project Plan
 
-**Status:** Phases 0 and 1 are complete. The app is deployed on Cloudflare Workers at `https://neuron.marcoeduardo-asegurado.workers.dev`, with static assets, a Worker API, and a Cloudflare D1 binding. Phase 2 authentication is implemented, migrated to remote D1, deployed, and smoke-tested in production. It is pending Resend configuration, password-reset email delivery verification, and final phone/desktop QA. Phase 3 is implemented, migrated to remote D1, deployed as version `56a065d7-3419-494b-9493-a70486c876a1`, and smoke-tested in production. The authenticated production setup flow still needs testing with a real account. Phase 4's grading engine is implemented in `src/lib/grading/` with automated tests; no production conversion thresholds are set.
+**Status:** Phases 0 and 1 are complete. The app is deployed on Cloudflare Workers at `https://neuron.marcoeduardo-asegurado.workers.dev`, with static assets, a Worker API, and a Cloudflare D1 binding. Phase 2 authentication is implemented, migrated to remote D1, deployed, and smoke-tested in production. It is pending Resend configuration, password-reset email delivery verification, and final phone/desktop QA. Phase 3 is implemented, migrated to remote D1, deployed as version `56a065d7-3419-494b-9493-a70486c876a1`, and smoke-tested in production. The authenticated production setup flow still needs testing with a real account. Phase 4's grading engine is implemented in `src/lib/grading/` with automated tests; no production conversion thresholds are set. Phase 5's Home dashboard and score-entry API are implemented locally, including `migrations/0004_activities.sql`; the migration, deployment, and authenticated production QA are still pending approval.
 **Source of truth:** Consolidated project plan for the NEUron rebuild. It was derived from the original master brief (Parts 1, 2, 5, 7, and 8), which has since been removed at the user's request. This file is now the reference for purpose, scope, phases, and open decisions.
 
 > This document covers the project purpose, scope, phase order, task checklists, Done When criteria, technical direction, and open decisions. Design details live in `DESIGN.md`, grading rules in `GRADING_RULES.md`, data design in `DATA_MODEL.md`, and agent workflow rules in `AGENTS.md`.
@@ -282,13 +282,23 @@ Implementation status:
 **Goal:** Build the main grade-monitoring screen.
 
 Tasks:
-- [ ] Implement Home using the phone and desktop specs in `DESIGN.md`.
-- [ ] Show active semester and switcher where specified.
-- [ ] Show each subject's grade and percentage/status consistently.
-- [ ] Show incomplete subjects clearly.
-- [ ] Implement Add Score interaction from Home.
-- [ ] Validate score entries and associate each with the correct subject/category.
-- [ ] Persist changes to D1 through the Worker API and refresh calculated values.
+- [x] Implement Home using the phone and desktop specs in `DESIGN.md`.
+- [x] Show active semester and switcher where specified.
+- [x] Show each subject's percentage and pending status consistently.
+- [x] Show incomplete subjects clearly.
+- [x] Implement Add Score interaction from Home.
+- [x] Validate score entries and associate each with the correct subject/category.
+- [x] Persist changes to D1 through the Worker API and refresh calculated values.
+
+Implementation status:
+- `migrations/0004_activities.sql` adds the normalized `activities` table with ownership through `grading_categories`, score checks, cascade delete, and category/date indexes.
+- `src/server/activities.ts` exposes `POST /api/activities` with same-origin, session, subject/category ownership, and active-category checks. `src/server/activity-validation.ts` reuses the grading engine's activity validation and normalizes an optional date to today.
+- `POST /api/semesters/:id/activate` switches the single active semester for the authenticated account.
+- Semester detail responses include each category's activities so `src/features/home/view-model.ts` can derive percentages from the Phase 4 engine on every read.
+- Home shows exact percentages, a shared `Grade Pending` banner, `No Grade Yet` for incomplete subjects, category completion progress, and per-subject pending explanations. No numeric grade or GWA is shown while official thresholds are unverified.
+- The Add Score dialog collects subject, active category, activity name, earned score, total points, and an optional date that defaults to today. It validates before submitting, supports Escape/overlay close and keyboard focus containment, and refreshes Home after saving.
+- `src/features/home/HomePage.test.tsx`, `view-model.test.ts`, `score-form.test.ts`, and `src/server/activity-validation.test.ts` cover the dashboard, switching, form validation, payloads, mapping, and API validation.
+- Migration `0004` has not been applied remotely, and the Phase 5 build is not deployed yet.
 
 **Done when:** Home is responsive and visually checked against the `DESIGN.md` spec; score entries save correctly; invalid data is blocked; all grade values match the grading engine; refresh preserves saved records.
 

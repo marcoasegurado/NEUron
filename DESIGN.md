@@ -332,6 +332,7 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 - **Phone:** page title, active semester, compact grade rows/cards, bottom navigation, Add Score.
 - **Desktop:** page title/description, status banner, semester switcher, Add Score, multi-column grade cards.
 - **States:** complete grades, incomplete subject, no subjects, no scores, loading, error, Add Score default/validation/saved.
+- **Implemented (Phase 5):** the header holds the semester switcher and Add Score. A persistent status banner states that percentages are exact while numeric grades are pending official NEU thresholds. Subject cards show the exact percentage, a `Grade Pending` chip, and category-completion progress; incomplete subjects show `No Grade Yet` plus the categories still missing scores. The grid uses one column on phone, two at `720px`, and three at `1024px`. Add Score opens a centered dialog on desktop and a bottom sheet below `600px`, with Escape/overlay close and contained keyboard focus. This is the current visual baseline.
 
 ### Subjects
 - **Phone:** subject list; expanded subject with categories, weights, averages, activities; empty-score state; delete-score confirmation.

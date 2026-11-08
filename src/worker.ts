@@ -1,3 +1,4 @@
+import { handleActivityRequest } from './server/activities'
 import { handleAuthRequest } from './server/auth'
 import type { Env } from './server/db'
 import { HttpError, json } from './server/http'
@@ -52,6 +53,11 @@ export default {
         const semesterResponse = await handleSemesterRequest(request, env)
         if (semesterResponse) {
           return semesterResponse
+        }
+
+        const activityResponse = await handleActivityRequest(request, env)
+        if (activityResponse) {
+          return activityResponse
         }
 
         return json({ error: 'API route not found.' }, 404)
