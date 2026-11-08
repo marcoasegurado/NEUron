@@ -1,6 +1,6 @@
 # NEUron — Data Model
 
-**Status:** Logical entities and relationships are identified. The storage target is Cloudflare D1, and the `neuron` database is created and bound as `DB`. Auth is defined in `migrations/0001_auth.sql` and `migrations/0002_add_username.sql`; academic structure is defined in `migrations/0003_academic_structure.sql`; activities are defined in `migrations/0004_activities.sql`; schedules are defined in `migrations/0005_schedule.sql`. Auth, academic structure, and activities are applied locally and remotely; the Phase 3 and Phase 5 APIs are deployed, and Phase 6 is deployed. `0005_schedule.sql` still needs to be applied locally and remotely. The conversion-table schema and global conversion-table ownership still need review before implementation.
+**Status:** Logical entities and relationships are identified. The storage target is Cloudflare D1, and the `neuron` database is created and bound as `DB`. Auth is defined in `migrations/0001_auth.sql` and `migrations/0002_add_username.sql`; academic structure is defined in `migrations/0003_academic_structure.sql`; activities are defined in `migrations/0004_activities.sql`; schedules are defined in `migrations/0005_schedule.sql`. Auth, academic structure, activities, and schedules are applied locally and remotely; the Phase 3, Phase 5, and Phase 6 APIs are deployed, and Phase 7 is deployed as version `e0dfb7d1-ddd0-46c3-a56b-c2a4f588e47b`. The conversion-table schema and global conversion-table ownership still need review before implementation.
 **Source of truth:** Consolidated data model for the NEUron rebuild. Derived from the original master brief (Part 6 and relevant rules from Parts 1 and 4), which has since been removed at the user's request. This file is now the reference for entities, relationships, and data decisions.
 
 > Add remaining D1 tables and migrations only after reviewing the current `neuron` schema and confirming the unresolved decisions with the user. Do not choose a schema that makes unresolved decisions difficult to change.
@@ -159,7 +159,7 @@ These must be resolved with the user before the dependent implementation work:
 
 | Decision | Current status | Needed before |
 |---|---|---|
-| D1 database and binding | `neuron` created in APAC and bound as `DB`; `0001_auth.sql` and `0002_add_username.sql` are applied locally and remotely; `0003_academic_structure.sql` is applied locally and remotely; `0004_activities.sql` is applied locally and remotely | Resolved for Phase 5 |
+| D1 database and binding | `neuron` created in APAC and bound as `DB`; `0001_auth.sql` through `0005_schedule.sql` are applied locally and remotely | Resolved for Phase 7 |
 | Exact D1/SQL schema and migrations | Auth, academic-structure, activity, and schedule schemas are defined in `0001`–`0005`; the conversion table is still undefined | Phase 4+ / data-model approval |
 | Authentication provider and stable user ID | Resolved: custom email/password with UUID user IDs and D1 sessions | Resolved |
 | Password hashing and session lifetime | Resolved baseline: PBKDF2-HMAC-SHA256 at 10,000 iterations; 7-day sessions; 1-hour reset tokens | Resolved |
