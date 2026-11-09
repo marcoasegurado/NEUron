@@ -137,76 +137,89 @@ export function validateBasics(draft: SetupDraft): BasicErrors {
   return errors
 }
 
+export function validateSubjectDraft(
+  subject: SubjectDraft,
+  takenNames: Iterable<string> = [],
+): SubjectErrors {
+  const taken = new Set(
+    Array.from(takenNames, (name) => name.trim().toLowerCase()),
+  )
+  const subjectError: SubjectErrors = { categoryErrors: {} }
+  const name = subject.name.trim()
+
+  if (!name) {
+    subjectError.name = 'Enter the subject name.'
+  } else if (taken.has(name.toLowerCase())) {
+    subjectError.name = 'Subject names must be unique.'
+  }
+
+  const unitsText = subject.units.trim()
+  const units = Number(unitsText)
+  if (!unitsText || !Number.isFinite(units) || units <= 0) {
+    subjectError.units = 'Units must be greater than zero.'
+  }
+
+  if (subject.categories.length === 0) {
+    subjectError.categories = 'Add at least one grading category.'
+  } else {
+    const categoryNames = new Set<string>()
+    let totalWeight = 0
+    let hasCategoryFieldError = false
+
+    for (const category of subject.categories) {
+      const categoryError: CategoryErrors = {}
+      const categoryName = category.name.trim()
+
+      if (!categoryName) {
+        categoryError.name = 'Enter the category name.'
+      } else {
+        const key = categoryName.toLowerCase()
+        if (categoryNames.has(key)) {
+          categoryError.name = 'Category names must be unique.'
+        }
+        categoryNames.add(key)
+      }
+
+      const weightText = category.weight.trim()
+      const weight = Number(weightText)
+      if (
+        !weightText ||
+        !Number.isFinite(weight) ||
+        weight <= 0 ||
+        weight > 100
+      ) {
+        categoryError.weight = 'Use a weight from 0.01 to 100.'
+      } else {
+        totalWeight += weight
+      }
+
+      if (Object.keys(categoryError).length > 0) {
+        hasCategoryFieldError = true
+        subjectError.categoryErrors[category.id] = categoryError
+      }
+    }
+
+    if (
+      !hasCategoryFieldError &&
+      Math.abs(totalWeight - 100) > WEIGHT_TOLERANCE
+    ) {
+      subjectError.categories = `Weights total ${formatWeight(totalWeight)}%; they must total 100%.`
+    }
+  }
+
+  return subjectError
+}
+
 export function validateSubjects(draft: SetupDraft): SubjectErrorsMap {
   const errors: SubjectErrorsMap = {}
   const subjectNames = new Set<string>()
 
   for (const subject of draft.subjects) {
-    const subjectError: SubjectErrors = { categoryErrors: {} }
-    const name = subject.name.trim()
+    const subjectError = validateSubjectDraft(subject, subjectNames)
+    const name = subject.name.trim().toLowerCase()
 
-    if (!name) {
-      subjectError.name = 'Enter the subject name.'
-    } else {
-      const key = name.toLowerCase()
-      if (subjectNames.has(key)) {
-        subjectError.name = 'Subject names must be unique.'
-      }
-      subjectNames.add(key)
-    }
-
-    const unitsText = subject.units.trim()
-    const units = Number(unitsText)
-    if (!unitsText || !Number.isFinite(units) || units <= 0) {
-      subjectError.units = 'Units must be greater than zero.'
-    }
-
-    if (subject.categories.length === 0) {
-      subjectError.categories = 'Add at least one grading category.'
-    } else {
-      const categoryNames = new Set<string>()
-      let totalWeight = 0
-      let hasCategoryFieldError = false
-
-      for (const category of subject.categories) {
-        const categoryError: CategoryErrors = {}
-        const categoryName = category.name.trim()
-
-        if (!categoryName) {
-          categoryError.name = 'Enter the category name.'
-        } else {
-          const key = categoryName.toLowerCase()
-          if (categoryNames.has(key)) {
-            categoryError.name = 'Category names must be unique.'
-          }
-          categoryNames.add(key)
-        }
-
-        const weightText = category.weight.trim()
-        const weight = Number(weightText)
-        if (
-          !weightText ||
-          !Number.isFinite(weight) ||
-          weight <= 0 ||
-          weight > 100
-        ) {
-          categoryError.weight = 'Use a weight from 0.01 to 100.'
-        } else {
-          totalWeight += weight
-        }
-
-        if (Object.keys(categoryError).length > 0) {
-          hasCategoryFieldError = true
-          subjectError.categoryErrors[category.id] = categoryError
-        }
-      }
-
-      if (
-        !hasCategoryFieldError &&
-        Math.abs(totalWeight - 100) > WEIGHT_TOLERANCE
-      ) {
-        subjectError.categories = `Weights total ${formatWeight(totalWeight)}%; they must total 100%.`
-      }
+    if (name && !subjectError.name) {
+      subjectNames.add(name)
     }
 
     if (hasSubjectError(subjectError)) {

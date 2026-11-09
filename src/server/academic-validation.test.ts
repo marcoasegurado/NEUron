@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseSemesterSetup } from './academic-validation'
+import { parseSemesterSetup, parseSubjectSetup } from './academic-validation'
 
 function validBody() {
   return {
@@ -115,5 +115,47 @@ describe('semester setup validation', () => {
     expect(() => parseSemesterSetup(body)).toThrow(
       'Use an academic year such as 2026-2027.',
     )
+  })
+})
+
+describe('single subject validation', () => {
+  function validSubject() {
+    return {
+      name: '  History  ',
+      units: 3,
+      professor: '  Mr. Santos  ',
+      categories: [
+        { name: 'Quizzes', weightPercent: 40 },
+        { name: 'Exams', weightPercent: 60 },
+      ],
+    }
+  }
+
+  it('normalizes a valid subject', () => {
+    const result = parseSubjectSetup(validSubject())
+    expect(result.name).toBe('History')
+    expect(result.professor).toBe('Mr. Santos')
+    expect(result.categories).toHaveLength(2)
+  })
+
+  it('rejects a name already used in the semester', () => {
+    expect(() =>
+      parseSubjectSetup(validSubject(), ['history']),
+    ).toThrow('Subject "History" is duplicated.')
+  })
+
+  it('rejects incomplete weights and units', () => {
+    const subject = validSubject()
+    subject.categories = [
+      { name: 'Quizzes', weightPercent: 40 },
+      { name: 'Exams', weightPercent: 50 },
+    ]
+    expect(() => parseSubjectSetup(subject)).toThrow(
+      'Grading weights for "History" must total 100%.',
+    )
+
+    expect(() =>
+      parseSubjectSetup({ ...validSubject(), units: 0 }),
+    ).toThrow('Subject units must be greater than zero.')
   })
 })

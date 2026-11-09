@@ -1,6 +1,6 @@
 import { HttpError } from './http'
 
-const MAX_SUBJECTS = 30
+export const MAX_SUBJECTS = 30
 const MAX_CATEGORIES = 30
 const MAX_SUBJECT_NAME = 120
 const MAX_PROFESSOR = 120
@@ -141,6 +141,41 @@ function parseCategories(value: unknown): CategorySetupInput[] {
   })
 }
 
+function parseSubjectRecord(
+  entry: unknown,
+  nameField: string,
+  names: Set<string>,
+): SubjectSetupInput {
+  if (!isRecord(entry)) {
+    throw new HttpError(400, 'Subject details are invalid.')
+  }
+  const name = requireText(entry.name, nameField, MAX_SUBJECT_NAME)
+  const key = name.toLowerCase()
+  if (names.has(key)) {
+    throw new HttpError(400, `Subject "${name}" is duplicated.`)
+  }
+  names.add(key)
+
+  const categories = parseCategories(entry.categories)
+  const totalWeight = categories.reduce(
+    (total, category) => total + category.weightPercent,
+    0,
+  )
+  if (Math.abs(totalWeight - 100) > WEIGHT_TOLERANCE) {
+    throw new HttpError(
+      400,
+      `Grading weights for "${name}" must total 100%.`,
+    )
+  }
+
+  return {
+    name,
+    units: requireUnits(entry.units),
+    professor: optionalProfessor(entry.professor),
+    categories,
+  }
+}
+
 function parseSubjects(value: unknown): SubjectSetupInput[] {
   if (!Array.isArray(value) || value.length === 0) {
     throw new HttpError(400, 'Add at least one subject.')
@@ -153,40 +188,19 @@ function parseSubjects(value: unknown): SubjectSetupInput[] {
   }
 
   const names = new Set<string>()
-  return value.map((entry, index) => {
-    if (!isRecord(entry)) {
-      throw new HttpError(400, `Subject ${index + 1} is invalid.`)
-    }
-    const name = requireText(
-      entry.name,
-      `subject ${index + 1} name`,
-      MAX_SUBJECT_NAME,
-    )
-    const key = name.toLowerCase()
-    if (names.has(key)) {
-      throw new HttpError(400, `Subject "${name}" is duplicated.`)
-    }
-    names.add(key)
+  return value.map((entry, index) =>
+    parseSubjectRecord(entry, `subject ${index + 1} name`, names),
+  )
+}
 
-    const categories = parseCategories(entry.categories)
-    const totalWeight = categories.reduce(
-      (total, category) => total + category.weightPercent,
-      0,
-    )
-    if (Math.abs(totalWeight - 100) > WEIGHT_TOLERANCE) {
-      throw new HttpError(
-        400,
-        `Grading weights for "${name}" must total 100%.`,
-      )
-    }
-
-    return {
-      name,
-      units: requireUnits(entry.units),
-      professor: optionalProfessor(entry.professor),
-      categories,
-    }
-  })
+export function parseSubjectSetup(
+  body: Record<string, unknown>,
+  existingNames: Iterable<string> = [],
+): SubjectSetupInput {
+  const names = new Set(
+    Array.from(existingNames, (name) => name.trim().toLowerCase()),
+  )
+  return parseSubjectRecord(body, 'subject name', names)
 }
 
 export function parseSemesterSetup(

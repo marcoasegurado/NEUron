@@ -124,13 +124,48 @@ function noContent() {
 }
 
 function mockReady() {
+  let subjects = setupData.subjects
   fetchMock.mockImplementation((url: string, init?: RequestInit) => {
     const method = init?.method ?? 'GET'
     if (url === '/api/semesters' && method === 'GET') {
       return Promise.resolve(ok({ semesters: [semester] }))
     }
     if (url === '/api/semesters/semester-1' && method === 'GET') {
-      return Promise.resolve(ok(setupData))
+      return Promise.resolve(ok({ ...setupData, subjects }))
+    }
+    if (
+      url === '/api/semesters/semester-1/subjects' &&
+      method === 'POST'
+    ) {
+      const input = JSON.parse(init?.body as string) as {
+        name: string
+        units: number
+        professor: string | null
+        categories: Array<{ name: string; weightPercent: number }>
+      }
+      const created: Subject = {
+        id: 'subject-3',
+        semesterId: 'semester-1',
+        name: input.name,
+        units: input.units,
+        professor: input.professor,
+        sortOrder: 2,
+        createdAt: '2026-11-08T00:00:00.000Z',
+        updatedAt: '2026-11-08T00:00:00.000Z',
+        categories: input.categories.map((entry, index) => ({
+          id: `created-category-${index}`,
+          subjectId: 'subject-3',
+          name: entry.name,
+          weightPercent: entry.weightPercent,
+          isActive: true,
+          sortOrder: index,
+          createdAt: '2026-11-08T00:00:00.000Z',
+          updatedAt: '2026-11-08T00:00:00.000Z',
+          activities: [],
+        })),
+      }
+      subjects = [...subjects, created]
+      return Promise.resolve(ok({ subject: created }, 201))
     }
     if (url === '/api/activities' && method === 'POST') {
       return Promise.resolve(
@@ -361,5 +396,87 @@ describe('SubjectsPage', () => {
         ),
       ).toBe(true)
     })
+  })
+
+  it('adds a subject and refreshes the list', async () => {
+    mockReady()
+    const user = userEvent.setup()
+    renderSubjects()
+
+    await screen.findByText('Mathematics')
+    await user.click(screen.getByRole('button', { name: 'Add Subject' }))
+
+    expect(
+      screen.getByRole('heading', { name: 'Add subject' }),
+    ).toBeInTheDocument()
+
+    await user.type(screen.getByLabelText('Subject name'), 'History')
+    await user.type(screen.getByLabelText('Units'), '3')
+    await user.type(screen.getByLabelText('Category 1'), 'Quizzes')
+    await user.type(screen.getByLabelText('Weight %'), '100')
+    await user.click(screen.getByRole('button', { name: 'Save subject' }))
+
+    expect(
+      await screen.findByText(
+        '“History” added. Percentages recalculated.',
+      ),
+    ).toBeInTheDocument()
+    expect(await screen.findByText('History')).toBeInTheDocument()
+    expect(
+      screen.getByText('1st Semester 2026-2027 · 3 subjects'),
+    ).toBeInTheDocument()
+
+    const call = fetchMock.mock.calls.find(
+      ([url, init]) =>
+        url === '/api/semesters/semester-1/subjects' &&
+        init?.method === 'POST',
+    )
+    expect(call).toBeDefined()
+    expect(JSON.parse(call?.[1]?.body as string)).toEqual({
+      name: 'History',
+      units: 3,
+      professor: null,
+      categories: [{ name: 'Quizzes', weightPercent: 100 }],
+    })
+  })
+
+  it('blocks an incomplete or duplicate subject before saving', async () => {
+    mockReady()
+    const user = userEvent.setup()
+    renderSubjects()
+
+    await screen.findByText('Mathematics')
+    await user.click(screen.getByRole('button', { name: 'Add Subject' }))
+    await user.click(screen.getByRole('button', { name: 'Save subject' }))
+
+    expect(
+      screen.getByText('Enter the subject name.'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Units must be greater than zero.'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Enter the category name.'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Use a weight from 0.01 to 100.'),
+    ).toBeInTheDocument()
+
+    await user.type(screen.getByLabelText('Subject name'), 'Mathematics')
+    await user.type(screen.getByLabelText('Units'), '3')
+    await user.type(screen.getByLabelText('Category 1'), 'Quizzes')
+    await user.type(screen.getByLabelText('Weight %'), '100')
+    await user.click(screen.getByRole('button', { name: 'Save subject' }))
+
+    expect(
+      screen.getByText('Subject names must be unique.'),
+    ).toBeInTheDocument()
+    expect(
+      fetchMock.mock.calls.some(
+        ([url, init]) =>
+          url === '/api/semesters/semester-1/subjects' &&
+          init?.method === 'POST',
+      ),
+    ).toBe(false)
   })
 })

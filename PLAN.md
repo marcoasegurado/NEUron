@@ -313,6 +313,7 @@ Tasks:
 - [x] Implement expand/collapse.
 - [x] Display categories, weights, averages, and activities.
 - [x] Add, edit, and delete activity scores.
+- [x] Add a subject and its grading categories to the active semester from the Subjects page.
 - [ ] Add/edit subject details only as permitted by approved data rules. Subject editing remains unapproved and is not implemented.
 - [x] Implement empty-score and delete-confirmation states.
 - [x] Recalculate values after every change.
@@ -325,8 +326,9 @@ Implementation status:
 - `src/features/subjects/view-model.ts` derives each subject summary from the Home view model and adds category averages plus newest-first activity percentages, so Home and Subjects cannot disagree.
 - `src/features/subjects/SubjectsPage.tsx` renders collapsed subject cards that expand into categories and activities. Each active category has an Add score action; each activity has Edit and Delete actions. Delete requires confirmation in a modal. Empty categories show an explicit no-scores state.
 - Every successful create, update, or delete refetches the active semester from the Worker API, so the Subjects view and later Home visits recalculate from the Phase 4 engine.
+- `POST /api/semesters/:id/subjects` adds one subject to the signed-in user's semester. It enforces ownership, the 30-subject cap, case-insensitive duplicate names, and the same category/100%-weight rules as semester setup. The Subjects header (and the no-subjects empty state) exposes `Add Subject`, which opens `src/features/subjects/SubjectDialog.tsx`; a successful save refetches the semester so Home and Schedule show the new subject.
 - Numeric grades and GWA remain deferred. Subjects shows exact percentages with `Grade Pending` while official NEU thresholds are unverified.
-- Test coverage was added in `src/features/subjects/view-model.test.ts`, `src/features/subjects/SubjectsPage.test.tsx`, `src/features/activities/score-form.test.ts`, and `src/server/activity-validation.test.ts`.
+- Test coverage was added in `src/features/subjects/view-model.test.ts`, `src/features/subjects/SubjectsPage.test.tsx`, `src/features/subjects/subject-form.test.ts`, `src/features/activities/score-form.test.ts`, and `src/server/activity-validation.test.ts`.
 
 **Done when:** Subject details/history are accurate; add/edit/delete persists; Home and Subjects show the same grade; phone and desktop layouts match the `DESIGN.md` spec.
 

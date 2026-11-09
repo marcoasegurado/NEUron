@@ -1,0 +1,115 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.categoryHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.categoryTitle {
+  font-size: var(--text-small);
+  line-height: var(--text-small-line);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-secondary);
+}
+
+.weightTotal {
+  flex-shrink: 0;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
+}
+
+.weightValid {
+  background-color: var(--color-grade-strong-bg);
+  color: var(--color-grade-strong-text);
+}
+
+.weightInvalid {
+  background-color: var(--color-grade-risk-bg);
+  color: var(--color-grade-risk-text);
+}
+
+.categoryList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.categoryRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+.categoryRemove {
+  justify-self: start;
+}
+
+.addCategory {
+  align-self: flex-start;
+}
+
+.fieldError {
+  font-size: var(--text-caption);
+  line-height: var(--text-caption-line);
+  color: var(--color-danger);
+}
+
+.submitError {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-tile);
+  background-color: var(--color-grade-risk-bg);
+  color: var(--color-danger);
+  font-size: var(--text-small);
+  line-height: var(--text-small-line);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+@media (min-width: 480px) {
+  .categoryRow {
+    grid-template-columns: minmax(0, 1fr) 7rem auto;
+    align-items: end;
+  }
+
+  .categoryRemove {
+    justify-self: stretch;
+  }
+}
+
+@media (min-width: 640px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr) 8rem;
+  }
+}
+
+@media (max-width: 599px) {
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .actions > * {
+    width: 100%;
+  }
+}

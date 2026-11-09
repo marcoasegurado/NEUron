@@ -16,12 +16,14 @@ import {
   type Activity,
   type Semester,
   type SemesterSetup,
+  type Subject,
 } from '../../lib/academic-api'
 import { formatNumber } from '../../lib/grading/grading'
 import {
   ActivityDialog,
   type ActivityDialogProps,
 } from '../activities/ActivityDialog'
+import { SubjectDialog } from './SubjectDialog'
 import {
   buildSubjectsView,
   formatActivityDate,
@@ -61,6 +63,7 @@ export function SubjectsPage() {
   const [reloadKey, setReloadKey] = useState(0)
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set())
   const [dialog, setDialog] = useState<DialogState>(null)
+  const [addSubjectOpen, setAddSubjectOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<ActivityDetail | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
@@ -113,6 +116,26 @@ export function SubjectsPage() {
   }, [])
 
   const closeDialog = useCallback(() => setDialog(null), [])
+
+  const closeAddSubject = useCallback(() => setAddSubjectOpen(false), [])
+
+  const handleSubjectSaved = useCallback(
+    async (subject: Subject) => {
+      setAddSubjectOpen(false)
+      setNotice(`“${subject.name}” added. Percentages recalculated.`)
+      try {
+        await refresh()
+      } catch (error) {
+        setNotice(
+          academicErrorMessage(
+            error,
+            'The subject was added, but the subjects could not refresh.',
+          ),
+        )
+      }
+    },
+    [refresh],
+  )
 
   const closeDelete = useCallback(() => {
     setDeleteTarget(null)
@@ -273,6 +296,13 @@ export function SubjectsPage() {
         description={`${setup.semester.label} · ${subjectCount} ${
           subjectCount === 1 ? 'subject' : 'subjects'
         }`}
+        actions={
+          subjectCount > 0 ? (
+            <Button onClick={() => setAddSubjectOpen(true)}>
+              Add Subject
+            </Button>
+          ) : undefined
+        }
         stickyOnPhone
       />
 
@@ -288,9 +318,17 @@ export function SubjectsPage() {
             title="No subjects in this semester"
             description="Add subjects and grading categories before recording scores."
             action={
-              <Button onClick={() => navigate('/setup')}>
-                Set up semester
-              </Button>
+              <div className={styles.emptyActions}>
+                <Button onClick={() => setAddSubjectOpen(true)}>
+                  Add Subject
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => navigate('/setup')}
+                >
+                  Set up semester
+                </Button>
+              </div>
             }
           />
         </Card>
@@ -490,6 +528,15 @@ export function SubjectsPage() {
       )}
 
       {dialogProps ? <ActivityDialog {...dialogProps} /> : null}
+
+      {addSubjectOpen ? (
+        <SubjectDialog
+          semesterId={setup.semester.id}
+          existingNames={setup.subjects.map((subject) => subject.name)}
+          onClose={closeAddSubject}
+          onSaved={(subject) => void handleSubjectSaved(subject)}
+        />
+      ) : null}
 
       {deleteTarget ? (
         <Modal

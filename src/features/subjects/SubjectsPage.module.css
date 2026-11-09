@@ -23,6 +23,13 @@
   line-height: var(--text-small-line);
 }
 
+.emptyActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
 .list {
   display: flex;
   flex-direction: column;

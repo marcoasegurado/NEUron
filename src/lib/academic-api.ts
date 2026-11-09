@@ -78,6 +78,16 @@ export interface CreateSemesterInput {
   }>
 }
 
+export interface CreateSubjectInput {
+  name: string
+  units: number
+  professor?: string | null
+  categories: Array<{
+    name: string
+    weightPercent: number
+  }>
+}
+
 export interface CreateActivityInput {
   subjectId: string
   categoryId: string
@@ -139,6 +149,22 @@ export function activateSemester(
   return apiRequest<{ semester: Semester }>(
     `/api/semesters/${encodeURIComponent(semesterId)}/activate`,
     { method: 'POST' },
+  )
+}
+
+export function createSubject(
+  semesterId: string,
+  input: CreateSubjectInput,
+): Promise<{ subject: Subject }> {
+  return apiRequest<{ subject: Subject }>(
+    `/api/semesters/${encodeURIComponent(semesterId)}/subjects`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(input),
+    },
   )
 }
 
