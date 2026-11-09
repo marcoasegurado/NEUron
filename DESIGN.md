@@ -273,13 +273,13 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 
 ### Brand mark (logo)
 
-- The official NEUming logo is the cat mark: a container-free, front-facing cat head in the warm palette. It ships as the inline `CatMark` SVG component (`src/components/brand/CatMark.tsx`) and the favicon.
+- The official NEUming logo is the cat head: a container-free, front-facing orange cat with dark outlines, pink inner ears and cheeks, a cream muzzle, whiskers, and gold sparkles. It ships as the inline `CatMascot` SVG component (`src/components/brand/CatMascot.tsx`), which is the single source of the artwork for the brand mark and the favicon.
 - **Name:** NEUming (NEU + *mingming*, Filipino for kitty). The mascot is named **Ming**.
-- **Colors:** orange `#F26B21` head and ears; cream `#FFF8EF` inner ears and muzzle; warm brown `#3A2A1F` eyes, nose, and whiskers; gold `#F5B82E` forehead star.
-- **Sizes:** `32px` in the authenticated phone bar, `44px` beside the sidebar and auth wordmark, `168px` as the auth-panel mascot.
-- **Clear space:** keep at least `8%` of the mark's width clear on all sides; never crop the ears or face.
+- **Colors:** orange `#F97316` head and ears; pink `#F7A8A2` inner ears and cheeks; cream `#FFF6E8` muzzle; warm brown `#3D2B1F` outlines, eyes, nose, and whiskers; deeper orange `#E5600D` forehead stripes; gold `#F5B82E` sparkles.
+- **Sizes:** `52px` beside the sidebar wordmark, `32px` in the authenticated phone bar, `152px` phone / `168px` desktop as the auth-panel mascot, and `56px` phone / `64px` desktop inside dialogs.
+- **Clear space:** keep at least `8%` of the mark's width clear on all sides; never crop the ears, whiskers, or face.
 - **Pairing:** the mark sits to the left of the `NEUming` wordmark with the `Grade Encoder` tagline beneath, unless a standalone icon is required.
-- **Favicon:** the same cat head in cream on a rounded orange tile (`#F26B21`).
+- **Favicon:** the same cat head on a rounded tile filled with the page cream (`#FBF4E3`), so the browser-tab and installed-app icon match the in-app mark instead of using a separate drawing. The artwork is scaled to keep the `8%` clear space inside the tile.
 - Do not recolor, outline, or replace the mark with a generic placeholder without approval.
 
 ### Mascot and illustration
@@ -313,7 +313,7 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 - Login, Forgot Password, and Reset Password share one frame.
 - **Phone:** centered brand header with the `CatMascot` illustration, `NEU`-orange + `ming`-brown `NEUming` wordmark, and the muted tagline `Your grades, always in sight.` above the form card. The card uses `24px` radius, cream `16px`-radius inputs with orange borders, and a `52px` primary button. Decorative pale-yellow and peach circles sit at the top-right and bottom-left of the page.
 - **Desktop (1024px+):** two-panel layout. The app-orange left panel centers a cream halo behind the mascot, the wordmark (`NEU` cream, `ming` brown), the statement `Track every quiz, exam and project, and always know where you stand.`, and three translucent feature pills. The cream right panel centers the form card over decorative circles.
-- **Mascot note:** the auth panel uses the detailed `CatMascot` (`src/components/brand/CatMascot.tsx`, `152px` phone / `168px` desktop). The sidebar and phone bar keep the compact `CatMark` at `44px` and `32px`.
+- **Mascot note:** the auth panel and the sidebar/phone-bar brand marks all use the detailed `CatMascot` (`src/components/brand/CatMascot.tsx`, `152px` phone / `168px` desktop on the auth panel, `52px` sidebar, `32px` phone bar).
 - Auth fields use the shared `Input` component with visible labels and field-level errors; auth-specific sizing is applied through the layout CSS, not duplicated components.
 - Auth screens never reveal whether an email is registered.
 

@@ -1,49 +1,78 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="NEUming">
-  <rect width="64" height="64" rx="16" fill="#F97316" />
-  <path
-    d="M16 30 12.5 13c-.3-1.5 1.3-2.5 2.6-1.8L30 20"
-    fill="#FFF6E8"
-    stroke="#FFF6E8"
-    stroke-width="4"
-    stroke-linejoin="round"
-  />
-  <path
-    d="M48 30 51.5 13c.3-1.5-1.3-2.5-2.6-1.8L34 20"
-    fill="#FFF6E8"
-    stroke="#FFF6E8"
-    stroke-width="4"
-    stroke-linejoin="round"
-  />
-  <path d="M18.5 25 16.5 16.5 24 21Z" fill="#F97316" />
-  <path d="M45.5 25 47.5 16.5 40 21Z" fill="#F97316" />
-  <path
-    d="M32 20c10 0 18 8 18 18S42 56 32 56 14 46 14 38s8-18 18-18Z"
-    fill="#FFF6E8"
-  />
-  <path
-    d="M23 35c1.5-2 4-2 5.5 0"
-    fill="none"
-    stroke="#3D2B1F"
-    stroke-width="2.4"
-    stroke-linecap="round"
-  />
-  <path
-    d="M35.5 35c1.5-2 4-2 5.5 0"
-    fill="none"
-    stroke="#3D2B1F"
-    stroke-width="2.4"
-    stroke-linecap="round"
-  />
-  <path d="M30 41h4l-2 2.3Z" fill="#3D2B1F" />
-  <path
-    d="M32 43.3v1.6c-.7 1.3-1.9 1.5-2.9 1.1M32 44.9c.7 1.3 1.9 1.5 2.9 1.1"
-    fill="none"
-    stroke="#3D2B1F"
-    stroke-width="1.8"
-    stroke-linecap="round"
-  />
-  <path
-    d="M32 23l1.2 2.8 3 .4-2.2 2.2.6 3-2.6-1.6-2.6 1.6.6-3-2.2-2.2 3-.4Z"
-    fill="#F5B82E"
-  />
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 200 200" role="img" aria-label="NEUming">
+  <rect width="200" height="200" rx="44" fill="#FBF4E3" />
+  <g transform="translate(0 6)">
+    <path
+      d="M30 22c1.2 6.2 3.6 8.6 9.8 9.8-6.2 1.2-8.6 3.6-9.8 9.8-1.2-6.2-3.6-8.6-9.8-9.8 6.2-1.2 8.6-3.6 9.8-9.8Z"
+      fill="#F5B82E"
+    />
+    <path
+      d="M168 20c.9 4.6 2.7 6.4 7.3 7.3-4.6.9-6.4 2.7-7.3 7.3-.9-4.6-2.7-6.4-7.3-7.3 4.6-.9 6.4-2.7 7.3-7.3Z"
+      fill="#F5B82E"
+    />
+
+    <path
+      d="M52 82 48 40q-1-7 5-4l33 26Z"
+      fill="#F97316"
+      stroke="#3D2B1F"
+      stroke-width="5"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M148 82 152 40q1-7-5-4l-33 26Z"
+      fill="#F97316"
+      stroke="#3D2B1F"
+      stroke-width="5"
+      stroke-linejoin="round"
+    />
+    <path d="M58 72 55 50l21 13Z" fill="#F7A8A2" />
+    <path d="M142 72 145 50l-21 13Z" fill="#F7A8A2" />
+
+    <ellipse
+      cx="100"
+      cy="110"
+      rx="62"
+      ry="56"
+      fill="#F97316"
+      stroke="#3D2B1F"
+      stroke-width="5"
+    />
+
+    <path
+      d="M89 68v9M100 64v10M111 68v9"
+      fill="none"
+      stroke="#E5600D"
+      stroke-width="5"
+      stroke-linecap="round"
+    />
+
+    <ellipse cx="79" cy="103" rx="11" ry="14" fill="#3D2B1F" />
+    <ellipse cx="121" cy="103" rx="11" ry="14" fill="#3D2B1F" />
+    <circle cx="82.5" cy="98" r="3.5" fill="#FFFFFF" />
+    <circle cx="124.5" cy="98" r="3.5" fill="#FFFFFF" />
+
+    <ellipse cx="56" cy="125" rx="12" ry="7" fill="#F7A8A2" />
+    <ellipse cx="144" cy="125" rx="12" ry="7" fill="#F7A8A2" />
+
+    <ellipse cx="100" cy="130" rx="26" ry="18" fill="#FFF6E8" />
+
+    <path
+      d="M95 117q5-3 10 0 2 2 0 5l-3 4q-2 2-4 0l-3-4q-2-3 0-5Z"
+      fill="#EE7F72"
+    />
+    <path
+      d="M100 126v4M100 130q-6 7-12 2M100 130q6 7 12 2"
+      fill="none"
+      stroke="#3D2B1F"
+      stroke-width="3.5"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M44 114 20 108M44 124 18 124M44 134 20 140M156 114l24-6M156 124l26 0M156 134l24 6"
+      fill="none"
+      stroke="#3D2B1F"
+      stroke-width="3.5"
+      stroke-linecap="round"
+    />
+  </g>
 </svg>
