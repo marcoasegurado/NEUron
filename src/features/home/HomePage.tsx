@@ -9,6 +9,7 @@ import {
   EmptyState,
   Progress,
   Select,
+  Toast,
 } from '../../components/ui'
 import {
   academicErrorMessage,
@@ -241,9 +242,7 @@ export function HomePage() {
       />
 
       {notice ? (
-        <p className={styles.notice} role="status">
-          {notice}
-        </p>
+        <Toast message={notice} onDismiss={() => setNotice(null)} />
       ) : null}
 
       <Card className={styles.statusBanner}>

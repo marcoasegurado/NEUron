@@ -25,21 +25,23 @@ These are proposed baseline tokens for implementation. Keep them in one centrali
 
 | Token | Role | Proposed value |
 |---|---|---|
-| `--color-bg-page` | Warm cream page background | `#FFF8EF` |
-| `--color-bg-surface` | Card and panel surface | `#FFFDF9` |
+| `--color-bg-page` | Warm cream page background | `#FBF4E3` |
+| `--color-bg-surface` | Card and panel surface | `#FFFFFF` |
 | `--color-bg-elevated` | Dialog / popover surface | `#FFFFFF` |
-| `--color-primary` | Primary actions, active navigation | `#F26B21` |
-| `--color-primary-hover` | Primary hover/pressed | `#D9540E` |
+| `--color-bg-note` | Highlight/status banner surface | `#FBF0CF` |
+| `--color-primary` | Primary actions, active navigation | `#F97316` |
+| `--color-primary-hover` | Primary hover/pressed | `#E5600D` |
 | `--color-primary-soft` | Tinted primary backgrounds | `#FDE7D6` |
 | `--color-accent-gold` | Highlights, grade accents, stickers | `#F5B82E` |
-| `--color-text` | Primary warm-brown text | `#3A2A1F` |
-| `--color-text-secondary` | Secondary labels | `#7A6355` |
-| `--color-text-muted` | Hints, placeholders | `#A08D80` |
-| `--color-border` | Default soft border | `#F3D6BF` |
-| `--color-border-strong` | Focused/selected border | `#E9B892` |
-| `--color-success` | Complete / healthy status | `#4F8A5B` |
-| `--color-warning` | Needs attention | `#D98A1C` |
-| `--color-danger` | Errors, destructive actions | `#C44536` |
+| `--color-accent-gold-soft` | Soft gold tints | `#FBE7A9` |
+| `--color-text` | Primary warm-brown text | `#3D2B1F` |
+| `--color-text-secondary` | Secondary labels | `#8A7361` |
+| `--color-text-muted` | Hints, placeholders | `#B3A091` |
+| `--color-border` | Default soft border | `#F6E4CB` |
+| `--color-border-strong` | Focused/selected border | `#F3C48F` |
+| `--color-success` | Complete / healthy status | `#2E7D4F` |
+| `--color-warning` | Needs attention | `#B45309` |
+| `--color-danger` | Errors, destructive actions | `#D62828` |
 | `--color-info` | Neutral informational status | `#4A7C8C` |
 
 ### Grade and status colors
@@ -48,12 +50,12 @@ Grade colors communicate meaning, not decoration. Use tinted pill backgrounds wi
 
 | Status / grade band (proposal) | Text / accent | Tint background |
 |---|---|---|
-| Strong (roughly 1.00–1.75) | `#3F7D52` | `#E7F2EA` |
-| Good (roughly 1.76–2.25) | `#5C8A2E` | `#EFF5E3` |
-| Fair (roughly 2.26–2.75) | `#B07A12` | `#FCF1D6` |
-| Low (roughly 2.76–3.50) | `#C0621F` | `#FBE8D8` |
-| At risk (roughly 3.51–5.00) | `#A83A2E` | `#F8E4E0` |
-| No Grade Yet / pending | `#7A6355` | `#F2ECE5` |
+| Strong (roughly 1.00–1.75) | `#2E7D4F` | `#D9F2E1` |
+| Good (roughly 1.76–2.25) | `#5F7F1F` | `#EAF3D4` |
+| Fair (roughly 2.26–2.75) | `#B45309` | `#FBE7A9` |
+| Low (roughly 2.76–3.50) | `#D9480F` | `#FBDFD2` |
+| At risk (roughly 3.51–5.00) | `#D62828` | `#FAD3D3` |
+| No Grade Yet / pending | `#8A7361` | `#EDE5D8` |
 
 The exact band boundaries must align with the approved conversion table in `GRADING_RULES.md`. Until the official NEU thresholds are approved, treat the bands above as a visual proposal only.
 
@@ -132,7 +134,7 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 ### Desktop
 
 - Left vertical sidebar, width 248–272px, full height.
-- Sidebar structure: brand/mascot at top, primary nav in the middle, student/profile block pinned near the bottom.
+- Sidebar structure: cat mark plus a two-tone `NEUming` wordmark at top, primary nav in the middle, and a bottom footer with a cream profile card and an outlined `Log out` pill. The active nav item is a filled app-orange pill with white icon/label and a darker orange bottom edge; inactive items are muted brown with no background.
 - Main content: max width ~1120px, page padding 32–48px.
 - Page header: title and supporting text at upper-left; semester switcher and primary action at upper-right on the same row where space allows.
 - Home uses a responsive card grid (2–3 columns). Subjects uses a single expandable list. Schedule uses a wide calendar grid at `1024px` and above, and a week strip plus day agenda below that.
@@ -219,6 +221,7 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 
 - Centered card on desktop, upward sheet on phone.
 - Title, supporting text, form/content, action row.
+- The Add/Edit score dialog shows the cat mascot beside the title, cream fields with light-orange borders, an outlined `Cancel` pill, and a filled orange `Save score` action with a darker bottom edge. It is about `610px` wide on desktop. The layout is two columns (`Subject`/`Category`), full-width `Title`, then `Score` / `Total items` separated by a slash. There is no date field or corner close button; Escape, overlay click, and `Cancel` close the dialog. Below `600px` it becomes the standard bottom sheet.
 - Primary action on the right/bottom; destructive action visually distinguished.
 - Overlay uses a warm dark scrim, not pure black.
 - Focus is trapped; Escape/back closes; restore focus on close.
@@ -226,9 +229,9 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 ### Navigation
 
 **Sidebar (desktop)**
-- Brand block with cat mark and "NEUming" wordmark.
-- Nav items as pill rows with icon + label; active state uses soft orange fill and orange icon/text.
-- Profile block at the bottom with avatar/initials, name, and semester context.
+- Brand block with cat mark and two-tone "NEUming" wordmark.
+- Nav items as pill rows with icon + label; the active item is a filled app-orange pill with white icon/label, while inactive items are muted brown with no background.
+- Bottom footer with a cream profile card (gold avatar + bold name) and an outlined orange `Log out` pill.
 
 **Bottom nav (phone)**
 - Three items with icon + short label.
@@ -308,15 +311,16 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 
 ### Auth layout baseline
 - Login, Forgot Password, and Reset Password share one frame.
-- **Phone:** compact left-aligned header with the cat mark, `NEUming` wordmark, and a small muted `Grade Encoder` tagline beneath the name; the larger supporting brand copy is hidden. The header overlays the top of the viewport while the form card is optically centered in the full viewport, and the card's supporting description is hidden on phone. `16px` form padding, `20px` card radius.
-- **Desktop (1024px+):** two-panel layout — orange/cream brand panel on one side, form panel on the other. Brand panel keeps the product name, a short encouraging line, and the mascot area.
-- **Mascot note:** the cat mark is implemented. The auth brand panel uses the `168px` `CatMark`; the sidebar and phone bar use `44px` and `32px` respectively, paired with the `NEUming` wordmark.
-- All fields use the shared `Input` component, `44px` minimum control height, visible labels, and field-level errors.
+- **Phone:** centered brand header with the `CatMascot` illustration, `NEU`-orange + `ming`-brown `NEUming` wordmark, and the muted tagline `Your grades, always in sight.` above the form card. The card uses `24px` radius, cream `16px`-radius inputs with orange borders, and a `52px` primary button. Decorative pale-yellow and peach circles sit at the top-right and bottom-left of the page.
+- **Desktop (1024px+):** two-panel layout. The app-orange left panel centers a cream halo behind the mascot, the wordmark (`NEU` cream, `ming` brown), the statement `Track every quiz, exam and project, and always know where you stand.`, and three translucent feature pills. The cream right panel centers the form card over decorative circles.
+- **Mascot note:** the auth panel uses the detailed `CatMascot` (`src/components/brand/CatMascot.tsx`, `152px` phone / `168px` desktop). The sidebar and phone bar keep the compact `CatMark` at `44px` and `32px`.
+- Auth fields use the shared `Input` component with visible labels and field-level errors; auth-specific sizing is applied through the layout CSS, not duplicated components.
 - Auth screens never reveal whether an email is registered.
 
 ### Login
-- **Phone:** compact left-aligned logo, wordmark, and `Grade Encoder` tagline header; email-or-username field, password field with visibility control and `Password` placeholder, primary Log in button, forgot-password link. No create-account link.
-- **Desktop:** two-panel layout — orange/cream brand panel with mascot on one side, form panel on the other.
+- **Phone:** centered cat mascot, wordmark, and `Your grades, always in sight.` tagline above the form card; `Welcome back!` title, `Log in to see how your semester is going.` description, email-or-username field, password field with visibility control and `Enter your password` placeholder, primary Log in button, and forgot-password link.
+- **Desktop:** the two-panel auth layout above, with the form card centered on the cream side.
+- The Figma `New here? Create an account` line is omitted until a real registration flow exists.
 - **States:** default, field-level validation, submitting, invalid credentials, success redirect, network error.
 
 ### Manual account creation

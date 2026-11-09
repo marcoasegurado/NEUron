@@ -7,6 +7,7 @@ import {
   Card,
   EmptyState,
   Modal,
+  Toast,
 } from '../../components/ui'
 import {
   academicErrorMessage,
@@ -307,9 +308,7 @@ export function SubjectsPage() {
       />
 
       {notice ? (
-        <p className={styles.notice} role="status">
-          {notice}
-        </p>
+        <Toast message={notice} onDismiss={() => setNotice(null)} />
       ) : null}
 
       {subjectCount === 0 ? (

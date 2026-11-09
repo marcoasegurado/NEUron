@@ -1,37 +1,40 @@
 :root {
   /* Color system (proposed baseline from DESIGN.md) */
-  --color-bg-page: #fff8ef;
-  --color-bg-surface: #fffdf9;
+  --color-bg-page: #fbf4e3;
+  --color-bg-surface: #ffffff;
   --color-bg-elevated: #ffffff;
-  --color-primary: #f26b21;
-  --color-primary-hover: #d9540e;
+  --color-bg-note: #fbf0cf;
+  --color-primary: #f97316;
+  --color-primary-hover: #e5600d;
   --color-primary-soft: #fde7d6;
   --color-accent-gold: #f5b82e;
-  --color-text: #3a2a1f;
-  --color-text-secondary: #7a6355;
-  --color-text-muted: #a08d80;
-  --color-border: #f3d6bf;
-  --color-border-strong: #e9b892;
-  --color-success: #4f8a5b;
-  --color-warning: #d98a1c;
-  --color-danger: #c44536;
+  --color-accent-gold-soft: #fbe7a9;
+  --color-primary-peach: #fbe0c4;
+  --color-text: #3d2b1f;
+  --color-text-secondary: #8a7361;
+  --color-text-muted: #b3a091;
+  --color-border: #f6e4cb;
+  --color-border-strong: #f3c48f;
+  --color-success: #2e7d4f;
+  --color-warning: #b45309;
+  --color-danger: #d62828;
   --color-info: #4a7c8c;
 
-  --color-grade-strong-text: #3f7d52;
-  --color-grade-strong-bg: #e7f2ea;
-  --color-grade-good-text: #5c8a2e;
-  --color-grade-good-bg: #eff5e3;
-  --color-grade-fair-text: #b07a12;
-  --color-grade-fair-bg: #fcf1d6;
-  --color-grade-low-text: #c0621f;
-  --color-grade-low-bg: #fbe8d8;
-  --color-grade-risk-text: #a83a2e;
-  --color-grade-risk-bg: #f8e4e0;
-  --color-grade-pending-text: #7a6355;
-  --color-grade-pending-bg: #f2ece5;
+  --color-grade-strong-text: #2e7d4f;
+  --color-grade-strong-bg: #d9f2e1;
+  --color-grade-good-text: #5f7f1f;
+  --color-grade-good-bg: #eaf3d4;
+  --color-grade-fair-text: #b45309;
+  --color-grade-fair-bg: #fbe7a9;
+  --color-grade-low-text: #d9480f;
+  --color-grade-low-bg: #fbdfd2;
+  --color-grade-risk-text: #d62828;
+  --color-grade-risk-bg: #fad3d3;
+  --color-grade-pending-text: #8a7361;
+  --color-grade-pending-bg: #ede5d8;
 
-  --color-focus-ring: rgba(242, 107, 33, 0.35);
-  --color-overlay: rgba(58, 42, 31, 0.45);
+  --color-focus-ring: rgba(249, 115, 22, 0.35);
+  --color-overlay: rgba(61, 43, 31, 0.45);
 
   /* Typography */
   --font-sans: "Nunito Sans", "Inter", system-ui, -apple-system, "Segoe UI",
@@ -62,9 +65,9 @@
   --radius-dialog: 28px;
 
   /* Elevation */
-  --shadow-card: 0 2px 8px rgba(58, 42, 31, 0.06);
-  --shadow-raised: 0 12px 32px rgba(58, 42, 31, 0.14);
-  --shadow-nav: 0 -2px 12px rgba(58, 42, 31, 0.06);
+  --shadow-card: 0 2px 8px rgba(61, 43, 31, 0.06);
+  --shadow-raised: 0 12px 32px rgba(61, 43, 31, 0.14);
+  --shadow-nav: 0 -2px 12px rgba(61, 43, 31, 0.06);
 
   /* Spacing */
   --space-1: 0.25rem;

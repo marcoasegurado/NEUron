@@ -1,20 +1,110 @@
+.dialog {
+  max-width: 610px;
+  background-color: var(--color-bg-surface);
+}
+
+.dialog h2 {
+  color: var(--color-text);
+  font-size: 2rem;
+  line-height: 2.25rem;
+}
+
+.mascot {
+  display: block;
+  width: 64px;
+  height: 64px;
+}
+
 .form {
   display: flex;
   flex-direction: column;
+  gap: var(--space-5);
+  margin-top: var(--space-2);
+}
+
+.dialog label {
+  color: var(--color-text);
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+}
+
+.dialog input,
+.dialog select {
+  min-height: 60px;
+  padding: 0 var(--space-5);
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-tile);
+  background-color: var(--color-primary-soft);
+  color: var(--color-text);
+  font-size: var(--text-body);
+}
+
+.dialog select {
+  padding-right: var(--space-6);
+}
+
+.dialog select + span {
+  right: var(--space-5);
+  color: var(--color-primary);
+  font-size: 1.25rem;
+  font-weight: var(--weight-bold);
+}
+
+.dialog input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.dialog input[aria-invalid='true'],
+.dialog select[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--space-4);
 }
 
-.row {
+.scoreRow {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: var(--space-2);
+}
+
+.scoreRow input {
+  text-align: center;
+}
+
+.slash {
+  margin-bottom: var(--space-4);
+  color: var(--color-text-secondary);
+  font-size: 1.75rem;
+  font-weight: var(--weight-semibold);
+  line-height: 1;
 }
 
 .actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
+  display: grid;
+  grid-template-columns: minmax(0, 0.38fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.actions .cancelButton,
+.actions .saveButton {
+  min-height: 60px;
+  padding: 0 var(--space-5);
+  font-size: 1.125rem;
+  font-weight: var(--weight-bold);
+}
+
+.actions .cancelButton {
+  border-width: 2px;
+}
+
+.actions .saveButton {
+  box-shadow: 0 4px 0 var(--color-primary-hover);
 }
 
 .submitError {
@@ -27,8 +117,18 @@
 }
 
 @media (max-width: 599px) {
+  .dialog h2 {
+    font-size: 1.625rem;
+    line-height: 2rem;
+  }
+
+  .mascot {
+    width: 56px;
+    height: 56px;
+  }
+
   .actions {
-    flex-direction: column-reverse;
+    grid-template-columns: 1fr;
   }
 
   .actions > * {

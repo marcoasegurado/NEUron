@@ -2,100 +2,84 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: var(--color-bg-page);
+  background:
+    radial-gradient(
+      circle at 108% -6%,
+      var(--color-accent-gold-soft) 0 145px,
+      transparent 146px
+    ),
+    radial-gradient(
+      circle at -14% 108%,
+      var(--color-primary-peach) 0 155px,
+      transparent 156px
+    ),
+    var(--color-bg-page);
 }
 
 .brandPanel {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
-  padding: var(--space-5) var(--space-4) var(--space-6);
-  background:
-    radial-gradient(circle at 85% 15%, rgba(245, 184, 46, 0.35), transparent 38%),
-    linear-gradient(145deg, #fff2e2 0%, #ffe3c8 100%);
-  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-7) var(--space-5) var(--space-2);
 }
 
-.brandTop {
+.brandContent {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--space-3);
+  text-align: center;
 }
 
-.brandMark {
-  display: block;
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
+.mascotHalo {
+  display: grid;
+  place-items: center;
 }
 
-.brandText {
-  display: flex;
-  flex-direction: column;
+.mascot {
+  width: 152px;
+  height: 152px;
 }
 
-.brandName {
-  font-size: var(--text-h3);
+.wordmark {
+  margin-top: var(--space-4);
+  font-size: 2.25rem;
   font-weight: var(--weight-bold);
-  line-height: 1.2;
+  line-height: 1;
+  letter-spacing: -0.02em;
 }
 
-.brandTag {
-  font-size: var(--text-caption);
-  color: var(--color-text-secondary);
+.wordmarkNeu {
+  color: var(--color-primary);
 }
 
-.brandCopy {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.eyebrow {
-  color: var(--color-primary-hover);
-  font-size: var(--text-caption);
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.headline {
-  font-size: var(--text-h1);
-  line-height: var(--text-h1-line);
-  font-weight: var(--weight-bold);
-  max-width: 18ch;
+.wordmarkMing {
+  color: var(--color-text);
 }
 
 .tagline {
+  margin-top: var(--space-3);
   color: var(--color-text-secondary);
-  max-width: 44ch;
+  font-size: var(--text-body);
+  line-height: var(--text-body-line);
 }
 
-.mascotArea {
+.statement,
+.features {
   display: none;
-}
-
-.mascotMark {
-  display: block;
-  width: 168px;
-  height: 168px;
 }
 
 .formPanel {
   display: flex;
-  flex: 1;
-  align-items: center;
   justify-content: center;
-  padding: var(--space-5) var(--space-4) var(--space-8);
+  padding: var(--space-5) var(--space-5) var(--space-7);
 }
 
 .formCard {
   width: 100%;
   max-width: 440px;
   padding: var(--space-5);
-  background-color: var(--color-bg-surface);
+  background-color: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
+  border-radius: 24px;
   box-shadow: var(--shadow-raised);
 }
 
@@ -107,60 +91,40 @@
 }
 
 .title {
-  font-size: var(--text-h2);
-  line-height: var(--text-h2-line);
+  font-size: 1.625rem;
+  line-height: 2rem;
   font-weight: var(--weight-bold);
 }
 
 .description {
   color: var(--color-text-secondary);
-  font-size: var(--text-small);
-  line-height: var(--text-small-line);
+  font-size: 0.9375rem;
+  line-height: 1.5rem;
+}
+
+.formCard label {
+  color: var(--color-text);
+  font-weight: var(--weight-semibold);
+}
+
+.formCard input {
+  min-height: 52px;
+  border-color: var(--color-border-strong);
+  border-radius: 16px;
+  background-color: var(--color-bg-page);
+}
+
+.formCard button[type='submit'] {
+  min-height: 52px;
+  font-size: var(--text-body);
 }
 
 .footer {
   margin-top: var(--space-5);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border);
   color: var(--color-text-secondary);
   font-size: var(--text-small);
   line-height: var(--text-small-line);
   text-align: center;
-}
-
-@media (max-width: 1023px) {
-  .page {
-    display: grid;
-    grid-template-areas: 'auth';
-  }
-
-  .brandPanel {
-    z-index: 1;
-    grid-area: auth;
-    align-self: start;
-    align-items: flex-start;
-    gap: 0;
-    padding: var(--space-5) var(--space-4);
-  }
-
-  .brandTop {
-    justify-content: flex-start;
-  }
-
-  .brandCopy,
-  .description {
-    display: none;
-  }
-
-  .formPanel {
-    grid-area: auth;
-    min-height: 100vh;
-    padding: var(--space-4);
-  }
-
-  .formHeader {
-    margin-bottom: var(--space-4);
-  }
 }
 
 @media (min-width: 1024px) {
@@ -169,30 +133,109 @@
   }
 
   .brandPanel {
-    justify-content: space-between;
-    width: 46%;
+    align-items: center;
+    justify-content: center;
+    width: 50%;
     min-height: 100vh;
-    padding: var(--space-7) var(--space-8);
-    border-right: 1px solid var(--color-border);
-    border-bottom: 0;
+    padding: var(--space-8);
+    background:
+      radial-gradient(
+        circle at 6% 12%,
+        rgba(255, 248, 239, 0.12) 0 120px,
+        transparent 121px
+      ),
+      radial-gradient(
+        circle at 98% 68%,
+        rgba(255, 248, 239, 0.1) 0 150px,
+        transparent 151px
+      ),
+      radial-gradient(
+        circle at 82% 106%,
+        rgba(255, 248, 239, 0.12) 0 160px,
+        transparent 161px
+      ),
+      var(--color-primary);
   }
 
-  .headline {
-    font-size: var(--text-display);
-    line-height: var(--text-display-line);
-    max-width: 14ch;
+  .brandContent {
+    max-width: 420px;
   }
 
-  .mascotArea {
+  .mascotHalo {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background-color: var(--color-bg-page);
+    box-shadow: var(--shadow-raised);
+  }
+
+  .mascot {
+    width: 168px;
+    height: 168px;
+  }
+
+  .wordmark {
+    margin-top: var(--space-5);
+    font-size: 2.75rem;
+  }
+
+  .wordmarkNeu {
+    color: var(--color-bg-page);
+  }
+
+  .tagline {
+    display: none;
+  }
+
+  .statement {
     display: block;
+    max-width: 34ch;
+    margin-top: var(--space-3);
+    color: var(--color-bg-page);
+    font-size: 1.125rem;
+    line-height: 1.5;
+  }
+
+  .features {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    margin: var(--space-6) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .feature {
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-pill);
+    background-color: rgba(255, 248, 239, 0.22);
+    color: var(--color-bg-page);
+    font-size: var(--text-small);
+    line-height: var(--text-small-line);
   }
 
   .formPanel {
-    width: 54%;
+    align-items: center;
+    width: 50%;
+    min-height: 100vh;
     padding: var(--space-7);
+    background:
+      radial-gradient(
+        circle at 108% -6%,
+        var(--color-accent-gold-soft) 0 160px,
+        transparent 161px
+      ),
+      radial-gradient(
+        circle at -10% 106%,
+        var(--color-primary-peach) 0 160px,
+        transparent 161px
+      ),
+      var(--color-bg-page);
   }
 
   .formCard {
+    max-width: 430px;
     padding: var(--space-6);
   }
 }

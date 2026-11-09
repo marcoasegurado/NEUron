@@ -1,6 +1,6 @@
 import { useState, type ComponentType, type SVGProps } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { CatMark } from '../components/brand/CatMark'
+import { CatMascot } from '../components/brand/CatMascot'
 import { useAuth } from '../features/auth/useAuth'
 import { cx } from '../lib/cx'
 import {
@@ -76,40 +76,38 @@ export function AppShell() {
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
         <div className={styles.brand}>
-          <CatMark className={styles.brandMark} />
-          <div className={styles.brandText}>
-            <span className={styles.brandName}>NEUming</span>
-            <span className={styles.brandTag}>Grade Encoder</span>
-          </div>
+          <CatMascot className={styles.brandMark} />
+          <span className={styles.brandName} aria-label="NEUming">
+            <span className={styles.brandNeu}>NEU</span>
+            <span className={styles.brandMing}>ming</span>
+          </span>
         </div>
 
         <nav className={styles.sideNav} aria-label="Primary">
           {primaryNav.map((item) => (
             <NavItemLink key={item.to} item={item} />
           ))}
-          <div className={styles.navDivider} />
           {secondaryNav.map((item) => (
             <NavItemLink key={item.to} item={item} />
           ))}
         </nav>
 
-        <div className={styles.profile}>
-          <span className={styles.avatar} aria-hidden="true">
-            {initial}
-          </span>
-          <div className={styles.profileText}>
+        <div className={styles.sidebarFooter}>
+          <div className={styles.profile}>
+            <span className={styles.avatar} aria-hidden="true">
+              {initial}
+            </span>
             <p className={styles.profileName}>
               {user?.displayName ?? 'Student'}
             </p>
-            <p className={styles.profileMeta}>{user?.email ?? ''}</p>
           </div>
           <button
             type="button"
-            className={styles.signOut}
+            className={styles.logoutButton}
             onClick={handleSignOut}
             disabled={signingOut}
           >
-            {signingOut ? 'Signing out…' : 'Sign out'}
+            {signingOut ? 'Signing out…' : 'Log out'}
           </button>
         </div>
       </aside>
@@ -118,8 +116,11 @@ export function AppShell() {
         <div className={styles.content}>
           <div className={styles.mobileBar}>
             <div className={styles.mobileBrand}>
-              <CatMark className={styles.mobileBrandMark} />
-              <span>NEUming</span>
+              <CatMascot className={styles.mobileBrandMark} />
+              <span aria-label="NEUming">
+                <span className={styles.brandNeu}>NEU</span>
+                <span className={styles.brandMing}>ming</span>
+              </span>
             </div>
             <button
               type="button"

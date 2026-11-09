@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { CatMascot } from '../../components/brand/CatMascot'
 import { Button, Input, Modal, Select } from '../../components/ui'
 import {
   academicErrorMessage,
@@ -105,12 +106,10 @@ export function ActivityDialog({
 
   return (
     <Modal
-      title={editing ? 'Edit score' : 'Add score'}
-      description={
-        editing
-          ? 'Update the activity name, score, or date. Its subject and grading category stay the same.'
-          : 'Record one activity for a grading category. The category average updates as soon as the score is saved.'
-      }
+      title={editing ? 'Edit score' : 'Add a score'}
+      leading={<CatMascot className={styles.mascot} />}
+      hideClose
+      className={styles.dialog}
       onClose={onClose}
     >
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
@@ -120,56 +119,58 @@ export function ActivityDialog({
           </p>
         ) : null}
 
-        <Select
-          label="Subject"
-          value={values.subjectId}
-          onChange={(event) => handleSubjectChange(event.target.value)}
-          error={errors.subjectId}
-          disabled={editing || subjects.length === 0}
-          hint={editing ? 'The subject cannot be changed here.' : undefined}
-        >
-          {subjects.length === 0 ? (
-            <option value="">No subjects available</option>
-          ) : null}
-          {subjects.map((subject) => (
-            <option key={subject.id} value={subject.id}>
-              {subject.name}
-            </option>
-          ))}
-        </Select>
+        <div className={styles.columns}>
+          <Select
+            label="Subject"
+            value={values.subjectId}
+            onChange={(event) => handleSubjectChange(event.target.value)}
+            error={errors.subjectId}
+            disabled={editing || subjects.length === 0}
+            hint={editing ? 'The subject cannot be changed here.' : undefined}
+          >
+            {subjects.length === 0 ? (
+              <option value="">No subjects available</option>
+            ) : null}
+            {subjects.map((subject) => (
+              <option key={subject.id} value={subject.id}>
+                {subject.name}
+              </option>
+            ))}
+          </Select>
 
-        <Select
-          label="Grading category"
-          value={values.categoryId}
-          onChange={(event) => {
-            update({ categoryId: event.target.value })
-            setErrors((current) => ({
-              ...current,
-              categoryId: undefined,
-            }))
-          }}
-          hint={
-            editing
-              ? 'The grading category cannot be changed here.'
-              : categories.length === 0
-                ? 'This subject has no active grading categories.'
-                : undefined
-          }
-          error={errors.categoryId}
-          disabled={editing || categories.length === 0}
-        >
-          {categories.length === 0 ? (
-            <option value="">No active categories</option>
-          ) : null}
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name} · {category.weightPercent}%
-            </option>
-          ))}
-        </Select>
+          <Select
+            label="Category"
+            value={values.categoryId}
+            onChange={(event) => {
+              update({ categoryId: event.target.value })
+              setErrors((current) => ({
+                ...current,
+                categoryId: undefined,
+              }))
+            }}
+            hint={
+              editing
+                ? 'The grading category cannot be changed here.'
+                : categories.length === 0
+                  ? 'This subject has no active grading categories.'
+                  : undefined
+            }
+            error={errors.categoryId}
+            disabled={editing || categories.length === 0}
+          >
+            {categories.length === 0 ? (
+              <option value="">No active categories</option>
+            ) : null}
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name} · {category.weightPercent}%
+              </option>
+            ))}
+          </Select>
+        </div>
 
         <Input
-          label="Activity name"
+          label="Title"
           value={values.name}
           onChange={(event) => {
             update({ name: event.target.value })
@@ -179,9 +180,9 @@ export function ActivityDialog({
           error={errors.name}
         />
 
-        <div className={styles.row}>
+        <div className={styles.scoreRow}>
           <Input
-            label="Score earned"
+            label="Score"
             type="number"
             min={0}
             step="any"
@@ -198,8 +199,11 @@ export function ActivityDialog({
             placeholder="18"
             error={errors.scoreEarned}
           />
+          <span className={styles.slash} aria-hidden="true">
+            /
+          </span>
           <Input
-            label="Total points"
+            label="Total items"
             type="number"
             min={0.01}
             step="any"
@@ -218,24 +222,18 @@ export function ActivityDialog({
           />
         </div>
 
-        <Input
-          label="Date (optional)"
-          type="date"
-          value={values.date}
-          onChange={(event) => {
-            update({ date: event.target.value })
-            setErrors((current) => ({ ...current, date: undefined }))
-          }}
-          hint="Defaults to today when left blank."
-          error={errors.date}
-        />
-
         <div className={styles.actions}>
-          <Button variant="ghost" onClick={onClose} disabled={saving}>
+          <Button
+            variant="secondary"
+            className={styles.cancelButton}
+            onClick={onClose}
+            disabled={saving}
+          >
             Cancel
           </Button>
           <Button
             type="submit"
+            className={styles.saveButton}
             disabled={saving || categories.length === 0}
           >
             {saving

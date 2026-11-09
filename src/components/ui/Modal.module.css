@@ -29,6 +29,19 @@
   margin-bottom: var(--space-4);
 }
 
+.headMain {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.leading {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+
 .copy {
   display: flex;
   flex-direction: column;

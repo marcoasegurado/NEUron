@@ -287,12 +287,12 @@ describe('SubjectsPage', () => {
     )
 
     expect(
-      screen.getByRole('heading', { name: 'Add score' }),
+      screen.getByRole('heading', { name: 'Add a score' }),
     ).toBeInTheDocument()
 
-    await user.type(screen.getByLabelText('Activity name'), 'Quiz 2')
-    await user.type(screen.getByLabelText('Score earned'), '18')
-    await user.type(screen.getByLabelText('Total points'), '20')
+    await user.type(screen.getByLabelText('Title'), 'Quiz 2')
+    await user.type(screen.getByLabelText('Score'), '18')
+    await user.type(screen.getByLabelText('Total items'), '20')
     await user.click(screen.getByRole('button', { name: 'Save score' }))
 
     expect(
@@ -328,12 +328,12 @@ describe('SubjectsPage', () => {
       screen.getByRole('heading', { name: 'Edit score' }),
     ).toBeInTheDocument()
     expect(screen.getByLabelText('Subject')).toBeDisabled()
-    expect(screen.getByLabelText('Grading category')).toBeDisabled()
-    expect(screen.getByLabelText('Activity name')).toHaveValue('Quiz 1')
-    expect(screen.getByLabelText('Score earned')).toHaveValue(80)
+    expect(screen.getByLabelText('Category')).toBeDisabled()
+    expect(screen.getByLabelText('Title')).toHaveValue('Quiz 1')
+    expect(screen.getByLabelText('Score')).toHaveValue(80)
 
-    await user.clear(screen.getByLabelText('Score earned'))
-    await user.type(screen.getByLabelText('Score earned'), '85')
+    await user.clear(screen.getByLabelText('Score'))
+    await user.type(screen.getByLabelText('Score'), '85')
     await user.click(screen.getByRole('button', { name: 'Save changes' }))
 
     expect(

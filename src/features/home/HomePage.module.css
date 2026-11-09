@@ -29,19 +29,10 @@
   margin-top: var(--space-4);
 }
 
-.notice {
-  margin-bottom: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-tile);
-  background-color: var(--color-grade-strong-bg);
-  color: var(--color-grade-strong-text);
-  font-size: var(--text-small);
-  line-height: var(--text-small-line);
-}
-
 .statusBanner {
   margin-bottom: var(--space-5);
-  background-color: var(--color-bg-elevated);
+  border-color: transparent;
+  background-color: var(--color-bg-note);
 }
 
 .statusCopy {

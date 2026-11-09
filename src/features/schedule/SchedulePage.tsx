@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '../../app/PageHeader'
-import { Badge, Button, Card, EmptyState, Modal } from '../../components/ui'
+import {
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  Modal,
+  Toast,
+} from '../../components/ui'
 import {
   academicErrorMessage,
   deleteScheduleClass,
@@ -278,9 +285,7 @@ export function SchedulePage() {
       />
 
       {notice ? (
-        <p className={styles.notice} role="status">
-          {notice}
-        </p>
+        <Toast message={notice} onDismiss={() => setNotice(null)} />
       ) : null}
 
       {subjects.length === 0 ? (

@@ -13,40 +13,30 @@
   margin-top: var(--space-4);
 }
 
-.notice {
-  margin-bottom: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-tile);
-  background-color: var(--color-grade-strong-bg);
-  color: var(--color-grade-strong-text);
-  font-size: var(--text-small);
-  line-height: var(--text-small-line);
-}
-
 /* Subject tone palette, shared by agenda cards and calendar blocks. */
 .tone0 {
-  --tone-bg: #fde7d6;
-  --tone-border: #f26b21;
+  --tone-bg: var(--color-primary-soft);
+  --tone-border: var(--color-primary);
 }
 
 .tone1 {
-  --tone-bg: #e7f2ea;
-  --tone-border: #4f8a5b;
+  --tone-bg: var(--color-grade-strong-bg);
+  --tone-border: var(--color-grade-strong-text);
 }
 
 .tone2 {
-  --tone-bg: #fcf1d6;
-  --tone-border: #b07a12;
+  --tone-bg: var(--color-grade-fair-bg);
+  --tone-border: var(--color-grade-fair-text);
 }
 
 .tone3 {
-  --tone-bg: #fbe8d8;
-  --tone-border: #c0621f;
+  --tone-bg: var(--color-grade-low-bg);
+  --tone-border: var(--color-grade-low-text);
 }
 
 .tone4 {
   --tone-bg: #e7eef1;
-  --tone-border: #4a7c8c;
+  --tone-border: var(--color-info);
 }
 
 /* Phone: week strip + selected-day agenda. */

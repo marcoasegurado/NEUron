@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { CatMark } from '../../components/brand/CatMark'
+import { CatMascot } from '../../components/brand/CatMascot'
 import styles from './AuthLayout.module.css'
 
 interface AuthLayoutProps {
@@ -8,6 +8,12 @@ interface AuthLayoutProps {
   children: ReactNode
   footer?: ReactNode
 }
+
+const features = [
+  'Custom grading for every subject',
+  'Instant 1.0 to 5.0 grade conversion',
+  'Works on phone, tablet and desktop',
+]
 
 export function AuthLayout({
   title,
@@ -18,33 +24,36 @@ export function AuthLayout({
   return (
     <div className={styles.page}>
       <aside className={styles.brandPanel}>
-        <div className={styles.brandTop}>
-          <CatMark className={styles.brandMark} />
-          <div className={styles.brandText}>
-            <span className={styles.brandName}>NEUming</span>
-            <span className={styles.brandTag}>Grade Encoder</span>
+        <div className={styles.brandContent}>
+          <div className={styles.mascotHalo}>
+            <CatMascot className={styles.mascot} />
           </div>
-        </div>
 
-        <div className={styles.brandCopy}>
-          <p className={styles.eyebrow}>Your semester, in focus</p>
-          <h1 className={styles.headline}>
-            Know where every grade is headed.
-          </h1>
-          <p className={styles.tagline}>
-            Track scores, weights, and GWA without losing the bigger picture.
+          <p className={styles.wordmark} aria-label="NEUming">
+            <span className={styles.wordmarkNeu}>NEU</span>
+            <span className={styles.wordmarkMing}>ming</span>
           </p>
-        </div>
 
-        <div className={styles.mascotArea} aria-hidden="true">
-          <CatMark className={styles.mascotMark} />
+          <p className={styles.tagline}>Your grades, always in sight.</p>
+          <p className={styles.statement}>
+            Track every quiz, exam and project, and always know where you
+            stand.
+          </p>
+
+          <ul className={styles.features}>
+            {features.map((feature) => (
+              <li key={feature} className={styles.feature}>
+                {feature}
+              </li>
+            ))}
+          </ul>
         </div>
       </aside>
 
       <main className={styles.formPanel}>
         <div className={styles.formCard}>
           <header className={styles.formHeader}>
-            <h2 className={styles.title}>{title}</h2>
+            <h1 className={styles.title}>{title}</h1>
             <p className={styles.description}>{description}</p>
           </header>
           {children}

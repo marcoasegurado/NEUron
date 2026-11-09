@@ -61,8 +61,8 @@ export function LoginPage() {
 
   return (
     <AuthLayout
-      title="Welcome back"
-      description="Sign in to keep tracking your semester."
+      title="Welcome back!"
+      description="Log in to see how your semester is going."
     >
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
         {error ? (
@@ -74,7 +74,7 @@ export function LoginPage() {
         <Input
           label="Email or username"
           autoComplete="username"
-          placeholder="you@example.com or username"
+          placeholder="you@email.com or username"
           value={identifier}
           onChange={(event) => setIdentifier(event.target.value)}
           error={fieldErrors.identifier}
@@ -83,7 +83,7 @@ export function LoginPage() {
         <PasswordInput
           label="Password"
           autoComplete="current-password"
-          placeholder="Password"
+          placeholder="Enter your password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           error={fieldErrors.password}

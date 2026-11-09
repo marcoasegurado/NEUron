@@ -207,7 +207,7 @@ describe('HomePage', () => {
     await user.click(screen.getByRole('button', { name: 'Add Score' }))
 
     expect(
-      screen.getByRole('heading', { name: 'Add score' }),
+      screen.getByRole('heading', { name: 'Add a score' }),
     ).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Save score' }))
@@ -231,9 +231,9 @@ describe('HomePage', () => {
 
     await screen.findByText('Mathematics')
     await user.click(screen.getByRole('button', { name: 'Add Score' }))
-    await user.type(screen.getByLabelText('Activity name'), 'Quiz 2')
-    await user.type(screen.getByLabelText('Score earned'), '18')
-    await user.type(screen.getByLabelText('Total points'), '20')
+    await user.type(screen.getByLabelText('Title'), 'Quiz 2')
+    await user.type(screen.getByLabelText('Score'), '18')
+    await user.type(screen.getByLabelText('Total items'), '20')
     await user.click(screen.getByRole('button', { name: 'Save score' }))
 
     expect(await screen.findByText('“new-activity” saved.')).toBeInTheDocument()

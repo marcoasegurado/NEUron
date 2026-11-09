@@ -11,6 +11,8 @@ import styles from './Modal.module.css'
 export interface ModalProps {
   title: string
   description?: string
+  leading?: ReactNode
+  hideClose?: boolean
   onClose: () => void
   children: ReactNode
   className?: string
@@ -22,6 +24,8 @@ const FOCUSABLE =
 export function Modal({
   title,
   description,
+  leading,
+  hideClose = false,
   onClose,
   children,
   className,
@@ -98,24 +102,31 @@ export function Modal({
         aria-describedby={description ? descriptionId : undefined}
       >
         <div className={styles.head}>
-          <div className={styles.copy}>
-            <h2 id={titleId} className={styles.title}>
-              {title}
-            </h2>
-            {description ? (
-              <p id={descriptionId} className={styles.description}>
-                {description}
-              </p>
+          <div className={styles.headMain}>
+            {leading ? (
+              <div className={styles.leading}>{leading}</div>
             ) : null}
+            <div className={styles.copy}>
+              <h2 id={titleId} className={styles.title}>
+                {title}
+              </h2>
+              {description ? (
+                <p id={descriptionId} className={styles.description}>
+                  {description}
+                </p>
+              ) : null}
+            </div>
           </div>
-          <button
-            type="button"
-            className={styles.close}
-            onClick={onClose}
-            aria-label="Close"
-          >
-            ×
-          </button>
+          {hideClose ? null : (
+            <button
+              type="button"
+              className={styles.close}
+              onClick={onClose}
+              aria-label="Close"
+            >
+              ×
+            </button>
+          )}
         </div>
         {children}
       </div>

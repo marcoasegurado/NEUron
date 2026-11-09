@@ -1,44 +1,44 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="NEUming">
-  <rect width="64" height="64" rx="16" fill="#F26B21" />
+  <rect width="64" height="64" rx="16" fill="#F97316" />
   <path
     d="M16 30 12.5 13c-.3-1.5 1.3-2.5 2.6-1.8L30 20"
-    fill="#FFF8EF"
-    stroke="#FFF8EF"
+    fill="#FFF6E8"
+    stroke="#FFF6E8"
     stroke-width="4"
     stroke-linejoin="round"
   />
   <path
     d="M48 30 51.5 13c.3-1.5-1.3-2.5-2.6-1.8L34 20"
-    fill="#FFF8EF"
-    stroke="#FFF8EF"
+    fill="#FFF6E8"
+    stroke="#FFF6E8"
     stroke-width="4"
     stroke-linejoin="round"
   />
-  <path d="M18.5 25 16.5 16.5 24 21Z" fill="#F26B21" />
-  <path d="M45.5 25 47.5 16.5 40 21Z" fill="#F26B21" />
+  <path d="M18.5 25 16.5 16.5 24 21Z" fill="#F97316" />
+  <path d="M45.5 25 47.5 16.5 40 21Z" fill="#F97316" />
   <path
     d="M32 20c10 0 18 8 18 18S42 56 32 56 14 46 14 38s8-18 18-18Z"
-    fill="#FFF8EF"
+    fill="#FFF6E8"
   />
   <path
     d="M23 35c1.5-2 4-2 5.5 0"
     fill="none"
-    stroke="#3A2A1F"
+    stroke="#3D2B1F"
     stroke-width="2.4"
     stroke-linecap="round"
   />
   <path
     d="M35.5 35c1.5-2 4-2 5.5 0"
     fill="none"
-    stroke="#3A2A1F"
+    stroke="#3D2B1F"
     stroke-width="2.4"
     stroke-linecap="round"
   />
-  <path d="M30 41h4l-2 2.3Z" fill="#3A2A1F" />
+  <path d="M30 41h4l-2 2.3Z" fill="#3D2B1F" />
   <path
     d="M32 43.3v1.6c-.7 1.3-1.9 1.5-2.9 1.1M32 44.9c.7 1.3 1.9 1.5 2.9 1.1"
     fill="none"
-    stroke="#3A2A1F"
+    stroke="#3D2B1F"
     stroke-width="1.8"
     stroke-linecap="round"
   />
