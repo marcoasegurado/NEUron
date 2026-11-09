@@ -129,7 +129,15 @@
 }
 
 @media (max-width: 1023px) {
+  .page {
+    display: grid;
+    grid-template-areas: 'auth';
+  }
+
   .brandPanel {
+    z-index: 1;
+    grid-area: auth;
+    align-self: start;
     align-items: flex-start;
     gap: 0;
     padding: var(--space-5) var(--space-4);
@@ -145,7 +153,9 @@
   }
 
   .formPanel {
-    padding: var(--space-5) var(--space-4);
+    grid-area: auth;
+    min-height: 100vh;
+    padding: var(--space-4);
   }
 
   .formHeader {

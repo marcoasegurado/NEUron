@@ -308,7 +308,7 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 
 ### Auth layout baseline
 - Login, Forgot Password, and Reset Password share one frame.
-- **Phone:** compact left-aligned header with the cat mark, `NEUming` wordmark, and a small muted `Grade Encoder` tagline beneath the name; the larger supporting brand copy is hidden. The form card is vertically centered in the remaining space, and the card's supporting description is hidden on phone. `16px` form padding, `20px` card radius.
+- **Phone:** compact left-aligned header with the cat mark, `NEUming` wordmark, and a small muted `Grade Encoder` tagline beneath the name; the larger supporting brand copy is hidden. The header overlays the top of the viewport while the form card is optically centered in the full viewport, and the card's supporting description is hidden on phone. `16px` form padding, `20px` card radius.
 - **Desktop (1024px+):** two-panel layout — orange/cream brand panel on one side, form panel on the other. Brand panel keeps the product name, a short encouraging line, and the mascot area.
 - **Mascot note:** the cat mark is implemented. The auth brand panel uses the `168px` `CatMark`; the sidebar and phone bar use `44px` and `32px` respectively, paired with the `NEUming` wordmark.
 - All fields use the shared `Input` component, `44px` minimum control height, visible labels, and field-level errors.
