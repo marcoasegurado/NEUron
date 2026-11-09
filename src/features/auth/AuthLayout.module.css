@@ -128,6 +128,32 @@
   text-align: center;
 }
 
+@media (max-width: 1023px) {
+  .brandPanel {
+    align-items: center;
+    gap: 0;
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .brandTop {
+    justify-content: center;
+  }
+
+  .brandTag,
+  .brandCopy,
+  .description {
+    display: none;
+  }
+
+  .formPanel {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .formHeader {
+    margin-bottom: var(--space-4);
+  }
+}
+
 @media (min-width: 1024px) {
   .page {
     flex-direction: row;
