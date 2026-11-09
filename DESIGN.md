@@ -275,7 +275,7 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 - **Colors:** orange `#F26B21` head and ears; cream `#FFF8EF` inner ears and muzzle; warm brown `#3A2A1F` eyes, nose, and whiskers; gold `#F5B82E` forehead star.
 - **Sizes:** `32px` in the authenticated phone bar, `44px` beside the sidebar and auth wordmark, `168px` as the auth-panel mascot.
 - **Clear space:** keep at least `8%` of the mark's width clear on all sides; never crop the ears or face.
-- **Pairing:** the mark sits to the left of the `NEUming` wordmark with the `Grade monitoring` tagline beneath, unless a standalone icon is required.
+- **Pairing:** the mark sits to the left of the `NEUming` wordmark with the `Grade Encoder` tagline beneath, unless a standalone icon is required.
 - **Favicon:** the same cat head in cream on a rounded orange tile (`#F26B21`).
 - Do not recolor, outline, or replace the mark with a generic placeholder without approval.
 
@@ -308,14 +308,14 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 
 ### Auth layout baseline
 - Login, Forgot Password, and Reset Password share one frame.
-- **Phone:** compact centered header with only the cat mark and `NEUming` wordmark (the tagline and supporting brand copy are hidden), then the form card vertically centered in the remaining space. The card's supporting description is hidden on phone. `16px` form padding, `20px` card radius.
+- **Phone:** compact left-aligned header with the cat mark, `NEUming` wordmark, and a small muted `Grade Encoder` tagline beneath the name; the larger supporting brand copy is hidden. The form card is vertically centered in the remaining space, and the card's supporting description is hidden on phone. `16px` form padding, `20px` card radius.
 - **Desktop (1024px+):** two-panel layout — orange/cream brand panel on one side, form panel on the other. Brand panel keeps the product name, a short encouraging line, and the mascot area.
 - **Mascot note:** the cat mark is implemented. The auth brand panel uses the `168px` `CatMark`; the sidebar and phone bar use `44px` and `32px` respectively, paired with the `NEUming` wordmark.
 - All fields use the shared `Input` component, `44px` minimum control height, visible labels, and field-level errors.
 - Auth screens never reveal whether an email is registered.
 
 ### Login
-- **Phone:** compact logo-plus-wordmark header, email-or-username field, password field with visibility control, primary Log in button, forgot-password link. No create-account link.
+- **Phone:** compact left-aligned logo, wordmark, and `Grade Encoder` tagline header; email-or-username field, password field with visibility control and `Password` placeholder, primary Log in button, forgot-password link. No create-account link.
 - **Desktop:** two-panel layout — orange/cream brand panel with mascot on one side, form panel on the other.
 - **States:** default, field-level validation, submitting, invalid credentials, success redirect, network error.
 

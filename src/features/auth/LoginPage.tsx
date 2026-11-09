@@ -83,6 +83,7 @@ export function LoginPage() {
         <PasswordInput
           label="Password"
           autoComplete="current-password"
+          placeholder="Password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           error={fieldErrors.password}

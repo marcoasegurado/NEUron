@@ -79,7 +79,7 @@ export function AppShell() {
           <CatMark className={styles.brandMark} />
           <div className={styles.brandText}>
             <span className={styles.brandName}>NEUming</span>
-            <span className={styles.brandTag}>Grade monitoring</span>
+            <span className={styles.brandTag}>Grade Encoder</span>
           </div>
         </div>
 
