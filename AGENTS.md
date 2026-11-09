@@ -1,8 +1,8 @@
-# NEUron — Coding Agent Operating Rules
+# NEUming — Coding Agent Operating Rules
 
-**Source of truth:** Consolidated coding-agent operating rules for the NEUron rebuild. Derived from the original master brief (Part 9), which has since been removed at the user's request.
+**Source of truth:** Consolidated coding-agent operating rules for the NEUming rebuild. Derived from the original master brief (Part 9), which has since been removed at the user's request.
 
-> These rules apply to OpenCode, DeepSeek, GitHub Copilot, and any other coding agent working on NEUron.
+> These rules apply to OpenCode, DeepSeek, GitHub Copilot, and any other coding agent working on NEUming.
 
 ---
 

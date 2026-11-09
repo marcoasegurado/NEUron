@@ -23,15 +23,10 @@
 }
 
 .brandMark {
-  display: grid;
-  place-items: center;
+  display: block;
+  flex-shrink: 0;
   width: 44px;
   height: 44px;
-  border-radius: var(--radius-tile);
-  background-color: var(--color-primary);
-  color: #ffffff;
-  font-size: var(--text-h3);
-  font-weight: var(--weight-bold);
 }
 
 .brandText {
@@ -81,16 +76,9 @@
 }
 
 .mascotMark {
-  display: grid;
-  place-items: center;
+  display: block;
   width: 168px;
   height: 168px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  color: var(--color-primary);
-  font-size: 5rem;
-  font-weight: var(--weight-bold);
 }
 
 .formPanel {

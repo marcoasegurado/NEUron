@@ -1,7 +1,7 @@
-# NEUron — Grading and GWA Rules
+# NEUming — Grading and GWA Rules
 
 **Status:** Calculation rules are finalized and implemented in `src/lib/grading/` with automated tests. The official NEU percentage-to-grade threshold values still require verification and are not approved for hard-coding; no production conversion defaults exist.
-**Source of truth:** Consolidated grading and GWA rules for the NEUron rebuild. Derived from the original master brief (Part 4), which has since been removed at the user's request. This file is now the reference for grading behavior.
+**Source of truth:** Consolidated grading and GWA rules for the NEUming rebuild. Derived from the original master brief (Part 4), which has since been removed at the user's request. This file is now the reference for grading behavior.
 
 > This section is authoritative. All screens and features must call the same reusable grading logic. UI components must not implement their own formulas.
 
@@ -121,7 +121,7 @@ Suggested data shape (illustrative only):
 ### Conversion-table ownership still needs a data decision
 
 Confirmed: one table is shared by all subjects.
-Not yet confirmed: whether the table is configurable per student account or centrally managed across all NEUron accounts.
+Not yet confirmed: whether the table is configurable per student account or centrally managed across all NEUming accounts.
 
 The Settings proposal assumes the table can be managed in a settings area, but the coding agent must not decide its ownership scope or permissions without user approval.
 

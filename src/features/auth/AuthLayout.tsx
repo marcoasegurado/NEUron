@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { CatMark } from '../../components/brand/CatMark'
 import styles from './AuthLayout.module.css'
 
 interface AuthLayoutProps {
@@ -18,11 +19,9 @@ export function AuthLayout({
     <div className={styles.page}>
       <aside className={styles.brandPanel}>
         <div className={styles.brandTop}>
-          <span className={styles.brandMark} aria-hidden="true">
-            N
-          </span>
+          <CatMark className={styles.brandMark} />
           <div className={styles.brandText}>
-            <span className={styles.brandName}>NEUron</span>
+            <span className={styles.brandName}>NEUming</span>
             <span className={styles.brandTag}>Grade monitoring</span>
           </div>
         </div>
@@ -38,7 +37,7 @@ export function AuthLayout({
         </div>
 
         <div className={styles.mascotArea} aria-hidden="true">
-          <span className={styles.mascotMark}>N</span>
+          <CatMark className={styles.mascotMark} />
         </div>
       </aside>
 

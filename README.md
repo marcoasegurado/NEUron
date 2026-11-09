@@ -1,12 +1,12 @@
-# NEUron
+# NEUming
 
-NEUron is a responsive grade-monitoring web app for New Era University students. It is designed to help students configure subject grading systems, record scores, monitor grades, manage schedules, and calculate their semester GWA.
+NEUming is a responsive grade-monitoring web app for New Era University students. It is designed to help students configure subject grading systems, record scores, monitor grades, manage schedules, and calculate their semester GWA.
 
 > **Status: In active development.** The app is currently being rebuilt and is not feature-complete. Authentication is available in the deployed build, while academic setup, grade tracking, schedule management, and related APIs are still being implemented.
 
 ## Live app
 
-[Open the NEUron live preview](https://neuron.marcoeduardo-asegurado.workers.dev)
+[Open the NEUming live preview](https://neuron.marcoeduardo-asegurado.workers.dev)
 
 The live deployment is intended for preview and development validation. Do not rely on it as a complete production academic record system yet.
 

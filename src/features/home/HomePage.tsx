@@ -187,7 +187,7 @@ export function HomePage() {
         <Card>
           <EmptyState
             title="No semester yet"
-            description="NEUron needs a semester and its subjects before it can calculate grades."
+            description="NEUming needs a semester and its subjects before it can calculate grades."
             action={
               <Button onClick={() => navigate('/setup')}>
                 Set up semester
@@ -254,7 +254,7 @@ export function HomePage() {
           </h2>
           <p className={styles.statusText}>
             Official NEU percentage-to-grade thresholds are still being
-            verified. NEUron will not show invented grades or a GWA.
+            verified. NEUming will not show invented grades or a GWA.
           </p>
         </div>
       </Card>

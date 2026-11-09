@@ -1,5 +1,6 @@
 import { useState, type ComponentType, type SVGProps } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { CatMark } from '../components/brand/CatMark'
 import { useAuth } from '../features/auth/useAuth'
 import { cx } from '../lib/cx'
 import {
@@ -75,11 +76,9 @@ export function AppShell() {
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
         <div className={styles.brand}>
-          <span className={styles.brandMark} aria-hidden="true">
-            N
-          </span>
+          <CatMark className={styles.brandMark} />
           <div className={styles.brandText}>
-            <span className={styles.brandName}>NEUron</span>
+            <span className={styles.brandName}>NEUming</span>
             <span className={styles.brandTag}>Grade monitoring</span>
           </div>
         </div>
@@ -119,10 +118,8 @@ export function AppShell() {
         <div className={styles.content}>
           <div className={styles.mobileBar}>
             <div className={styles.mobileBrand}>
-              <span className={styles.mobileBrandMark} aria-hidden="true">
-                N
-              </span>
-              <span>NEUron</span>
+              <CatMark className={styles.mobileBrandMark} />
+              <span>NEUming</span>
             </div>
             <button
               type="button"

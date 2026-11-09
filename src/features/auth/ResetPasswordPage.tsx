@@ -63,7 +63,7 @@ export function ResetPasswordPage() {
   const description = done
     ? 'Your password has been changed and other sessions were signed out.'
     : token
-      ? 'Choose a new password for your NEUron account.'
+      ? 'Choose a new password for your NEUming account.'
       : 'This reset link is missing or incomplete.'
 
   return (

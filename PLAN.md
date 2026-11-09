@@ -1,7 +1,7 @@
-# NEUron — Project Plan
+# NEUming — Project Plan
 
 **Status:** Phases 0 and 1 are complete. The app is deployed on Cloudflare Workers at `https://neuron.marcoeduardo-asegurado.workers.dev`, with static assets, a Worker API, and a Cloudflare D1 binding. Phase 2 authentication is implemented, migrated to remote D1, deployed, and smoke-tested in production. It is pending Resend configuration, password-reset email delivery verification, and final phone/desktop QA. Phase 3 is implemented, migrated to remote D1, deployed as version `56a065d7-3419-494b-9493-a70486c876a1`, and smoke-tested in production. The authenticated production setup flow still needs testing with a real account. Phase 4's grading engine is implemented in `src/lib/grading/` with automated tests; no production conversion thresholds are set. Phase 5's Home dashboard and score-entry API are implemented, and `migrations/0004_activities.sql` is applied locally and remotely. Production is deployed as version `ad69da18-a1fa-4cba-a796-a6edf883d5f1` with unauthenticated smoke tests passing; authenticated production QA and phone/desktop visual checks are still pending. Phase 6's Subjects page and score management are implemented, pushed, and deployed as version `abe26cda-8beb-452b-be3f-4426fe039591`. Phase 7's weekly schedule is implemented, committed as `4051ed4`, pushed to `origin/main`, with `migrations/0005_schedule.sql` applied locally and remotely, and deployed as version `e0dfb7d1-ddd0-46c3-a56b-c2a4f588e47b`. Production health, asset delivery, and unauthenticated API rejection were verified for Phases 6 and 7. Phase 7 also passed authenticated production CRUD QA and the phone/desktop visual check and is complete. Authenticated production QA and phone/desktop visual checks remain pending for Phases 5 and 6.
-**Source of truth:** Consolidated project plan for the NEUron rebuild. It was derived from the original master brief (Parts 1, 2, 5, 7, and 8), which has since been removed at the user's request. This file is now the reference for purpose, scope, phases, and open decisions.
+**Source of truth:** Consolidated project plan for the NEUming rebuild. It was derived from the original master brief (Parts 1, 2, 5, 7, and 8), which has since been removed at the user's request. This file is now the reference for purpose, scope, phases, and open decisions.
 
 > This document covers the project purpose, scope, phase order, task checklists, Done When criteria, technical direction, and open decisions. Design details live in `DESIGN.md`, grading rules in `GRADING_RULES.md`, data design in `DATA_MODEL.md`, and agent workflow rules in `AGENTS.md`.
 
@@ -9,11 +9,11 @@
 
 ## 1. Product context
 
-### 1.1 What is NEUron?
+### 1.1 What is NEUming?
 
-NEUron is a responsive grade-monitoring web application for New Era University (NEU) students. It helps a student monitor academic performance throughout a semester by letting them configure a grading system for every subject, record activity scores, see computed grades, manage class schedules, and calculate their semester General Weighted Average (GWA).
+NEUming is a responsive grade-monitoring web application for New Era University (NEU) students. It helps a student monitor academic performance throughout a semester by letting them configure a grading system for every subject, record activity scores, see computed grades, manage class schedules, and calculate their semester General Weighted Average (GWA).
 
-The central product idea is that professors may use different grading categories and weights for different subjects. NEUron must therefore let students customize the grading categories and weights separately for each subject while using one shared percentage-to-grade conversion table across that student's subjects.
+The central product idea is that professors may use different grading categories and weights for different subjects. NEUming must therefore let students customize the grading categories and weights separately for each subject while using one shared percentage-to-grade conversion table across that student's subjects.
 
 ### 1.2 Main product goals
 
@@ -479,7 +479,7 @@ Do not block unrelated work on decisions that are only needed in a later phase. 
 
 ### Confirmed
 
-- Product: NEUron, a grade-monitoring web app for NEU students.
+- Product: NEUming, a grade-monitoring web app for NEU students.
 - Rebuild is intended; the rejected local UI changes were not pushed.
 - The orange/cream/cat-mascot design in `DESIGN.md` is the visual source of truth.
 - Primary navigation: Home, Subjects, Schedule; Settings is visible but needs a full-page specification.

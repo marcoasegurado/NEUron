@@ -1,7 +1,7 @@
-# NEUron — Design Specification
+# NEUming — Design Specification
 
 **Status:** Approved visual direction, expanded into an implementation-ready specification. No external design tool is required to build from this document.
-**Source of truth:** Consolidated visual specification for the NEUron rebuild. Derived from the original master brief (Part 3 and relevant product context), which has since been removed at the user's request, with the visual direction elaborated here. This file is now the visual reference; raise conflicts instead of guessing.
+**Source of truth:** Consolidated visual specification for the NEUming rebuild. Derived from the original master brief (Part 3 and relevant product context), which has since been removed at the user's request, with the visual direction elaborated here. This file is now the visual reference; raise conflicts instead of guessing.
 
 > This is the visual contract for the rebuild. Implement screens from the descriptions, tokens, components, and screen specs below. Where a value is not yet approved, use the proposed baseline and label it as a proposal rather than presenting it as final.
 
@@ -9,7 +9,7 @@
 
 ## 1. Design concept
 
-NEUron should feel like a friendly study companion, not a corporate grade portal.
+NEUming should feel like a friendly study companion, not a corporate grade portal.
 
 - **Metaphor:** warm cream paper, orange highlighter, golden stickers, and a cat study buddy.
 - **Tone:** encouraging, calm, clear, and slightly playful. Never childish at the expense of readability.
@@ -226,7 +226,7 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 ### Navigation
 
 **Sidebar (desktop)**
-- Brand block with mascot mark and "NEUron" wordmark.
+- Brand block with cat mark and "NEUming" wordmark.
 - Nav items as pill rows with icon + label; active state uses soft orange fill and orange icon/text.
 - Profile block at the bottom with avatar/initials, name, and semester context.
 
@@ -236,7 +236,7 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 - Safe-area aware; never cover content or dialogs.
 
 **Phone account bar (proposal)**
-- Authenticated phone screens show a compact bar above the page header with the NEUron mark and a text Sign out action, so sign-out is reachable without adding a fourth bottom-nav item.
+- Authenticated phone screens show a compact bar above the page header with the NEUming mark and a text Sign out action, so sign-out is reachable without adding a fourth bottom-nav item.
 - Hidden on desktop, where the sidebar profile block owns sign-out.
 - This is a proposal recorded during Phase 2; remove or restyle it if a dedicated profile/menu treatment is approved later.
 
@@ -266,14 +266,25 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 - Use inline spinners for button and row-level saves.
 - Keep layout stable to avoid jumps.
 
-## 7. Mascot and illustration usage
+## 7. Brand mark, mascot, and illustration usage
 
-- The cat mascot is the NEUron study buddy: friendly, encouraging, never mocking.
+### Brand mark (logo)
+
+- The official NEUming logo is the cat mark: a container-free, front-facing cat head in the warm palette. It ships as the inline `CatMark` SVG component (`src/components/brand/CatMark.tsx`) and the favicon.
+- **Name:** NEUming (NEU + *mingming*, Filipino for kitty). The mascot is named **Ming**.
+- **Colors:** orange `#F26B21` head and ears; cream `#FFF8EF` inner ears and muzzle; warm brown `#3A2A1F` eyes, nose, and whiskers; gold `#F5B82E` forehead star.
+- **Sizes:** `32px` in the authenticated phone bar, `44px` beside the sidebar and auth wordmark, `168px` as the auth-panel mascot.
+- **Clear space:** keep at least `8%` of the mark's width clear on all sides; never crop the ears or face.
+- **Pairing:** the mark sits to the left of the `NEUming` wordmark with the `Grade monitoring` tagline beneath, unless a standalone icon is required.
+- **Favicon:** the same cat head in cream on a rounded orange tile (`#F26B21`).
+- Do not recolor, outline, or replace the mark with a generic placeholder without approval.
+
+### Mascot and illustration
+
+- The cat mascot is the NEUming study buddy: friendly, encouraging, never mocking.
 - Place it in the login brand panel, onboarding/setup, empty states, and gentle status banners.
 - Sizes: small 48–64px for inline banners; medium 96–140px for empty states; large for hero/brand panels.
-- Keep generous clear space; never crop the face.
 - Do not place the mascot behind text, inside inputs, or over grade figures.
-- Do not recolor or replace the mascot with a generic placeholder without approval.
 - Illustrations use the same warm palette; avoid pure black or neon accents.
 
 ## 8. Iconography
@@ -299,7 +310,7 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 - Login, Forgot Password, and Reset Password share one frame.
 - **Phone:** stacked brand mark header, form card, supporting links. `16px` form padding, `20px` card radius.
 - **Desktop (1024px+):** two-panel layout — orange/cream brand panel on one side, form panel on the other. Brand panel keeps the product name, a short encouraging line, and the mascot area.
-- **Mascot note:** the cat mascot artwork is not yet in the repository. Use the existing orange `N` brand mark in the mascot area until approved artwork exists; this is a temporary, recorded deviation.
+- **Mascot note:** the cat mark is implemented. The auth brand panel uses the `168px` `CatMark`; the sidebar and phone bar use `44px` and `32px` respectively, paired with the `NEUming` wordmark.
 - All fields use the shared `Input` component, `44px` minimum control height, visible labels, and field-level errors.
 - Auth screens never reveal whether an email is registered.
 
