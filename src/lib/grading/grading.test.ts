@@ -4,6 +4,7 @@ import {
   calculateSemesterGwa,
   calculateSubjectGrade,
   calculateSubjectPercentage,
+  calculateTargetPercentage,
   convertPercentage,
   formatNumber,
   roundForDisplay,
@@ -541,5 +542,202 @@ describe('display rounding', () => {
   it('rounds only the display copy', () => {
     expect(roundForDisplay(1.804, 2)).toBe(1.8)
     expect(roundForDisplay(1.805, 2)).toBe(1.81)
+  })
+})
+
+describe('target percentage calculator', () => {
+  const quizzes = category('q', 'Quizzes', 20)
+  const final = category('f', 'Final', 80)
+
+  function partialSubject(): Subject {
+    return subject(
+      's',
+      3,
+      [quizzes, final],
+      [activity('a1', 'q', 90, 100)],
+    )
+  }
+
+  it('computes the average needed on the remaining weight', () => {
+    const result = calculateTargetPercentage(partialSubject(), 85)
+
+    expect(result.status).toBe('required')
+    if (result.status === 'required') {
+      expect(result.currentPercentage).toBeCloseTo(18, 10)
+      expect(result.remainingWeight).toBeCloseTo(80, 10)
+      expect(result.requiredPercentage).toBeCloseTo(83.75, 10)
+    }
+  })
+
+  it('returns reached when the current percentage already meets the target', () => {
+    const result = calculateTargetPercentage(partialSubject(), 15)
+
+    expect(result.status).toBe('reached')
+    if (result.status === 'reached') {
+      expect(result.currentPercentage).toBeCloseTo(18, 10)
+      expect(result.remainingWeight).toBeCloseTo(80, 10)
+    }
+  })
+
+  it('returns reached when the target equals the current percentage', () => {
+    expect(calculateTargetPercentage(partialSubject(), 18).status).toBe(
+      'reached',
+    )
+  })
+
+  it('treats an entirely unscored subject as 100% remaining', () => {
+    const result = calculateTargetPercentage(
+      subject('s', 3, [quizzes, final], []),
+      90,
+    )
+
+    expect(result.status).toBe('required')
+    if (result.status === 'required') {
+      expect(result.currentPercentage).toBe(0)
+      expect(result.remainingWeight).toBeCloseTo(100, 10)
+      expect(result.requiredPercentage).toBeCloseTo(90, 10)
+    }
+  })
+
+  it('reports no remaining weight when every category is scored', () => {
+    const complete = subject(
+      's',
+      3,
+      [
+        category('q', 'Quizzes', 50),
+        category('f', 'Final', 50),
+      ],
+      [activity('a1', 'q', 80, 100), activity('a2', 'f', 70, 100)],
+    )
+
+    const below = calculateTargetPercentage(complete, 80)
+    expect(below.status).toBe('unreachable')
+    if (below.status === 'unreachable') {
+      expect(below.reason).toBe('no-remaining')
+      expect(below.currentPercentage).toBeCloseTo(75, 10)
+      expect(below.remainingWeight).toBe(0)
+      expect(below.requiredPercentage).toBeNull()
+    }
+
+    expect(calculateTargetPercentage(complete, 70).status).toBe('reached')
+  })
+
+  it('reports unreachable when the required average is above 100%', () => {
+    const result = calculateTargetPercentage(
+      subject(
+        's',
+        3,
+        [category('q', 'Quizzes', 90), category('f', 'Final', 10)],
+        [activity('a1', 'q', 50, 100)],
+      ),
+      60,
+    )
+
+    expect(result.status).toBe('unreachable')
+    if (result.status === 'unreachable') {
+      expect(result.reason).toBe('above-100')
+      expect(result.currentPercentage).toBeCloseTo(45, 10)
+      expect(result.remainingWeight).toBeCloseTo(10, 10)
+      expect(result.requiredPercentage).toBeCloseTo(150, 10)
+    }
+  })
+
+  it('treats a required average of exactly 100% as reachable', () => {
+    const result = calculateTargetPercentage(
+      subject(
+        's',
+        3,
+        [category('q', 'Quizzes', 50), category('f', 'Final', 50)],
+        [activity('a1', 'q', 50, 100)],
+      ),
+      75,
+    )
+
+    expect(result.status).toBe('required')
+    if (result.status === 'required') {
+      expect(result.requiredPercentage).toBeCloseTo(100, 10)
+    }
+  })
+
+  it('rejects targets outside 0-100 or non-finite targets', () => {
+    expect(calculateTargetPercentage(partialSubject(), -1).status).toBe(
+      'invalid-target',
+    )
+    expect(calculateTargetPercentage(partialSubject(), 101).status).toBe(
+      'invalid-target',
+    )
+    expect(
+      calculateTargetPercentage(partialSubject(), Number.NaN).status,
+    ).toBe('invalid-target')
+  })
+
+  it('blocks a subject without active categories', () => {
+    expect(calculateTargetPercentage(subject('s', 3, [], []), 80)).toEqual({
+      status: 'blocked',
+      reason: 'no-categories',
+    })
+  })
+
+  it('blocks a subject whose active weights do not total 100%', () => {
+    expect(
+      calculateTargetPercentage(
+        subject(
+          's',
+          3,
+          [category('q', 'Quizzes', 50), category('f', 'Final', 40)],
+          [],
+        ),
+        80,
+      ),
+    ).toEqual({ status: 'blocked', reason: 'invalid-weights' })
+  })
+
+  it('blocks a subject with an invalid active activity', () => {
+    expect(
+      calculateTargetPercentage(
+        subject(
+          's',
+          3,
+          [category('q', 'Quizzes', 100)],
+          [activity('a1', 'q', 11, 10)],
+        ),
+        80,
+      ),
+    ).toEqual({ status: 'blocked', reason: 'invalid-activities' })
+  })
+
+  it('ignores inactive categories when computing remaining weight', () => {
+    const result = calculateTargetPercentage(
+      subject(
+        's',
+        3,
+        [category('q', 'Quizzes', 100), category('f', 'Final', 50, false)],
+        [activity('a1', 'q', 80, 100)],
+      ),
+      90,
+    )
+
+    expect(result.status).toBe('unreachable')
+    if (result.status === 'unreachable') {
+      expect(result.reason).toBe('no-remaining')
+      expect(result.remainingWeight).toBe(0)
+    }
+  })
+
+  it('counts a recorded zero as scored', () => {
+    const zero = subject(
+      's',
+      3,
+      [category('q', 'Quizzes', 100)],
+      [activity('a1', 'q', 0, 10)],
+    )
+
+    const below = calculateTargetPercentage(zero, 10)
+    expect(below.status).toBe('unreachable')
+    if (below.status === 'unreachable') {
+      expect(below.reason).toBe('no-remaining')
+    }
+
+    expect(calculateTargetPercentage(zero, 0).status).toBe('reached')
   })
 })

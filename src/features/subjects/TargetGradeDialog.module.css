@@ -1,0 +1,61 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-left: 4px solid var(--color-primary);
+  border-radius: var(--radius-tile);
+  background-color: var(--color-primary-soft);
+}
+
+.resultValue {
+  color: var(--color-text);
+  font-size: var(--text-display);
+  line-height: var(--text-display-line);
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.resultTitle {
+  color: var(--color-text);
+  font-size: var(--text-h3);
+  line-height: var(--text-h3-line);
+  font-weight: var(--weight-bold);
+}
+
+.resultText {
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+  line-height: var(--text-small-line);
+}
+
+.resultMeta {
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+  line-height: var(--text-caption-line);
+  font-variant-numeric: tabular-nums;
+}
+
+.assumption {
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+  line-height: var(--text-caption-line);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 599px) {
+  .actions > * {
+    width: 100%;
+  }
+}

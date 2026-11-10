@@ -25,6 +25,7 @@ import {
   type ActivityDialogProps,
 } from '../activities/ActivityDialog'
 import { SubjectDialog } from './SubjectDialog'
+import { TargetGradeDialog } from './TargetGradeDialog'
 import {
   buildSubjectsView,
   formatActivityDate,
@@ -65,6 +66,7 @@ export function SubjectsPage() {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set())
   const [dialog, setDialog] = useState<DialogState>(null)
   const [addSubjectOpen, setAddSubjectOpen] = useState(false)
+  const [targetSubjectId, setTargetSubjectId] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<ActivityDetail | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
@@ -269,6 +271,9 @@ export function SubjectsPage() {
   const { setup } = state
   const view = buildSubjectsView(setup.subjects)
   const subjectCount = view.subjects.length
+  const targetSubject = targetSubjectId
+    ? setup.subjects.find((subject) => subject.id === targetSubjectId)
+    : undefined
 
   const dialogProps: ActivityDialogProps | null =
     dialog?.mode === 'create'
@@ -389,15 +394,25 @@ export function SubjectsPage() {
 
                 {isExpanded ? (
                   <div id={panelId} className={styles.subjectBody}>
-                    {subject.pendingReason ? (
-                      <p className={styles.pendingReason}>
-                        {subject.pendingMessage}
-                      </p>
-                    ) : (
-                      <p className={styles.gradedNote}>
-                        All active categories have scores.
-                      </p>
-                    )}
+                    <div className={styles.subjectTools}>
+                      {subject.pendingReason ? (
+                        <p className={styles.pendingReason}>
+                          {subject.pendingMessage}
+                        </p>
+                      ) : (
+                        <p className={styles.gradedNote}>
+                          All active categories have scores.
+                        </p>
+                      )}
+                      <Button
+                        variant="secondary"
+                        className={styles.targetButton}
+                        onClick={() => setTargetSubjectId(subject.id)}
+                        aria-label={`Open target grade calculator for ${subject.name}`}
+                      >
+                        Target grade
+                      </Button>
+                    </div>
 
                     <div className={styles.categoryList}>
                       {subject.categories.map((category) => (
@@ -534,6 +549,13 @@ export function SubjectsPage() {
           existingNames={setup.subjects.map((subject) => subject.name)}
           onClose={closeAddSubject}
           onSaved={(subject) => void handleSubjectSaved(subject)}
+        />
+      ) : null}
+
+      {targetSubject ? (
+        <TargetGradeDialog
+          subject={targetSubject}
+          onClose={() => setTargetSubjectId(null)}
         />
       ) : null}
 

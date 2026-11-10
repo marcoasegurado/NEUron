@@ -7,6 +7,7 @@ import type {
   Subject,
   SubjectGradeResult,
   SubjectPercentageResult,
+  TargetPercentageResult,
   ValidationResult,
   WeightValidation,
 } from './types'
@@ -333,6 +334,94 @@ export function calculateSemesterGwa(
   }
 
   return { status: 'graded', gwa: weightedGrade / totalUnits }
+}
+
+/**
+ * Calculates the average needed on the remaining active-category weight to
+ * reach a target percentage. Scored categories keep their current averages;
+ * every unscored active category is treated as one remaining bucket.
+ */
+export function calculateTargetPercentage(
+  subject: Subject,
+  targetPercentage: number,
+): TargetPercentageResult {
+  if (
+    !Number.isFinite(targetPercentage) ||
+    targetPercentage < 0 ||
+    targetPercentage > WEIGHT_TOTAL
+  ) {
+    return { status: 'invalid-target' }
+  }
+
+  const active = activeCategories(subject.categories)
+  if (active.length === 0) {
+    return { status: 'blocked', reason: 'no-categories' }
+  }
+
+  if (!validateWeights(subject.categories).valid) {
+    return { status: 'blocked', reason: 'invalid-weights' }
+  }
+
+  const activeCategoryIds = new Set(active.map((category) => category.id))
+  const invalidActivity = subject.activities.some(
+    (activity) =>
+      activeCategoryIds.has(activity.categoryId) &&
+      !validateActivity(activity).valid,
+  )
+  if (invalidActivity) {
+    return { status: 'blocked', reason: 'invalid-activities' }
+  }
+
+  let currentPercentage = 0
+  let remainingWeight = 0
+
+  for (const category of active) {
+    const result = calculateCategoryAverage(category, subject.activities)
+
+    if (result.status === 'complete') {
+      currentPercentage += result.average * (category.weight / WEIGHT_TOTAL)
+    } else {
+      remainingWeight += category.weight
+    }
+  }
+
+  if (currentPercentage + WEIGHT_TOLERANCE >= targetPercentage) {
+    return {
+      status: 'reached',
+      currentPercentage,
+      remainingWeight,
+    }
+  }
+
+  if (remainingWeight <= WEIGHT_TOLERANCE) {
+    return {
+      status: 'unreachable',
+      reason: 'no-remaining',
+      currentPercentage,
+      remainingWeight: 0,
+      requiredPercentage: null,
+    }
+  }
+
+  const requiredPercentage =
+    ((targetPercentage - currentPercentage) / remainingWeight) * WEIGHT_TOTAL
+
+  if (requiredPercentage > WEIGHT_TOTAL + WEIGHT_TOLERANCE) {
+    return {
+      status: 'unreachable',
+      reason: 'above-100',
+      currentPercentage,
+      remainingWeight,
+      requiredPercentage,
+    }
+  }
+
+  return {
+    status: 'required',
+    currentPercentage,
+    remainingWeight,
+    requiredPercentage,
+  }
 }
 
 export function roundForDisplay(value: number, decimals = 2): number {

@@ -156,7 +156,52 @@ Example:
 
 `GWA = 18.00 / 10 = 1.80`
 
-## 8. Recalculation triggers
+## 8. Target percentage calculator
+
+Phase 9 supports a **percentage target only**. Grade targets (1.0–5.0) wait for the approved conversion table in Phase 10.
+
+Input: a target percentage `T` that is finite and satisfies `0 <= T <= 100`.
+
+Assumptions:
+
+- Every unscored active category is treated as one remaining-weight bucket.
+- The remaining work is scored as a single average. No per-activity or per-category split is assumed.
+- Categories that already have scores keep their current averages.
+- A category with any activity, including a recorded zero, counts as scored.
+- Inactive categories are ignored.
+- The calculator is read-only and never changes a saved score.
+
+Definitions:
+
+- `P` is the current subject percentage from scored categories only, using the same weighted category averages as Section 4.
+- `R` is the total weight, in percentage points, of active categories with no activities.
+- Scored weight is `100 - R`.
+
+Required average on the remaining work:
+
+`required = ((T - P) / R) * 100` when `R > 0`.
+
+Results:
+
+- `invalid-target` when `T` is not finite or is outside `0–100`.
+- `blocked` when the subject has no active categories, active weights do not total 100%, or an active activity is invalid.
+- `reached` when `P >= T` within tolerance, including when `R = 0`.
+- `unreachable` when `R = 0` and `P < T`, or when `required > 100` within tolerance.
+- `required` otherwise. A required average of exactly 100% is reachable.
+
+Display the current percentage, remaining weight, and required average to two decimal places. Do not round intermediate values.
+
+Examples:
+
+| Case | Values | Result |
+|---|---|---|
+| Partial remaining weight | Quizzes 20% scored at 90%, Final 80% unscored, target 85% | `P = 18`, `R = 80`, required `83.75%` |
+| Target already reached | Same subject, target 15% | `P = 18 >= 15` → reached |
+| No remaining weight | Quizzes 50% scored at 80%, Final 50% scored at 70%, target 80% | `P = 75`, `R = 0` → unreachable |
+| All unscored | Target 90% | required `90%` |
+| Required above 100 | `P = 45`, `R = 10`, target 60% | required `150%` → unreachable |
+
+## 9. Recalculation triggers
 
 Recalculate affected values whenever any of the following changes:
 
@@ -167,7 +212,7 @@ Recalculate affected values whenever any of the following changes:
 
 Home, Subjects, GWA, and Target Grade Calculator must use the same reusable grading functions. Do not duplicate formulas inside page components.
 
-## 9. Required grading test cases
+## 10. Required grading test cases
 
 | Case | Input / condition | Expected result |
 |---|---|---|
@@ -182,12 +227,17 @@ Home, Subjects, GWA, and Target Grade Calculator must use the same reusable grad
 | Incomplete semester | One active subject has no computed grade | GWA is `GWA Pending` |
 | Unit-weighted GWA | Grades 1.75 (3 units), 2.25 (3 units), 1.50 (4 units) | GWA = 1.80 |
 | Display rounding | Exact GWA is 1.804... | Display 1.80; retain exact value internally |
+| Target with remaining weight | `P = 18`, `R = 80`, target 85% | Required 83.75% |
+| Target already reached | `P = 18`, `R = 80`, target 15% | Reached |
+| No remaining weight | `R = 0`, `P = 75`, target 80% | Unreachable |
+| Required above 100 | `P = 45`, `R = 10`, target 60% | Unreachable at 150% |
+| Invalid target | Target 101% | Invalid target |
 
-## 10. Out of scope / unresolved grading behaviors
+## 11. Out of scope / unresolved grading behaviors
 
 Do not invent behavior for these cases:
 
-- Target Grade Calculator assumptions about remaining activities, empty categories, and remaining category weights.
+- Grade targets (1.0–5.0) in the Target Grade Calculator; percentage targets are specified in Section 8 and grade targets wait for the approved conversion table.
 - Withdrawn/dropped subjects and whether they are excluded from GWA.
 - Special subject treatment, if any, in the official NEU GWA calculation.
 - Historical conversion-table versioning and whether past semesters retain earlier mappings.

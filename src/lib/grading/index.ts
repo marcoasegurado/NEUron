@@ -8,6 +8,7 @@ export {
   calculateSemesterGwa,
   calculateSubjectGrade,
   calculateSubjectPercentage,
+  calculateTargetPercentage,
   convertPercentage,
   formatNumber,
   isCategoryActive,
@@ -29,6 +30,8 @@ export type {
   SubjectPendingReason,
   SubjectPendingResult,
   SubjectPercentageResult,
+  TargetBlockedReason,
+  TargetPercentageResult,
   ValidationResult,
   WeightValidation,
 } from './types'

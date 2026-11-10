@@ -79,3 +79,30 @@ export type SemesterGwaResult =
       pendingSubjectIds: string[]
     }
   | { status: 'empty' }
+
+export type TargetBlockedReason =
+  | 'no-categories'
+  | 'invalid-weights'
+  | 'invalid-activities'
+
+export type TargetPercentageResult =
+  | { status: 'invalid-target' }
+  | { status: 'blocked'; reason: TargetBlockedReason }
+  | {
+      status: 'reached'
+      currentPercentage: number
+      remainingWeight: number
+    }
+  | {
+      status: 'required'
+      currentPercentage: number
+      remainingWeight: number
+      requiredPercentage: number
+    }
+  | {
+      status: 'unreachable'
+      reason: 'no-remaining' | 'above-100'
+      currentPercentage: number
+      remainingWeight: number
+      requiredPercentage: number | null
+    }

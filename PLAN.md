@@ -1,6 +1,6 @@
 # NEUming — Project Plan
 
-**Status:** Phases 0 and 1 are complete. The app is deployed on Cloudflare Workers at `https://neuron.marcoeduardo-asegurado.workers.dev`, with static assets, a Worker API, and a Cloudflare D1 binding. Phase 2 authentication is implemented, migrated to remote D1, deployed, and smoke-tested in production. It is pending Resend configuration, password-reset email delivery verification, and final phone/desktop QA. Phase 3 is implemented, migrated to remote D1, deployed as version `56a065d7-3419-494b-9493-a70486c876a1`, and smoke-tested in production. The authenticated production setup flow still needs testing with a real account. Phase 4's grading engine is implemented in `src/lib/grading/` with automated tests; no production conversion thresholds are set. Phase 5's Home dashboard and score-entry API are implemented, and `migrations/0004_activities.sql` is applied locally and remotely. Production is deployed and has passed authenticated production QA and the phone/desktop visual check, so Phase 5 is complete. Phase 6's Subjects page and score management are implemented, pushed, deployed as version `abe26cda-8beb-452b-be3f-4426fe039591`, and have passed authenticated production QA and the phone/desktop visual check, so Phase 6 is complete. Phase 7's weekly schedule is implemented, committed as `4051ed4`, pushed to `origin/main`, with `migrations/0005_schedule.sql` applied locally and remotely, and deployed as version `e0dfb7d1-ddd0-46c3-a56b-c2a4f588e47b`. Production health, asset delivery, and unauthenticated API rejection were verified for Phases 6 and 7. Phase 7 also passed authenticated production CRUD QA and the phone/desktop visual check and is complete. Phases 5 and 6 have also passed authenticated production QA and the phone/desktop visual checks. A UI polish pass (reference palette, phone Home redesign, locked mobile top bar, toast, Add score bottom sheet) was committed as `bd428d8`, pushed to `origin/main`, and deployed as version `fea5f0d2-d023-4580-b9f9-68203270d4b2`. Phases 0–8 are complete. Phase 8's Semester GWA card is implemented in Home using the shared grading engine and is deployed as version `827d8f1e-6288-41b5-89ab-f65139ac7185` (from `49ccec8`; the Phase 8 app code was first deployed as `1257fb13-9285-47e5-a3c7-cae238d978d1`). Production QA passed for placement, pending and empty states, responsive layout, accessibility, and live score/unit updates; the pending state is shown in production because the official NEU conversion thresholds are still unapproved. Complete-state and conversion-driven GWA checks are deferred to Phase 10 with the shared conversion table.
+**Status:** Phases 0 and 1 are complete. The app is deployed on Cloudflare Workers at `https://neuron.marcoeduardo-asegurado.workers.dev`, with static assets, a Worker API, and a Cloudflare D1 binding. Phase 2 authentication is implemented, migrated to remote D1, deployed, and smoke-tested in production. It is pending Resend configuration, password-reset email delivery verification, and final phone/desktop QA. Phase 3 is implemented, migrated to remote D1, deployed as version `56a065d7-3419-494b-9493-a70486c876a1`, and smoke-tested in production. The authenticated production setup flow still needs testing with a real account. Phase 4's grading engine is implemented in `src/lib/grading/` with automated tests; no production conversion thresholds are set. Phase 5's Home dashboard and score-entry API are implemented, and `migrations/0004_activities.sql` is applied locally and remotely. Production is deployed and has passed authenticated production QA and the phone/desktop visual check, so Phase 5 is complete. Phase 6's Subjects page and score management are implemented, pushed, deployed as version `abe26cda-8beb-452b-be3f-4426fe039591`, and have passed authenticated production QA and the phone/desktop visual check, so Phase 6 is complete. Phase 7's weekly schedule is implemented, committed as `4051ed4`, pushed to `origin/main`, with `migrations/0005_schedule.sql` applied locally and remotely, and deployed as version `e0dfb7d1-ddd0-46c3-a56b-c2a4f588e47b`. Production health, asset delivery, and unauthenticated API rejection were verified for Phases 6 and 7. Phase 7 also passed authenticated production CRUD QA and the phone/desktop visual check and is complete. Phases 5 and 6 have also passed authenticated production QA and the phone/desktop visual checks. A UI polish pass (reference palette, phone Home redesign, locked mobile top bar, toast, Add score bottom sheet) was committed as `bd428d8`, pushed to `origin/main`, and deployed as version `fea5f0d2-d023-4580-b9f9-68203270d4b2`. Phases 0–8 are complete. Phase 8's Semester GWA card is implemented in Home using the shared grading engine and is deployed as version `827d8f1e-6288-41b5-89ab-f65139ac7185` (from `49ccec8`; the Phase 8 app code was first deployed as `1257fb13-9285-47e5-a3c7-cae238d978d1`). Production QA passed for placement, pending and empty states, responsive layout, accessibility, and live score/unit updates; the pending state is shown in production because the official NEU conversion thresholds are still unapproved. Complete-state and conversion-driven GWA checks are deferred to Phase 10 with the shared conversion table. Phase 9's percentage-target calculator is implemented in the shared grading engine and the Subjects page, with tests; it is not yet deployed or verified in production.
 **Source of truth:** Consolidated project plan for the NEUming rebuild. It was derived from the original master brief (Parts 1, 2, 5, 7, and 8), which has since been removed at the user's request. This file is now the reference for purpose, scope, phases, and open decisions.
 
 > This document covers the project purpose, scope, phase order, task checklists, Done When criteria, technical direction, and open decisions. Design details live in `DESIGN.md`, grading rules in `GRADING_RULES.md`, data design in `DATA_MODEL.md`, and agent workflow rules in `AGENTS.md`.
@@ -391,15 +391,22 @@ Implementation status:
 **Goal:** Help a student estimate what scores are needed to reach a target grade.
 
 Tasks:
-- [ ] Finalize assumptions before implementation.
-- [ ] Define handling for future activities, empty categories, remaining category weights, and target input.
-- [ ] Let student choose a subject and target grade or percentage, subject to the approved design.
-- [ ] Show the required score or explain when the target is mathematically unreachable.
-- [ ] Clearly label estimates and assumptions.
-- [ ] Never modify actual saved activity scores.
-- [ ] Design the screen/states before implementation if not present in `DESIGN.md`.
+- [x] Finalize assumptions before implementation.
+- [x] Define handling for future activities, empty categories, remaining category weights, and target input.
+- [x] Let student choose a subject and target grade or percentage, subject to the approved design.
+- [x] Show the required score or explain when the target is mathematically unreachable.
+- [x] Clearly label estimates and assumptions.
+- [x] Never modify actual saved activity scores.
+- [x] Design the screen/states before implementation if not present in `DESIGN.md`.
 
-**Done when:** Calculator outputs have test cases; calculations reuse the same grading rules and conversion table; no actual grade records are modified.
+Implementation status:
+- Decisions: percentage targets first; all unscored active weight is one remaining bucket; the calculator opens from an expanded subject card on Subjects; standard edge-case messages. Grade targets (`1.0–5.0`) wait for the approved conversion table in Phase 10.
+- `calculateTargetPercentage` in `src/lib/grading/grading.ts` returns `invalid-target`, `blocked`, `reached`, `required`, or `unreachable`. It reuses `calculateCategoryAverage` and `validateWeights`; the UI never computes the formula inline.
+- `TargetGradeDialog` opens from the expanded subject card, calculates live as the target changes, shows the current percentage, remaining weight, and required average, and is read-only.
+- Tests cover the `GRADING_RULES.md` 83.75% example, already-reached, no remaining weight, above-100% unreachable, the exact 100% boundary, invalid targets, blocked states, inactive categories, and recorded zero. `SubjectsPage.test.tsx` covers opening the dialog and the reached state.
+- Build and targeted tests pass. Not yet deployed or verified in production.
+
+**Done when:** Calculator outputs have test cases; calculations reuse the same weighted category averages as the grading engine; percentage targets work without the conversion table; grade targets remain deferred to Phase 10; no actual grade records are modified.
 
 ### Phase 10 — Settings and semester management
 
@@ -467,7 +474,7 @@ These are intentionally unresolved. The coding agent must not silently choose an
 | Login and Forgot Password UI | Resolved: both reuse the auth layout and are specified in `DESIGN.md`; there is no public Register screen | Resolved |
 | Settings page and controls | Settings navigation exists; complete page design not identified | Phase 10 |
 | GWA card/section design | Resolved: Home card above the subject grid with complete, pending, empty, loading, and error states specified in `DESIGN.md` | Resolved |
-| Target Grade Calculator assumptions | Not finalized | Phase 9 |
+| Target Grade Calculator assumptions | Resolved: percentage target, one remaining-weight bucket, Subjects-page modal, standard edge-case messages | Resolved |
 | Schedule day range | Resolved: Monday–Saturday, stored as `day_of_week` `1`–`6` | Resolved |
 | Conversion table ownership | One shared table across subjects is confirmed; whether per account or central across users is not | Phase 10 / data-model approval |
 | Historical conversion table changes | Recalculate past semesters or preserve prior table version is undecided | Phase 10 |
@@ -477,7 +484,7 @@ These are intentionally unresolved. The coding agent must not silently choose an
 | Schedule subject link | Resolved: every class must reference a subject in the same semester | Resolved |
 | Phone schedule layout | Resolved: week strip plus the selected day's agenda | Resolved |
 | Category deletion with existing activities | Not finalized | Phase 3 / Phase 6 |
-| Target grade calculation method | Future score assumptions and category behavior need agreement | Phase 9 |
+| Target grade calculation method | Resolved: `required = ((T - P) / R) * 100`; grade targets wait for the approved conversion table | Resolved |
 | Tablet layout | No dedicated tablet frames identified | Phase 12 |
 
 Do not block unrelated work on decisions that are only needed in a later phase. For example, the app foundation can be prepared before target-calculator assumptions are finalized, but the calculator itself cannot be implemented.
@@ -502,6 +509,7 @@ Do not block unrelated work on decisions that are only needed in a later phase. 
 - GWA is weighted by subject units.
 - GWA stays pending until every active subject has a computed grade.
 - GWA display uses two decimal places.
+- Target Grade Calculator: percentage target only in Phase 9; all unscored active weight is one remaining bucket; `required = ((target - current) / remainingWeight) * 100`; the calculator is read-only. Grade targets wait for the approved conversion table.
 - Preferred stack: React + Vite, Cloudflare Workers with static assets, and Cloudflare D1.
 - Deployment URL: `https://neuron.marcoeduardo-asegurado.workers.dev`.
 - Phase 1 deployment verified: `/`, `/home`, `/manifest.webmanifest`, and `/api/health` return 200 on the production URL.
@@ -521,6 +529,7 @@ Do not block unrelated work on decisions that are only needed in a later phase. 
 - Phase 6 is deployed as version `abe26cda-8beb-452b-be3f-4426fe039591`.
 - Phase 7 is committed as `4051ed4`, pushed to `origin/main`, and deployed as version `e0dfb7d1-ddd0-46c3-a56b-c2a4f588e47b`. Production health, static assets, and unauthenticated rejection of `/api/auth/me`, `/api/semesters`, and the schedule list endpoint were verified. Authenticated production CRUD QA and the phone/desktop visual check passed, so Phase 7 is complete.
 - Phase 8 is committed as `459e39f`, pushed to `origin/main`, and deployed as version `1257fb13-9285-47e5-a3c7-cae238d978d1`; the documentation close-out commit `49ccec8` is deployed as version `827d8f1e-6288-41b5-89ab-f65139ac7185` with the same app code. Authenticated production QA passed at desktop and phone widths for card placement, pending and empty states, accessibility, refresh persistence, and live score/unit updates. Complete-state and conversion-driven GWA checks are deferred to Phase 10 with the shared conversion table, so Phase 8 is complete for the states production can produce.
+- Phase 9 is implemented locally: percentage-target calculator in `src/lib/grading/grading.ts` and `TargetGradeDialog` on the Subjects page, with grading and page tests passing. It is not committed, pushed, deployed, or production-verified yet.
 - The weekly schedule covers Monday–Saturday (`day_of_week` `1`–`6`), stores one entry per meeting day, and requires a subject from the same semester.
 - Overlapping classes are saved normally and flagged with a conflict warning rather than rejected.
 - The phone schedule uses a six-day week strip plus the selected day's agenda; from `1024px` it becomes a weekly time grid.
@@ -532,12 +541,11 @@ Do not block unrelated work on decisions that are only needed in a later phase. 
 - Official NEU percentage-to-grade threshold values.
 - Whether conversion-table ownership is per student or centrally managed.
 - Whether changing conversion thresholds recalculates historical semesters or preserves old versions.
-- Settings and Target Calculator screen designs.
-- Target Grade Calculator assumptions.
+- Settings screen design.
 - Dropped/withdrawn subject treatment in GWA.
 - Category deletion behavior when activities already exist.
 - D1 schema and migration for the shared conversion table.
 - Whether login rate limiting and email-ownership verification are required before real accounts.
 - Resend account, verified sender, and API key configuration.
 
-**Current instruction:** Phases 0–8 are complete and deployed. Phase 8 passed authenticated production QA for the states that exist without a conversion table (placement, pending, empty, responsive, accessibility, and live score/unit updates); complete-state and conversion-driven GWA checks are deferred to Phase 10 because the shared conversion table and official NEU thresholds are not yet approved. Phase 9 (Target Grade Calculator) remains blocked until its assumptions and screen design are approved. Do not start Phase 9 automatically.
+**Current instruction:** Phases 0–8 are complete and deployed. Phase 9's percentage-target calculator is implemented locally and its grading/page tests pass, but it is not committed, pushed, deployed, or production-verified. Review the Phase 9 UI and logic, then approve the push/deploy and production QA step. Grade targets and the shared conversion table remain Phase 10 work. Do not start Phase 10 automatically.

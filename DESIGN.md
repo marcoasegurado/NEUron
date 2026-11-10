@@ -388,8 +388,22 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 - **Dependency:** until the official NEU percentage-to-grade thresholds are configured, every subject grade is pending, so the card correctly stays at `GWA Pending`. The complete state is still implemented and tested with a fixture conversion table.
 - **Implemented and verified (Phase 8):** `buildSemesterGwa` in `src/features/home/view-model.ts` calls the shared `calculateSemesterGwa` and returns complete, pending, or empty. The card sits before the subject grid on phone and desktop, uses a soft orange border with an orange left bar, stacks on phone, and keeps the units/subject stats right-aligned on desktop. Loading and error stay at the page level, so the card never renders a skeleton or fallback value. Production shows `GWA Pending` with the thresholds reason; the `1.80` complete example is covered by a fixture conversion table in tests. Production QA passed on 2026-11-10 at phone and desktop widths for placement, pending and empty states, accessibility, refresh persistence, and live score/unit updates. The complete state remains fixture-tested until the shared conversion table exists in Phase 10. This is the current visual baseline.
 
-### Target Grade Calculator — needs spec
-- Screen, inputs, assumptions, result states, and unreachable-target messaging must be specified before implementation.
+### Target Grade Calculator
+- **Entry point:** in each expanded subject card on Subjects, a secondary `Target grade` action sits beside the subject's pending or graded note. No new navigation item and no Home surface are added.
+- **Input:** a target percentage from `0` to `100`, step `0.01`, with a trailing `%`. Percentage targets are available now; grade targets (`1.0–5.0`) wait for the approved NEU conversion table in Phase 10.
+- **Assumptions:** all unscored active-category weight is one remaining bucket, scored as a single average; scored categories keep their current averages; inactive categories are ignored; the calculator is read-only.
+- **Summary:** current percentage, remaining weight, and scored weight.
+- **States:**
+  - **Prompt:** empty input reads `Enter a target percentage to see what you need.`
+  - **Invalid:** `Enter a target between 0 and 100.`
+  - **Blocked:** no active categories, weights not totaling 100%, or an invalid activity. Explain the blocker and do not show a required score.
+  - **Reached:** `Target already reached` with the current percentage. When no weight remains, say every category already has scores.
+  - **Required:** `X%` needed on the remaining `Y%` of the grade, with the current percentage.
+  - **Unreachable:** `Not reachable`, with the reason: no remaining weight, or a required average above 100%.
+- **Copy:** the modal is titled `Target grade`, but the result always describes a percentage, never a converted grade.
+- **Accessibility:** the result uses `aria-live="polite"`, the input has a visible label, pending/blocked/unreachable states are conveyed by text, and the shared `Modal` handles focus.
+- **Visual:** cream surface, orange left accent, tabular numerals. The result value uses neutral body text, not the percentage grade-tone colors.
+- **Implemented (Phase 9):** the action opens the shared modal from the expanded subject body, the pure calculation lives in `calculateTargetPercentage`, and the modal updates live as the target changes. This is the current visual baseline.
 
 ## 11. State matrix
 

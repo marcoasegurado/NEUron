@@ -258,6 +258,59 @@ describe('SubjectsPage', () => {
     ).toHaveAttribute('aria-expanded', 'false')
   })
 
+  it('calculates the target percentage for an expanded subject', async () => {
+    mockReady()
+    const user = userEvent.setup()
+    renderSubjects()
+
+    await screen.findByText('Science')
+    await user.click(screen.getByRole('button', { name: /^Science/ }))
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Open target grade calculator for Science',
+      }),
+    )
+
+    expect(
+      screen.getByRole('heading', { name: 'Target grade' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Enter a target percentage to see what you need.'),
+    ).toBeInTheDocument()
+
+    await user.type(screen.getByLabelText('Target percentage'), '85')
+    expect(screen.getByText('85.00%')).toBeInTheDocument()
+    expect(
+      screen.getByText(/needed on the remaining 100\.00%/),
+    ).toBeInTheDocument()
+
+    await user.clear(screen.getByLabelText('Target percentage'))
+    await user.type(screen.getByLabelText('Target percentage'), '101')
+    expect(
+      screen.getAllByText('Enter a target between 0 and 100.').length,
+    ).toBeGreaterThan(0)
+  })
+
+  it('reports a reached target when no weight remains', async () => {
+    mockReady()
+    const user = userEvent.setup()
+    renderSubjects()
+
+    await screen.findByText('Mathematics')
+    await user.click(screen.getByRole('button', { name: /^Mathematics/ }))
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Open target grade calculator for Mathematics',
+      }),
+    )
+    await user.type(screen.getByLabelText('Target percentage'), '90')
+
+    expect(screen.getByText('Target already reached')).toBeInTheDocument()
+    expect(
+      screen.getByText(/every category has scores/),
+    ).toBeInTheDocument()
+  })
+
   it('shows the empty-score state for a category without activities', async () => {
     mockReady()
     const user = userEvent.setup()

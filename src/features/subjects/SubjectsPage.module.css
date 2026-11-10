@@ -134,6 +134,27 @@
   line-height: var(--text-small-line);
 }
 
+.subjectTools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.subjectTools p {
+  flex: 1 1 220px;
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  button.targetButton {
+    min-height: 36px;
+    padding: 0 var(--space-4);
+    font-size: var(--text-small);
+  }
+}
+
 .categoryList {
   display: flex;
   flex-direction: column;
