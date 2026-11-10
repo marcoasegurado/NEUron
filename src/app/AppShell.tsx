@@ -113,24 +113,25 @@ export function AppShell() {
       </aside>
 
       <main className={styles.main}>
-        <div className={styles.content}>
-          <div className={styles.mobileBar}>
-            <div className={styles.mobileBrand}>
-              <CatMascot className={styles.mobileBrandMark} />
-              <span aria-label="NEUming">
-                <span className={styles.brandNeu}>NEU</span>
-                <span className={styles.brandMing}>ming</span>
-              </span>
-            </div>
-            <button
-              type="button"
-              className={styles.signOut}
-              onClick={handleSignOut}
-              disabled={signingOut}
-            >
-              {signingOut ? 'Signing out…' : 'Sign out'}
-            </button>
+        <header className={styles.mobileBar}>
+          <div className={styles.mobileBrand}>
+            <CatMascot className={styles.mobileBrandMark} />
+            <span aria-label="NEUming">
+              <span className={styles.brandNeu}>NEU</span>
+              <span className={styles.brandMing}>ming</span>
+            </span>
           </div>
+          <button
+            type="button"
+            className={styles.signOut}
+            onClick={handleSignOut}
+            disabled={signingOut}
+          >
+            {signingOut ? 'Signing out…' : 'Sign out'}
+          </button>
+        </header>
+
+        <div className={styles.content}>
           <Outlet />
         </div>
       </main>

@@ -83,6 +83,7 @@
   --sidebar-width: 264px;
   --content-max: 1120px;
   --bottom-nav-height: 64px;
+  --mobile-bar-height: 80px;
 
   /* Motion */
   --duration-fast: 150ms;

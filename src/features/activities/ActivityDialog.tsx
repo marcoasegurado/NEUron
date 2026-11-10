@@ -109,6 +109,7 @@ export function ActivityDialog({
       title={editing ? 'Edit score' : 'Add a score'}
       leading={<CatMascot className={styles.mascot} />}
       hideClose
+      grabber
       className={styles.dialog}
       onClose={onClose}
     >

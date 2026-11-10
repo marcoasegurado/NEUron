@@ -11,6 +11,7 @@
 }
 
 .dialog {
+  position: relative;
   width: 100%;
   max-width: 520px;
   max-height: calc(100vh - var(--space-8));
@@ -80,6 +81,10 @@
   color: var(--color-text);
 }
 
+.grabber {
+  display: none;
+}
+
 @media (max-width: 599px) {
   .overlay {
     align-items: flex-end;
@@ -92,5 +97,28 @@
     padding: var(--space-5) var(--space-4)
       calc(var(--space-5) + env(safe-area-inset-bottom));
     border-radius: var(--radius-dialog) var(--radius-dialog) 0 0;
+  }
+
+  .grabber {
+    position: absolute;
+    top: var(--space-2);
+    left: 50%;
+    display: block;
+    width: 64px;
+    height: 20px;
+    padding: 0;
+    border: 0;
+    background-color: transparent;
+    transform: translateX(-50%);
+  }
+
+  .grabber::before {
+    content: '';
+    display: block;
+    width: 48px;
+    height: 5px;
+    margin: 8px auto 0;
+    border-radius: var(--radius-pill);
+    background-color: var(--color-border-strong);
   }
 }

@@ -39,8 +39,8 @@ export function CatMascot({ className, title }: CatMascotProps) {
         strokeWidth="5"
         strokeLinejoin="round"
       />
-      <path d="M58 72 55 50l21 13Z" fill="#F7A8A2" />
-      <path d="M142 72 145 50l-21 13Z" fill="#F7A8A2" />
+      <path d="M58 72 55 50l21 13Z" fill="#FFF6E8" />
+      <path d="M142 72 145 50l-21 13Z" fill="#FFF6E8" />
 
       <ellipse
         cx="100"

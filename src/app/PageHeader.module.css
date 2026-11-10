@@ -32,7 +32,7 @@
 @media (max-width: 639px) {
   .sticky {
     position: sticky;
-    top: 0;
+    top: var(--mobile-bar-height);
     z-index: 15;
     margin-right: calc(var(--space-4) * -1);
     margin-left: calc(var(--space-4) * -1);

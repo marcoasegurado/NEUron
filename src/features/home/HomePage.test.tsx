@@ -1,6 +1,5 @@
 import {
   cleanup,
-  fireEvent,
   render,
   screen,
   waitFor,
@@ -253,7 +252,7 @@ describe('HomePage', () => {
     })
   })
 
-  it('collapses the phone header to the title and Add Score after scrolling', async () => {
+  it('renders the phone home layout with a floating Add score button', async () => {
     vi.stubGlobal(
       'matchMedia',
       vi.fn((query: string) => ({
@@ -268,22 +267,22 @@ describe('HomePage', () => {
       })),
     )
     mockReady()
+    const user = userEvent.setup()
     renderHome()
 
     await screen.findByText('Mathematics')
-    expect(screen.getByLabelText('Semester')).toBeInTheDocument()
-
-    Object.defineProperty(window, 'scrollY', {
-      configurable: true,
-      value: 200,
-    })
-    fireEvent.scroll(window)
-
-    await waitFor(() => {
-      expect(screen.queryByLabelText('Semester')).not.toBeInTheDocument()
-    })
     expect(
-      screen.getByRole('button', { name: 'Add Score' }),
+      screen.getByRole('heading', { name: 'Current grades' }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Semester')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Home' }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByText('92%')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Add score' }))
+    expect(
+      screen.getByRole('heading', { name: 'Add a score' }),
     ).toBeInTheDocument()
   })
 

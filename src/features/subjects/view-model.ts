@@ -88,6 +88,7 @@ export function buildSubjectsView(subjects: ApiSubject[]): SubjectsView {
           percentage: null,
           pendingReason: 'no-categories' as const,
           pendingMessage: '',
+          incompleteCategoryNames: [],
           activeCategoryCount: 0,
           completedCategoryCount: 0,
           scoreCount: 0,

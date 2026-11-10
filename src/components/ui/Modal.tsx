@@ -13,6 +13,7 @@ export interface ModalProps {
   description?: string
   leading?: ReactNode
   hideClose?: boolean
+  grabber?: boolean
   onClose: () => void
   children: ReactNode
   className?: string
@@ -26,6 +27,7 @@ export function Modal({
   description,
   leading,
   hideClose = false,
+  grabber = false,
   onClose,
   children,
   className,
@@ -129,6 +131,14 @@ export function Modal({
           )}
         </div>
         {children}
+        {grabber ? (
+          <button
+            type="button"
+            className={styles.grabber}
+            onClick={onClose}
+            aria-label="Close dialog"
+          />
+        ) : null}
       </div>
     </div>
   )

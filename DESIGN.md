@@ -142,11 +142,14 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 ### Phone
 
 - No shrunken sidebar. Use a compact single-column layout.
+- Every route below desktop width shows a locked top bar: cat mascot + two-tone `NEUming` wordmark on the left and an orange `Sign out` action on the right. It stays pinned while the page scrolls.
 - Bottom navigation with three items: Home, Subjects, Schedule.
-- Bottom nav height ~64px plus safe-area padding; active item in orange, inactive in muted brown.
-- Page header is stacked: title, then subtitle, then actions.
-- Primary action is a full-width or prominent pill button near the content it affects.
-- Dialogs become bottom sheets or full-width cards with 28px top corners.
+- Bottom nav height ~64px plus safe-area padding; the active item is an orange rounded pill with white icon/label, inactive items are muted brown with no background.
+- Home starts with a cat mascot beside a pale-yellow encouragement bubble, then a bordered semester pill (`label` + `Switch`), then the `Current grades` title.
+- Home subject cards are single-column rows: name, `units | professor`, a status line (`All categories scored`, `Needs: <categories>`, or `Add a score to get started.`), and a tinted percentage tile on the right. Pending subjects show `—` in the beige tile.
+- The main Home action is a fixed circular orange `+` button above the bottom nav; the phone layout has no header `Add Score` button.
+- Page headers on other pages stay stacked: title, then subtitle, then actions.
+- Dialogs become bottom sheets with 28px top corners and a grabber. The Add score sheet stacks every field full-width and shows only the full-width `Save score` action.
 
 ### Tablet
 
@@ -276,9 +279,9 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 - The official NEUming logo is the cat head: a container-free, front-facing orange cat with dark outlines, pink inner ears and cheeks, a cream muzzle, whiskers, and gold sparkles. It ships as the inline `CatMascot` SVG component (`src/components/brand/CatMascot.tsx`), which is the single source of the artwork for the brand mark and the favicon.
 - **Name:** NEUming (NEU + *mingming*, Filipino for kitty). The mascot is named **Ming**.
 - **Colors:** orange `#F97316` head and ears; pink `#F7A8A2` inner ears and cheeks; cream `#FFF6E8` muzzle; warm brown `#3D2B1F` outlines, eyes, nose, and whiskers; deeper orange `#E5600D` forehead stripes; gold `#F5B82E` sparkles.
-- **Sizes:** `52px` beside the sidebar wordmark, `32px` in the authenticated phone bar, `152px` phone / `168px` desktop as the auth-panel mascot, and `56px` phone / `64px` desktop inside dialogs.
+- **Sizes:** `52px` beside the desktop sidebar wordmark, `48px` in the locked phone bar, `152px` phone / `168px` desktop as the auth-panel mascot, and `56px` phone / `64px` desktop inside dialogs.
 - **Clear space:** keep at least `8%` of the mark's width clear on all sides; never crop the ears, whiskers, or face.
-- **Pairing:** the mark sits to the left of the `NEUming` wordmark with the `Grade Encoder` tagline beneath, unless a standalone icon is required.
+- **Pairing:** the mark sits to the left of the `NEUming` wordmark in the sidebar and locked phone bar; the app chrome does not repeat the `Grade Encoder` tagline.
 - **Favicon:** the same cat head on a rounded tile filled with the page cream (`#FBF4E3`), so the browser-tab and installed-app icon match the in-app mark instead of using a separate drawing. The artwork is scaled to keep the `8%` clear space inside the tile.
 - Do not recolor, outline, or replace the mark with a generic placeholder without approval.
 
@@ -313,7 +316,7 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 - Login, Forgot Password, and Reset Password share one frame.
 - **Phone:** centered brand header with the `CatMascot` illustration, `NEU`-orange + `ming`-brown `NEUming` wordmark, and the muted tagline `Your grades, always in sight.` above the form card. The card uses `24px` radius, cream `16px`-radius inputs with orange borders, and a `52px` primary button. Decorative pale-yellow and peach circles sit at the top-right and bottom-left of the page.
 - **Desktop (1024px+):** two-panel layout. The app-orange left panel centers a cream halo behind the mascot, the wordmark (`NEU` cream, `ming` brown), the statement `Track every quiz, exam and project, and always know where you stand.`, and three translucent feature pills. The cream right panel centers the form card over decorative circles.
-- **Mascot note:** the auth panel and the sidebar/phone-bar brand marks all use the detailed `CatMascot` (`src/components/brand/CatMascot.tsx`, `152px` phone / `168px` desktop on the auth panel, `52px` sidebar, `32px` phone bar).
+- **Mascot note:** the auth panel and the sidebar/phone-bar brand marks all use the detailed `CatMascot` (`src/components/brand/CatMascot.tsx`, `152px` phone / `168px` desktop on the auth panel, `52px` sidebar, `48px` locked phone bar).
 - Auth fields use the shared `Input` component with visible labels and field-level errors; auth-specific sizing is applied through the layout CSS, not duplicated components.
 - Auth screens never reveal whether an email is registered.
 
@@ -347,7 +350,7 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 - **Phone:** page title, active semester, Semester GWA card, compact grade rows/cards, bottom navigation, Add Score.
 - **Desktop:** page title/description, status banner, semester switcher, Add Score, Semester GWA card, multi-column grade cards.
 - **States:** complete grades, incomplete subject, pending/complete/empty Semester GWA, no subjects, no scores, loading, error, Add Score default/validation/saved.
-- **Implemented (Phase 5):** the header holds the semester switcher and Add Score. A persistent status banner states that percentages are exact while numeric grades are pending official NEU thresholds. Subject cards show the exact percentage, a `Grade Pending` chip, and category-completion progress; incomplete subjects show `No Grade Yet` plus the categories still missing scores. The grid uses one column on phone, two at `720px`, and three at `1024px`. Add Score opens a centered dialog on desktop and a bottom sheet below `600px`, with Escape/overlay close and contained keyboard focus. At `640px+` the header Add Score control uses a compact `40px` height so it sits closer to the semester switcher; phone keeps the `44px` touch target. On phone widths the page header — title, semester context, switcher, and Add Score — sticks to the top of the viewport. Once the dashboard is scrolled past roughly `64px`, the sticky header collapses to a single row with the title and Add Score; the semester context and switcher hide until the user scrolls back to the top. This is the current visual baseline.
+- **Implemented (Phase 5):** the header holds the semester switcher and Add Score. A persistent status banner states that percentages are exact while numeric grades are pending official NEU thresholds. Subject cards show the exact percentage, a `Grade Pending` chip, and category-completion progress; incomplete subjects show `No Grade Yet` plus the categories still missing scores. The grid uses two columns at `720px` and three at `1024px`. Add Score opens a centered dialog on desktop and a bottom sheet below `600px`, with Escape/overlay close and contained keyboard focus. At `640px+` the header Add Score control uses a compact `40px` height so it sits closer to the semester switcher. Below `640px` Home switches to the dedicated phone layout: mascot + encouragement bubble, semester pill, `Current grades` title, single-column subject rows with tinted percentage tiles, and a fixed circular `+` button above the bottom nav. The phone layout uses a CSS-sticky top bar instead of a scroll-tracked sticky page header, so scrolling does not re-render the dashboard. This is the current visual baseline.
 
 ### Subjects
 - **Phone:** subject list; expanded subject with categories, weights, averages, activities; empty-score state; delete-score confirmation.

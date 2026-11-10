@@ -16,6 +16,7 @@ export interface SubjectSummary {
   percentage: number | null
   pendingReason: SubjectPendingReason | null
   pendingMessage: string
+  incompleteCategoryNames: string[]
   activeCategoryCount: number
   completedCategoryCount: number
   scoreCount: number
@@ -78,6 +79,7 @@ export function buildHomeView(subjects: ApiSubject[]): HomeView {
           percentage: result.percentage,
           pendingReason: null,
           pendingMessage: '',
+          incompleteCategoryNames: [],
           activeCategoryCount: activeCategories.length,
           completedCategoryCount,
           scoreCount: grading.activities.length,
@@ -99,6 +101,7 @@ export function buildHomeView(subjects: ApiSubject[]): HomeView {
         percentage: null,
         pendingReason: result.reason,
         pendingMessage: pendingMessage(result.reason, incompleteNames),
+        incompleteCategoryNames: incompleteNames,
         activeCategoryCount: activeCategories.length,
         completedCategoryCount,
         scoreCount: grading.activities.length,

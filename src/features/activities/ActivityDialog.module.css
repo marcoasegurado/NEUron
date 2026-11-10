@@ -127,11 +127,24 @@
     height: 56px;
   }
 
+  .form {
+    gap: var(--space-4);
+  }
+
+  .columns {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
   .actions {
     grid-template-columns: 1fr;
   }
 
   .actions > * {
     width: 100%;
+  }
+
+  .actions .cancelButton {
+    display: none;
   }
 }
