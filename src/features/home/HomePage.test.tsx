@@ -195,6 +195,11 @@ describe('HomePage', () => {
     expect(screen.getByText('0 of 1 categories scored')).toBeInTheDocument()
     expect(screen.getAllByText('Grade Pending').length).toBeGreaterThan(1)
     expect(screen.getByText('No Grade Yet')).toBeInTheDocument()
+    expect(screen.getByText('Semester GWA')).toBeInTheDocument()
+    expect(screen.getByText('GWA Pending')).toBeInTheDocument()
+    expect(
+      screen.getByText('Waiting on grades for Science.'),
+    ).toBeInTheDocument()
   })
 
   it('validates the Add Score form before sending a request', async () => {

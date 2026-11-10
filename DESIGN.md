@@ -386,6 +386,7 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 - **Desktop:** wide card; heading and reason span the full width, the value sits at the left, and the units/subject stats align to the right.
 - **Calculation:** rules and examples are in `GRADING_RULES.md` §7. The card reads from a shared GWA function; it does not compute a formula inline.
 - **Dependency:** until the official NEU percentage-to-grade thresholds are configured, every subject grade is pending, so the card correctly stays at `GWA Pending`. The complete state is still implemented and tested with a fixture conversion table.
+- **Implemented (Phase 8):** `buildSemesterGwa` in `src/features/home/view-model.ts` calls the shared `calculateSemesterGwa` and returns complete, pending, or empty. The card sits before the subject grid on phone and desktop, uses a soft orange border with an orange left bar, stacks on phone, and keeps the units/subject stats right-aligned on desktop. Loading and error stay at the page level, so the card never renders a skeleton or fallback value. Production shows `GWA Pending` with the thresholds reason; the `1.80` complete example is covered by a fixture conversion table in tests. This is the current visual baseline.
 
 ### Target Grade Calculator — needs spec
 - Screen, inputs, assumptions, result states, and unreachable-target messaging must be specified before implementation.

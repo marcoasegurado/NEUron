@@ -2,9 +2,15 @@ import type { Subject as ApiSubject } from '../../lib/academic-api'
 import { toGradingSubject } from '../../lib/academic-grading'
 import {
   calculateCategoryAverage,
+  calculateSemesterGwa,
+  calculateSubjectGrade,
   calculateSubjectPercentage,
+  isSubjectActive,
 } from '../../lib/grading/grading'
-import type { SubjectPendingReason } from '../../lib/grading/types'
+import type {
+  ConversionRow,
+  SubjectPendingReason,
+} from '../../lib/grading/types'
 
 export { toGradingSubject } from '../../lib/academic-grading'
 
@@ -26,7 +32,7 @@ export interface HomeView {
   subjects: SubjectSummary[]
 }
 
-function formatList(values: string[]): string {
+export function formatList(values: string[]): string {
   if (values.length <= 1) {
     return values[0] ?? ''
   }
@@ -107,5 +113,71 @@ export function buildHomeView(subjects: ApiSubject[]): HomeView {
         scoreCount: grading.activities.length,
       }
     }),
+  }
+}
+
+export type SemesterGwaView =
+  | { status: 'empty' }
+  | {
+      status: 'graded'
+      gwa: number
+      units: number
+      subjectCount: number
+    }
+  | {
+      status: 'pending'
+      reason: 'incomplete-subjects' | 'thresholds'
+      pendingSubjectNames: string[]
+    }
+
+/**
+ * Reads the semester GWA from the shared grading engine. An empty conversion
+ * table means the official NEU thresholds are not configured yet, so every
+ * complete subject is pending with the `thresholds` reason instead of listing
+ * subjects that are only waiting on the conversion table.
+ */
+export function buildSemesterGwa(
+  subjects: ApiSubject[],
+  table: ConversionRow[] = [],
+): SemesterGwaView {
+  const gradingSubjects = subjects.map(toGradingSubject)
+  const result = calculateSemesterGwa(gradingSubjects, table)
+
+  if (result.status === 'empty') {
+    return { status: 'empty' }
+  }
+
+  if (result.status === 'graded') {
+    const active = gradingSubjects.filter(isSubjectActive)
+    return {
+      status: 'graded',
+      gwa: result.gwa,
+      units: active.reduce((total, subject) => total + subject.units, 0),
+      subjectCount: active.length,
+    }
+  }
+
+  const byId = new Map(gradingSubjects.map((subject) => [subject.id, subject]))
+  const pending = result.pendingSubjectIds.flatMap((id) => {
+    const subject = byId.get(id)
+    return subject ? [subject] : []
+  })
+  const missingGrades = pending.filter((subject) => {
+    const grade = calculateSubjectGrade(subject, table)
+    return grade.status !== 'pending' || grade.reason !== 'no-conversion'
+  })
+
+  if (missingGrades.length === 0) {
+    return {
+      status: 'pending',
+      reason: 'thresholds',
+      pendingSubjectNames: [],
+    }
+  }
+
+  return {
+    status: 'pending',
+    reason: 'incomplete-subjects',
+    pendingSubjectNames: missingGrades.map((subject) => subject.name),
   }
 }

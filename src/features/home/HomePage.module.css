@@ -55,6 +55,93 @@
   line-height: var(--text-small-line);
 }
 
+.gwaCard {
+  position: relative;
+  margin-bottom: var(--space-5);
+  border-color: var(--color-primary-soft);
+  border-left: 4px solid var(--color-primary);
+}
+
+.gwaHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.gwaTitle {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.gwaBody {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.gwaValue {
+  color: var(--color-text);
+  font-size: 3rem;
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.gwaStats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-end;
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+  line-height: var(--text-small-line);
+  text-align: right;
+}
+
+.gwaCaption {
+  color: var(--color-text-muted);
+}
+
+.gwaPending,
+.gwaEmpty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+  margin-top: var(--space-2);
+}
+
+.gwaPendingValue {
+  color: var(--color-text);
+  font-size: 2rem;
+  font-weight: var(--weight-bold);
+  line-height: 2.5rem;
+}
+
+.gwaReason {
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+  line-height: var(--text-small-line);
+}
+
+.gwaCardPhone .gwaBody {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.gwaCardPhone .gwaStats {
+  align-items: flex-start;
+  text-align: left;
+}
+
 .grid {
   display: grid;
   grid-template-columns: 1fr;

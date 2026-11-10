@@ -24,7 +24,12 @@ import {
 import { cx } from '../../lib/cx'
 import { formatNumber } from '../../lib/grading/grading'
 import { ActivityDialog } from '../activities/ActivityDialog'
-import { buildHomeView, type SubjectSummary } from './view-model'
+import {
+  buildHomeView,
+  buildSemesterGwa,
+  formatList,
+  type SubjectSummary,
+} from './view-model'
 import styles from './HomePage.module.css'
 
 type HomeState =
@@ -226,6 +231,7 @@ export function HomePage() {
 
   const view = buildHomeView(state.setup.subjects)
   const subjectCount = view.subjects.length
+  const gwa = buildSemesterGwa(state.setup.subjects)
   const firstGraded = view.subjects.find(
     (subject) => subject.percentage !== null,
   )
@@ -319,6 +325,45 @@ export function HomePage() {
           </div>
         </Card>
       )}
+
+      <Card className={cx(styles.gwaCard, isPhone && styles.gwaCardPhone)}>
+        <div className={styles.gwaHead}>
+          <h2 className={styles.gwaTitle}>Semester GWA</h2>
+          {gwa.status === 'graded' ? null : <Badge tone="pending">Pending</Badge>}
+        </div>
+
+        {gwa.status === 'graded' ? (
+          <div className={styles.gwaBody}>
+            <span className={styles.gwaValue}>{formatNumber(gwa.gwa, 2)}</span>
+            <div className={styles.gwaStats}>
+              <span>
+                {gwa.units} {gwa.units === 1 ? 'unit' : 'units'} ·{' '}
+                {gwa.subjectCount}{' '}
+                {gwa.subjectCount === 1 ? 'subject' : 'subjects'}
+              </span>
+              <span className={styles.gwaCaption}>
+                {state.setup.semester.label}
+              </span>
+            </div>
+          </div>
+        ) : gwa.status === 'pending' ? (
+          <div className={styles.gwaPending}>
+            <span className={styles.gwaPendingValue}>GWA Pending</span>
+            <p className={styles.gwaReason}>
+              {gwa.reason === 'thresholds'
+                ? 'Official NEU percentage-to-grade thresholds are not configured yet.'
+                : `Waiting on grades for ${formatList(gwa.pendingSubjectNames)}.`}
+            </p>
+          </div>
+        ) : (
+          <div className={styles.gwaEmpty}>
+            <p className={styles.gwaReason}>
+              Add subjects to calculate your GWA
+            </p>
+            <Button onClick={() => navigate('/setup')}>Set up semester</Button>
+          </div>
+        )}
+      </Card>
 
       {subjectCount === 0 ? (
         <Card>
