@@ -169,7 +169,7 @@ These must be resolved with the user before the dependent implementation work:
 | Auth rate limiting / email ownership verification | Not specified or implemented | Before hardening / production if required |
 | Conversion table ownership | One shared table across subjects is confirmed; whether per account or central across users is not | Phase 10 / data-model approval |
 | Historical conversion table changes | Recalculate past semesters or preserve prior table version is undecided | Phase 10 |
-| Dropped/withdrawn subjects | Whether/how excluded from GWA is undecided | Phase 8 / Phase 10 |
+| Dropped/withdrawn subjects | Whether/how excluded from GWA is undecided | Phase 10 |
 | Schedule day range | Resolved: Monday–Saturday, stored as `day_of_week` `1`–`6` | Resolved |
 | Schedule overlap behavior | Resolved: overlaps are saved and flagged; no blocking constraint | Resolved |
 | Multi-day class storage | Resolved: one `class_schedules` row per meeting day | Resolved |
