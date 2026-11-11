@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '../../app/PageHeader'
+import { useOnlineStatus } from '../../app/useOnlineStatus'
 import {
   Badge,
   Button,
@@ -72,6 +73,7 @@ export function SchedulePage() {
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const online = useOnlineStatus()
 
   useEffect(() => {
     let cancelled = false
@@ -278,7 +280,10 @@ export function SchedulePage() {
         stickyOnPhone
         compactOnPhone
         actions={
-          <Button onClick={openCreate} disabled={subjects.length === 0}>
+          <Button
+            onClick={openCreate}
+            disabled={!online || subjects.length === 0}
+          >
             Add class
           </Button>
         }
@@ -305,7 +310,11 @@ export function SchedulePage() {
           <EmptyState
             title="No classes this week"
             description="Add your first class with its subject, day, start and end time, and an optional room."
-            action={<Button onClick={openCreate}>Add class</Button>}
+            action={
+              <Button onClick={openCreate} disabled={!online}>
+                Add class
+              </Button>
+            }
           />
         </Card>
       ) : (
@@ -360,7 +369,11 @@ export function SchedulePage() {
                   <p className={styles.emptyDay}>
                     No classes on {selectedDayView.label}.
                   </p>
-                  <Button variant="secondary" onClick={openCreate}>
+                  <Button
+                    variant="secondary"
+                    onClick={openCreate}
+                    disabled={!online}
+                  >
                     Add class
                   </Button>
                 </Card>
@@ -590,6 +603,7 @@ export function SchedulePage() {
                   setDetails(null)
                   setDialog({ mode: 'edit', entry })
                 }}
+                disabled={!online}
               >
                 Edit
               </Button>
@@ -600,6 +614,7 @@ export function SchedulePage() {
                   setDeleteTarget(details)
                   setDetails(null)
                 }}
+                disabled={!online}
               >
                 Delete
               </Button>
@@ -644,7 +659,7 @@ export function SchedulePage() {
               <Button
                 variant="destructive"
                 onClick={() => void handleDelete()}
-                disabled={deleting}
+                disabled={!online || deleting}
               >
                 {deleting ? 'Deleting…' : 'Delete class'}
               </Button>

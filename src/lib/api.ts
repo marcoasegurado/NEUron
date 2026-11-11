@@ -16,6 +16,19 @@ export async function apiRequest<T>(
   path: string,
   init: RequestInit = {},
 ): Promise<T> {
+  const method = (init.method ?? 'GET').toUpperCase()
+
+  if (
+    method !== 'GET' &&
+    typeof navigator !== 'undefined' &&
+    !navigator.onLine
+  ) {
+    throw new ApiError(
+      'You are offline. Changes cannot be saved until the connection returns.',
+      0,
+    )
+  }
+
   const response = await fetch(path, {
     ...init,
     credentials: 'same-origin',

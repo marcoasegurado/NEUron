@@ -1,4 +1,5 @@
 import { ApiError, apiRequest } from './api'
+import { clearOfflineData } from './service-worker'
 
 export interface Semester {
   id: string
@@ -146,13 +147,17 @@ export function createSemester(
   })
 }
 
-export function activateSemester(
+export async function activateSemester(
   semesterId: string,
 ): Promise<{ semester: Semester }> {
-  return apiRequest<{ semester: Semester }>(
+  const response = await apiRequest<{ semester: Semester }>(
     `/api/semesters/${encodeURIComponent(semesterId)}/activate`,
     { method: 'POST' },
   )
+  // The offline cache only holds the active semester, so switching invalidates
+  // it instead of accumulating every semester on the device.
+  await clearOfflineData()
+  return response
 }
 
 export function createSubject(

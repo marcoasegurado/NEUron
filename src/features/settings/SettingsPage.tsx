@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '../../app/PageHeader'
+import { useOnlineStatus } from '../../app/useOnlineStatus'
 import {
   Badge,
   Button,
@@ -42,6 +43,7 @@ export function SettingsPage() {
   const [switchError, setSwitchError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [signingOut, setSigningOut] = useState(false)
+  const online = useOnlineStatus()
 
   useEffect(() => {
     let cancelled = false
@@ -182,6 +184,7 @@ export function SettingsPage() {
                             setConfirmTarget(semester)
                           }}
                           aria-label={`Switch to ${semester.label}`}
+                          disabled={!online}
                         >
                           Activate
                         </Button>
@@ -291,7 +294,7 @@ export function SettingsPage() {
             </Button>
             <Button
               onClick={() => handleSwitch(confirmTarget)}
-              disabled={Boolean(switchingId)}
+              disabled={!online || Boolean(switchingId)}
             >
               {switchingId === confirmTarget.id
                 ? 'Switching…'

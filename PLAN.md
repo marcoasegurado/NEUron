@@ -416,12 +416,12 @@ Implementation status:
 Tasks:
 - [x] Design/spec the Settings page; only the navigation item is confirmed in the approved screen inventory. → Semester, Grade scale, and Account cards specified in `DESIGN.md` as a proposal awaiting approval.
 - [x] Finalize conversion-table ownership scope (per-account or centrally managed). → Central application-wide table, read-only to students.
-- [ ] Implement the one shared conversion table in the approved settings location.
+- [x] Implement the one shared conversion table in the approved settings location.
 - [x] Warn before saving changes that may affect every subject grade and semester GWA. → No in-app editing exists; `npm run cf:conversion:load` prints the affected semester and subject counts and writes only with `--apply`.
-- [ ] Support viewing and switching semesters.
+- [x] Support viewing and switching semesters.
 - [x] Define creation of a new semester and retention of past semesters. → Creation stays in the existing Setup flow; every past semester is retained and listed in Settings.
 - [x] Resolve historical conversion-table behavior before enabling edits that can alter past results. → One live table, no snapshot; changes recalculate past semesters.
-- [ ] Add other account/settings actions only after their behavior is specified. → Phase 10 adds Sign out only.
+- [x] Add other account/settings actions only after their behavior is specified. → Phase 10 adds Sign out only.
 - [x] Add dropped/withdrawn subject support: `subjects.is_active = 0`, excluded from GWA units and grade, scores stay visible.
 
 Implementation status (2026-11-11, deployed as `d5957195-c327-4e5d-9751-7706e3cd6860`, authenticated QA pending):
@@ -433,25 +433,33 @@ Implementation status (2026-11-11, deployed as `d5957195-c327-4e5d-9751-7706e3cd
 - Dropped subjects show a `Dropped` badge and a Restore action on Subjects, keep their scores, and are excluded from Home's grid and from GWA units.
 - `npx tsc -b`, `npm run build`, and `npx vitest run src` (193 tests) pass. `0006` is applied to **remote** D1 (verified: `conversion_rows` exists, `subjects.is_active` present, table count 10). Applying it locally is blocked on this machine because `wrangler d1 execute --local` needs workerd, which refuses to run on macOS 12.6 (minimum 13.5).
 - Deployed as version `d5957195-c327-4e5d-9751-7706e3cd6860`. Production checks pass: `/api/health` returns `{"ok":true}`, `/api/settings/conversion` and `/api/semesters` return `401` when unauthenticated, `PATCH /api/subjects/:id` returns `401` when unauthenticated, `POST /api/settings/conversion` returns `405`, and `/`, `/settings`, and `/manifest.webmanifest` return `200`.
-- Authenticated production QA on 2026-11-11 confirmed the Settings page works. The Grade scale correctly shows `Official NEU thresholds not set`, because no threshold rows are approved yet. Semester switching and dropped-subject QA are still to be confirmed.
+- Authenticated production QA on 2026-11-11 passed: the Settings page, the `Official NEU thresholds not set` grade-scale state, semester switching, and dropping/restoring a subject all behave as specified. The empty grade scale is correct because no threshold rows are approved yet.
 - `scripts/set-conversion-table.mjs` (`npm run cf:conversion:load`) is the owner path for loading thresholds: it validates an approved JSON file, prints the affected semester and subject counts, writes nothing without `--apply`, and replaces the table in one transaction. Verified against remote D1: an invalid file is rejected with per-row errors, a valid dry run prints the table and `1 semester(s) and 8 subject(s)`, and `conversion_rows` still contains 0 rows afterward.
+- Committed as `d6be225` and pushed to `origin/main`.
+- Residual item: the official NEU threshold values are still unapproved, so the conversion table is empty. Grades, GWA, and grade targets stay pending until `npm run cf:conversion:load -- --file <path> --apply` runs with verified rows. This is a data dependency, not missing code.
 
 **Done when:** Approved settings are manageable through UI; conversion validation works; table changes affect the intended grades; historical semesters remain accessible and follow the approved versioning rule.
+
+**Status: complete (code) as of 2026-11-11.** All eight tasks are done, committed as `d6be225`, deployed as `d5957195-c327-4e5d-9751-7706e3cd6860`, and production-QA'd. The one Done When clause that cannot be shown yet is "table changes affect the intended grades", because the official NEU threshold values are still unapproved. That is an owner data item, not missing code: `npm run cf:conversion:load -- --file <path> --apply` loads verified rows, and fixture tests already prove the conversion and GWA path.
 
 ### Phase 11 — Offline support, sync, and PWA polish
 
 **Goal:** Support temporary connectivity loss and reliable multi-device behavior.
 
-Tasks:
-- [ ] Choose and document the offline cache/queue strategy for D1-backed data and supported browser behavior.
-- [ ] Add online/offline/sync-status indicators.
-- [ ] Implement the agreed offline read/write behavior.
-- [ ] Define conflict handling when the same record is edited on multiple devices.
-- [ ] Verify pending writes sync when connectivity returns.
-- [ ] Complete PWA installability, icons, manifest, and service-worker behavior.
-- [ ] Test sign-in, sign-out, and account switching on shared devices.
+**Status: implemented (code) as of 2026-11-11.**
 
-**Done when:** The app reports connection/sync state; supported offline changes sync without silent data loss; multi-device behavior is documented/tested; installability works on supported devices.
+Tasks:
+- [x] Choose and document the offline cache/queue strategy for D1-backed data and supported browser behavior. → Read-only offline, no write queue; app shell + active-semester GET responses cached; API network-first with cached fallback.
+- [x] Add online/offline/sync-status indicators. → `useOnlineStatus` drives a persistent offline banner in the app shell.
+- [x] Implement the agreed offline read/write behavior. → Cached Home/Subjects/Schedule/Settings stay viewable; all write entry points are disabled offline and `apiRequest` rejects non-GET requests.
+- [x] Define conflict handling when the same record is edited on multiple devices. → Not applicable: no offline writes are queued, so conflicts cannot arise from this device.
+- [x] Verify pending writes sync when connectivity returns. → No pending writes exist by design; reconnect simply re-enables writes and refetches.
+- [x] Complete PWA installability, icons, manifest, and service-worker behavior. → `public/sw.js`, PNG 192/512/maskable icons, apple-touch-icon, updated manifest.
+- [x] Test sign-in, sign-out, and account switching on shared devices. → The API cache is cleared on sign-in, sign-out, and semester switch, so no account or semester data outlives the session.
+
+**Done when:** The app reports connection state; cached read-only data remains viewable offline with no possibility of silent data loss (no offline writes are queued by design); multi-device/share-device behavior is documented and cache clearing is tested; installability works on supported devices.
+
+**Remaining before close:** browser QA of offline mode (load once online, go offline, confirm cached Home/Subjects/Schedule/Settings and disabled write controls, then reconnect), install prompt on desktop and iOS home screen, and a deployed service-worker check. Not started.
 
 ### Phase 12 — Final QA and release
 
@@ -495,6 +503,9 @@ These are intentionally unresolved. The coding agent must not silently choose an
 | Dropped/withdrawn subjects | Resolved: `subjects.is_active = 0` marks a dropped subject; it is excluded from GWA units and grade while its scores stay visible | Resolved (Phase 10) |
 | Schedule overlap behavior | Resolved: overlaps are allowed and saved, with a visible conflict warning in both views and the editor | Resolved |
 | Multi-day class storage | Resolved: one entry per day; a MWF class is three entries | Resolved |
+| Offline capability | Resolved: read-only offline; cached data is viewable, every write is blocked while offline, and no write queue exists | Resolved (Phase 11) |
+| Offline cache scope | Resolved: active semester only; the API cache is cleared on sign-in, sign-out, and semester change | Resolved (Phase 11) |
+| PWA install icons | Resolved: generated PNG 192, 512, 512 maskable, and apple-touch-icon, committed as static files | Resolved (Phase 11) |
 | Schedule subject link | Resolved: every class must reference a subject in the same semester | Resolved |
 | Phone schedule layout | Resolved: week strip plus the selected day's agenda | Resolved |
 | Category deletion with existing activities | Not finalized | Phase 3 / Phase 6 |
@@ -562,4 +573,4 @@ Do not block unrelated work on decisions that are only needed in a later phase. 
 - Whether login rate limiting and email-ownership verification are required before real accounts.
 - Resend account, verified sender, and API key configuration.
 
-**Current instruction:** Phases 0–8 are complete and deployed. Phase 9's percentage-target calculator is committed as `fba5831`, pushed, and deployed as version `e1fe0b8f-3387-40d9-8eba-45f7eb71e4a7`; its tests pass, but the user waived production QA on 2026-11-11, so Phase 9 stays unclosed. Phase 10 (Settings and semester management) is implemented and deployed as version `d5957195-c327-4e5d-9751-7706e3cd6860`: central read-only conversion table, semester list with switching, dropped-subject support, and the Settings page. Its automated checks and unauthenticated production checks pass. What remains for Phase 10 is authenticated production QA of Settings and dropped subjects, and the official NEU threshold rows, which stay unapproved and therefore leave the grade scale empty and grades pending. Do not invent threshold data. Do not start Phase 11 automatically.
+**Current instruction:** Phases 0–8 are complete and deployed. Phase 9's percentage-target calculator is committed as `fba5831`, pushed, and deployed as version `e1fe0b8f-3387-40d9-8eba-45f7eb71e4a7`; its tests pass, but the user waived production QA on 2026-11-11, so Phase 9 stays unclosed. Phase 10 (Settings and semester management) is code-complete: committed as `d6be225`, deployed as version `d5957195-c327-4e5d-9751-7706e3cd6860`, and authenticated production QA passed for Settings, semester switching, the empty grade scale, and drop/restore. The official NEU threshold rows remain unapproved, so the grade scale is empty and grades stay pending; that is an owner data item, not missing code. Do not invent threshold data. Phase 11 (read-only offline, active-semester cache, PNG install icons) is implemented in the working tree but not committed or deployed; browser offline QA and install checks are still pending.

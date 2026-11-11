@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '../../app/PageHeader'
 import { useIsPhone } from '../../app/useIsPhone'
+import { useOnlineStatus } from '../../app/useOnlineStatus'
 import { CatMascot } from '../../components/brand/CatMascot'
 import {
   Badge,
@@ -75,6 +76,7 @@ export function HomePage() {
   const [notice, setNotice] = useState<string | null>(null)
   const [switching, setSwitching] = useState(false)
   const isPhone = useIsPhone()
+  const online = useOnlineStatus()
 
   useEffect(() => {
     let cancelled = false
@@ -261,7 +263,7 @@ export function HomePage() {
               aria-label="Semester"
               value={state.setup.semester.id}
               onChange={(event) => void handleSwitch(event.target.value)}
-              disabled={switching || state.semesters.length < 2}
+              disabled={!online || switching || state.semesters.length < 2}
             >
               {state.semesters.map((semester) => (
                 <option key={semester.id} value={semester.id}>
@@ -286,7 +288,9 @@ export function HomePage() {
                 label="Semester"
                 value={state.setup.semester.id}
                 onChange={(event) => void handleSwitch(event.target.value)}
-                disabled={switching || state.semesters.length < 2}
+                disabled={
+                  !online || switching || state.semesters.length < 2
+                }
                 className={styles.switcher}
               >
                 {state.semesters.map((semester) => (
@@ -299,7 +303,7 @@ export function HomePage() {
               <Button
                 className={styles.addScoreButton}
                 onClick={() => setDialogOpen(true)}
-                disabled={subjectCount === 0}
+                disabled={!online || subjectCount === 0}
               >
                 Add Score
               </Button>
@@ -500,7 +504,7 @@ export function HomePage() {
           className={styles.fab}
           aria-label="Add score"
           onClick={() => setDialogOpen(true)}
-          disabled={subjectCount === 0}
+          disabled={!online || subjectCount === 0}
         >
           <span aria-hidden="true">+</span>
         </button>

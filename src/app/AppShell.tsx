@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { CatMascot } from '../components/brand/CatMascot'
 import { useAuth } from '../features/auth/useAuth'
 import { cx } from '../lib/cx'
+import { useOnlineStatus } from './useOnlineStatus'
 import {
   HomeIcon,
   ScheduleIcon,
@@ -56,6 +57,7 @@ function NavItemLink({
 export function AppShell() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const online = useOnlineStatus()
   const [signingOut, setSigningOut] = useState(false)
   const initial = user?.displayName.trim().charAt(0).toUpperCase() || 'N'
 
@@ -132,6 +134,12 @@ export function AppShell() {
         </header>
 
         <div className={styles.content}>
+          {!online ? (
+            <p className={styles.offlineBanner} role="status" aria-live="polite">
+              You are offline. Saved data is read-only until the connection
+              returns.
+            </p>
+          ) : null}
           <Outlet />
         </div>
       </main>

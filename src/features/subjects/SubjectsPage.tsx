@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '../../app/PageHeader'
+import { useOnlineStatus } from '../../app/useOnlineStatus'
 import {
   Badge,
   Button,
@@ -76,6 +77,7 @@ export function SubjectsPage() {
   const [statusSaving, setStatusSaving] = useState(false)
   const [statusError, setStatusError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const online = useOnlineStatus()
 
   useEffect(() => {
     let cancelled = false
@@ -345,7 +347,10 @@ export function SubjectsPage() {
         }`}
         actions={
           subjectCount > 0 ? (
-            <Button onClick={() => setAddSubjectOpen(true)}>
+            <Button
+              onClick={() => setAddSubjectOpen(true)}
+              disabled={!online}
+            >
               Add Subject
             </Button>
           ) : undefined
@@ -364,7 +369,10 @@ export function SubjectsPage() {
             description="Add subjects and grading categories before recording scores."
             action={
               <div className={styles.emptyActions}>
-                <Button onClick={() => setAddSubjectOpen(true)}>
+                <Button
+                  onClick={() => setAddSubjectOpen(true)}
+                  disabled={!online}
+                >
                   Add Subject
                 </Button>
                 <Button
@@ -468,6 +476,7 @@ export function SubjectsPage() {
                             ? `Drop ${subject.name} from the semester GWA`
                             : `Restore ${subject.name} to the semester GWA`
                         }
+                        disabled={!online}
                       >
                         {subject.active ? 'Drop subject' : 'Restore subject'}
                       </Button>
@@ -527,6 +536,7 @@ export function SubjectsPage() {
                                     })
                                   }
                                   aria-label={`Add score for ${category.name} in ${subject.name}`}
+                                  disabled={!online}
                                 >
                                   Add score
                                 </Button>
@@ -578,6 +588,7 @@ export function SubjectsPage() {
                                         })
                                       }
                                       aria-label={`Edit ${activity.name}`}
+                                      disabled={!online}
                                     >
                                       Edit
                                     </Button>
@@ -588,6 +599,7 @@ export function SubjectsPage() {
                                         setDeleteTarget(activity)
                                       }}
                                       aria-label={`Delete ${activity.name}`}
+                                      disabled={!online}
                                     >
                                       Delete
                                     </Button>
@@ -653,7 +665,7 @@ export function SubjectsPage() {
               <Button
                 variant={statusTarget.active ? 'destructive' : 'primary'}
                 onClick={() => void handleStatusChange()}
-                disabled={statusSaving}
+                disabled={!online || statusSaving}
               >
                 {statusSaving
                   ? 'Saving…'
@@ -697,7 +709,7 @@ export function SubjectsPage() {
               <Button
                 variant="destructive"
                 onClick={() => void handleDelete()}
-                disabled={deleting}
+                disabled={!online || deleting}
               >
                 {deleting ? 'Deleting…' : 'Delete score'}
               </Button>

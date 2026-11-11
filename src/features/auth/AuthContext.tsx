@@ -11,6 +11,7 @@ import {
   logoutRequest,
   type AuthUser,
 } from './api'
+import { clearOfflineData } from '../../lib/service-worker'
 import {
   AuthContext,
   type AuthContextValue,
@@ -58,6 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (identifier: string, password: string) => {
     const current = await loginRequest(identifier, password)
+    // Never let a previous account's cached grades survive a new sign-in.
+    await clearOfflineData()
     setUser(current)
     setStatus('authenticated')
     return current
@@ -69,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       // Clear the local session even if the network request fails.
     } finally {
+      await clearOfflineData()
       setUser(null)
       setStatus('anonymous')
     }

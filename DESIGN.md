@@ -272,6 +272,18 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 - Use inline spinners for button and row-level saves.
 - Keep layout stable to avoid jumps.
 
+### Offline and installation (Phase 11)
+
+**Decisions:** read-only offline (no write queue), cache the active semester only, PNG install icons.
+
+- **Connection banner.** When `navigator.onLine` is false, every authenticated screen shows a full-width banner above the page content: `You are offline. Saved data is read-only until the connection returns.` Cream note surface, strong border, small text, `role="status"`. It disappears on reconnect.
+- **Read-only offline.** Cached pages stay viewable: Home grades, Subjects and their scores, the weekly schedule, and Settings. Every write entry point is disabled while offline — Add Score (button and phone FAB), semester switching (Home select and Settings activate), Add/Edit/Drop/Restore subject, Add/Edit/Delete score, and Add/Edit/Delete class. Nothing is queued and no merge logic exists, so offline edits cannot be lost or duplicated.
+- **Write guard.** Independent of the UI, `apiRequest` rejects any non-GET request while offline with `You are offline. Changes cannot be saved until the connection returns.` This covers dialogs that were already open when the connection dropped.
+- **Cache scope.** The service worker keeps an app-shell cache, a static-asset cache, and one API cache. The API cache is cleared on sign-in, sign-out, and whenever the active semester changes, so a shared device never shows another account's grades and the cache never spans semesters.
+- **Fetch strategy.** API GETs are network-first with a cached fallback; navigations are network-first with a cached shell and a plain offline page as the last resort; hashed assets and icons are cache-first. `/api/health` is never cached.
+- **Installability.** `manifest.webmanifest` declares 192×192 and 512×512 PNG icons plus a 512×512 maskable icon on the cream background, with the SVG keeping `sizes: any`. `index.html` links `apple-touch-icon` (180×180). Display is standalone, theme color cream, background cream.
+- **Not included.** Background sync, push notifications, and an install prompt UI are out of scope for Phase 11.
+
 ## 7. Brand mark, mascot, and illustration usage
 
 ### Brand mark (logo)
@@ -371,7 +383,7 @@ Each screen must be implemented for the listed layouts and states. Screens marke
   - **Details and delete:** details show day, time, and room with Close, Edit, and Delete. Delete opens a confirmation modal that repeats the subject, day, time, and room. Successful changes refetch the schedule and recalculate conflicts.
   - This is the current visual baseline; it follows the shared tokens and reuses the shared `Card`, `Modal`, `Input`, `Select`, `Button`, `Badge`, and `EmptyState` components.
 
-### Settings — proposed baseline (Phase 10, awaiting approval)
+### Settings — approved baseline (Phase 10)
 - **Entry:** the existing `Settings` navigation item. One scrolling page of stacked cards, no tabs and no sub-routes.
 - **Sections, in order:** Semester, Grade scale, Account.
 - **Semester card:**
@@ -391,7 +403,7 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 - **States:** page-level loading, inline error with retry, `Switching…` while the row action is disabled, switch error that leaves the active semester unchanged, grade scale not configured, empty semester list.
 - **Accessibility:** the active semester is marked by the `Active` badge text, not color alone; each `Activate` action has an accessible name naming its semester; the confirmation modal contains focus and returns it to the action.
 - **Visual:** reuses shared `Card`, `Badge`, `Button`, `Modal`, and `EmptyState`; cream surfaces, a soft orange border on the active semester row, no new navigation.
-- **Implemented (Phase 10, visual spec awaiting approval):** the three cards, the switch confirmation modal, the read-only scale list, and the not-configured state are built to this baseline. `GET /api/settings/conversion` and `PATCH /api/subjects/:id` back the page; `GET /api/semesters` now returns per-semester units and subject counts. Deployed as version `d5957195-c327-4e5d-9751-7706e3cd6860` and confirmed working in production on 2026-11-11; the not-configured state is correct until approved thresholds are loaded.
+- **Implemented (Phase 10, approved baseline):** the three cards, the switch confirmation modal, the read-only scale list, and the not-configured state are built to this baseline. `GET /api/settings/conversion` and `PATCH /api/subjects/:id` back the page; `GET /api/semesters` now returns per-semester units and subject counts. Deployed as version `d5957195-c327-4e5d-9751-7706e3cd6860`. Production QA passed on 2026-11-11 for semester switching, the empty grade-scale state, and the account card; the not-configured state is correct until approved thresholds are loaded.
 
 ### Dropped subjects
 - **Action:** a subject can be marked `Dropped` from its expanded card on Subjects. Dropping asks for confirmation that names the subject and states that it will stop counting toward the semester GWA.
@@ -399,6 +411,7 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 - **Reverse:** a dropped subject offers `Restore subject`, which returns it to the GWA immediately.
 - **States:** dropping, drop error, restored.
 - **Dependency:** `GRADING_RULES.md` §7 defines the exclusion; the UI never computes it inline.
+- **Implemented (Phase 10):** dropping and restoring are wired to `PATCH /api/subjects/:id` with a confirmation modal, the `Dropped` badge, and a note explaining that scores are kept. Production QA passed on 2026-11-11, including the GWA unit change.
 
 ### Semester GWA
 - **Placement:** Home, directly below the page header and status banner and above the subject grid. Phone and desktop use the same card; only the internal arrangement changes. No GWA navigation item is added.
@@ -442,7 +455,7 @@ Every data surface must intentionally handle:
 | Incomplete | `No Grade Yet` / `GWA Pending` with plain-language reason |
 | Error | Inline, actionable message; retry where possible |
 | Success | Clear confirmation without blocking the next action |
-| Offline (later phase) | Visible connection/sync status; no silent data loss |
+| Offline | Visible connection banner; cached data read-only; every write entry point disabled |
 | Saving | Disable conflicting actions; show progress |
 
 ## 12. Accessibility
