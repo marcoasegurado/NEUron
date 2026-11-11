@@ -124,26 +124,33 @@ export function ActivityDialog({
           <Select
             label="Subject"
             value={values.subjectId}
-            onChange={(event) => handleSubjectChange(event.target.value)}
+            options={
+              subjects.length === 0
+                ? [{ value: '', label: 'No subjects available' }]
+                : subjects.map((subject) => ({
+                    value: subject.id,
+                    label: subject.name,
+                  }))
+            }
+            onChange={handleSubjectChange}
             error={errors.subjectId}
             disabled={editing || subjects.length === 0}
             hint={editing ? 'The subject cannot be changed here.' : undefined}
-          >
-            {subjects.length === 0 ? (
-              <option value="">No subjects available</option>
-            ) : null}
-            {subjects.map((subject) => (
-              <option key={subject.id} value={subject.id}>
-                {subject.name}
-              </option>
-            ))}
-          </Select>
+          />
 
           <Select
             label="Category"
             value={values.categoryId}
-            onChange={(event) => {
-              update({ categoryId: event.target.value })
+            options={
+              categories.length === 0
+                ? [{ value: '', label: 'No active categories' }]
+                : categories.map((category) => ({
+                    value: category.id,
+                    label: `${category.name} · ${category.weightPercent}%`,
+                  }))
+            }
+            onChange={(value) => {
+              update({ categoryId: value })
               setErrors((current) => ({
                 ...current,
                 categoryId: undefined,
@@ -158,16 +165,7 @@ export function ActivityDialog({
             }
             error={errors.categoryId}
             disabled={editing || categories.length === 0}
-          >
-            {categories.length === 0 ? (
-              <option value="">No active categories</option>
-            ) : null}
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name} · {category.weightPercent}%
-              </option>
-            ))}
-          </Select>
+          />
         </div>
 
         <Input

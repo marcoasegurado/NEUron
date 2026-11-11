@@ -1,14 +1,12 @@
 import {
   useEffect,
-  useId,
   useMemo,
   useState,
   type FormEvent,
-  type ReactNode,
 } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '../../app/PageHeader'
-import { Badge, Button, Card, Input } from '../../components/ui'
+import { Badge, Button, Card, Input, Select } from '../../components/ui'
 import { cx } from '../../lib/cx'
 import {
   createSemester,
@@ -35,55 +33,6 @@ import {
 } from './draft'
 import { useMediaQuery } from './useMediaQuery'
 import styles from './SetupPage.module.css'
-
-interface SelectFieldProps {
-  label: string
-  value: string
-  onChange: (value: string) => void
-  children: ReactNode
-  hint?: string
-  error?: string
-}
-
-function SelectField({
-  label,
-  value,
-  onChange,
-  children,
-  hint,
-  error,
-}: SelectFieldProps) {
-  const generatedId = useId()
-  const selectId = generatedId
-  const messageId = `${selectId}-message`
-  const hasMessage = Boolean(error || hint)
-
-  return (
-    <div className={styles.selectField}>
-      <label className={styles.selectLabel} htmlFor={selectId}>
-        {label}
-      </label>
-      <select
-        id={selectId}
-        className={cx(styles.select, error && styles.selectInvalid)}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={hasMessage ? messageId : undefined}
-      >
-        {children}
-      </select>
-      {hasMessage ? (
-        <p
-          id={messageId}
-          className={cx(styles.selectMessage, error && styles.fieldError)}
-        >
-          {error ?? hint}
-        </p>
-      ) : null}
-    </div>
-  )
-}
 
 interface ReviewSummaryProps {
   draft: SetupDraft
@@ -390,19 +339,20 @@ export function SetupPage() {
                   error={basicErrors.academicYear}
                 />
 
-                <SelectField
+                <Select
                   label="Term"
                   value={draft.term}
+                  options={[
+                    { value: '1st Semester', label: '1st Semester' },
+                    { value: '2nd Semester', label: '2nd Semester' },
+                    { value: 'Summer', label: 'Summer' },
+                  ]}
                   onChange={(value) =>
                     changeDraft((current) => ({ ...current, term: value }))
                   }
                   hint="Choose the term for this semester."
                   error={basicErrors.term}
-                >
-                  <option value="1st Semester">1st Semester</option>
-                  <option value="2nd Semester">2nd Semester</option>
-                  <option value="Summer">Summer</option>
-                </SelectField>
+                />
 
                 <Input
                   label="Number of subjects"

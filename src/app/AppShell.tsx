@@ -1,5 +1,5 @@
 import { useState, type ComponentType, type SVGProps } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { CatMascot } from '../components/brand/CatMascot'
 import { useAuth } from '../features/auth/useAuth'
 import { cx } from '../lib/cx'
@@ -57,6 +57,7 @@ function NavItemLink({
 export function AppShell() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const online = useOnlineStatus()
   const [signingOut, setSigningOut] = useState(false)
   const initial = user?.displayName.trim().charAt(0).toUpperCase() || 'N'
@@ -140,7 +141,9 @@ export function AppShell() {
               returns.
             </p>
           ) : null}
-          <Outlet />
+          <div key={location.pathname} className={styles.page}>
+            <Outlet />
+          </div>
         </div>
       </main>
 
@@ -149,6 +152,12 @@ export function AppShell() {
           <NavItemLink key={item.to} item={item} compact />
         ))}
       </nav>
+
+      {/*
+        One-shot cream veil: it fades out as the shell mounts, so the boot
+        splash and the signed-in app cross-fade instead of hard-cutting.
+      */}
+      <div className={styles.bootVeil} aria-hidden="true" />
     </div>
   )
 }

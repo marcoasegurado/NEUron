@@ -111,48 +111,6 @@
   gap: var(--space-4);
 }
 
-/* Select mirrors the shared Input control. */
-.selectField {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.selectLabel {
-  font-size: var(--text-small);
-  font-weight: var(--weight-semibold);
-  color: var(--color-text-secondary);
-}
-
-.select {
-  width: 100%;
-  min-height: 44px;
-  padding: 0 var(--space-5) 0 var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  background-color: var(--color-bg-elevated);
-  color: var(--color-text);
-  transition:
-    border-color var(--duration-fast) var(--ease-out),
-    box-shadow var(--duration-fast) var(--ease-out);
-}
-
-.select:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-focus-ring);
-}
-
-.selectInvalid {
-  border-color: var(--color-danger);
-}
-
-.selectMessage {
-  font-size: var(--text-caption);
-  line-height: var(--text-caption-line);
-  color: var(--color-text-muted);
-}
-
 .fieldError {
   color: var(--color-danger);
 }

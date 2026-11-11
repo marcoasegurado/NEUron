@@ -181,6 +181,7 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 - Label above field; helper text below; error text in `--color-danger` with an icon.
 - Placeholders are muted and never the only label.
 - Selects use the same shell as inputs with a rounded chevron.
+- **Dropdown listbox (2026-11-11):** the menu is a custom panel, not the OS popup — white surface, 1px soft border, `16px` radius, raised shadow, `6px` padding, `40px` rows, and a `280px` max height with scroll. It fades and scales in over 150ms, rows highlight on hover and keyboard focus, the selected row is bold orange with a check, and the chevron rotates 180° while open. The trigger keeps focus and points at the active row with `aria-activedescendant`; arrows, Home/End, Enter/Space, Escape, Tab, and typeahead all work. The phone semester switcher reuses the same listbox with a compact pill trigger (`label` + `Switch` + chevron).
 - Checkboxes and radios use rounded-square/circular shapes with orange checked states.
 - Toggles use an orange track when on.
 
@@ -320,6 +321,22 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 - Respect `prefers-reduced-motion`; replace movement with instant state changes.
 - Avoid decorative looping animation except a subtle mascot idle state if approved.
 
+### Implemented motion set (2026-11-11)
+
+Tokens: `--duration-fast` 150ms, `--duration-base` 200ms, `--duration-slow` 250ms, `--ease-out`, `--ease-in`. Shared keyframes (`fade-in`, `rise-in`, `scale-in`, `sheet-up`, `veil-out`) live in `src/styles/global.css`; component CSS modules reference those names.
+
+- **App open.** While the session is checked, a branded splash shows the `CatMascot` + `NEU`/`ming` wordmark + `Checking your session…`. The mascot scales in (250ms), the wordmark rises (250ms, 60ms delay), and the status text fades (200ms, 120ms delay). `#root` fades in over 200ms, and the signed-in shell mounts a cream veil that fades out over 250ms (ease-in), so the splash and the app cross-fade instead of hard-cutting. The auth screens reuse the same language: mascot scale-in, wordmark rise, form card rise with an 80ms delay.
+- **Route change.** The `<Outlet />` wrapper is keyed on `pathname` and fades in over 200ms. It animates opacity only, so fixed children such as the phone Add Score FAB keep their viewport anchoring.
+- **Cards.** Home status banner, semester GWA card, Home/Subjects subject cards, and Settings cards rise 8px + fade over 200ms when they mount.
+- **Dialogs.** The overlay fades in over 150ms; the dialog scales from 0.96 over 200ms; on phones the sheet slides up 24px over 250ms.
+- **Offline banner.** Rises 8px + fades over 200ms when the connection drops.
+- **Buttons.** Primary and secondary buttons lift 1px and gain a soft shadow on hover, then settle back on press; the phone Add Score FAB lifts 2px, Schedule day tabs and agenda rows lift 1px, and Log out/Sign out fade their hover and disabled states. All use 150ms `ease-out`.
+- **Dropdowns.** The panel fades and scales from 0.98 over 150ms, the chevron rotates 180° over 150ms, and rows transition their highlight and text color. No looping animation.
+- **Existing motion.** Toast entrance, input focus, nav and progress transitions are unchanged.
+- **Exits.** Exits are instant (no JS exit-animation layer): dialogs close, subject panels collapse, and pages unmount without a fade-out. The splash-to-app handoff is a cross-fade because the veil covers the mount, not because the splash animates out.
+- **Reduced motion.** The global `prefers-reduced-motion` block zeroes animation/transition duration and delay, so every state change above becomes instant.
+- **Open gap.** Expanding a subject panel animates its entrance fade only; collapse is instant. Full height + opacity expand/collapse needs the accordion panel to stay mounted (grid-rows technique) and a test update, so it is deliberately deferred.
+
 ## 10. Screen and state inventory
 
 Each screen must be implemented for the listed layouts and states. Screens marked **needs spec** must receive an approved written specification before implementation.
@@ -356,7 +373,7 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 - **Phone:** three steps — (1) semester name and number of subjects; (2) subject details and editable grading categories/weights; (3) readiness summary and save.
 - **Desktop:** two-step equivalent with wider forms and multi-column subject configuration.
 - **States:** step progress, add/remove subject, invalid weight total, missing required fields, saving, success, unsaved-changes warning.
-- **Implemented (Phase 3):** phone renders all three steps; desktop combines subjects and review in step 2, with a sticky review column beside the subject cards. Subject fields become two columns at `640px+`; the term uses a native select styled as the shared control. This is the current visual baseline.
+- **Implemented (Phase 3):** phone renders all three steps; desktop combines subjects and review in step 2, with a sticky review column beside the subject cards. Subject fields become two columns at `640px+`; the term uses the shared animated select control. This is the current visual baseline.
 
 ### Home
 - **Phone:** page title, active semester, Semester GWA card, compact grade rows/cards, bottom navigation, Add Score.

@@ -301,7 +301,10 @@ describe('HomePage', () => {
     renderHome()
 
     await screen.findByText('Mathematics')
-    await user.selectOptions(screen.getByLabelText('Semester'), 'semester-2')
+    await user.click(screen.getByLabelText('Semester'))
+    await user.click(
+      await screen.findByRole('option', { name: '2nd Semester 2026-2027' }),
+    )
 
     expect(
       await screen.findByText('2nd Semester 2026-2027 · 1 subject'),

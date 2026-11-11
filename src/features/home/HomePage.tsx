@@ -241,6 +241,12 @@ export function HomePage() {
   const heroMessage = firstGraded
     ? `${firstGraded.name} is looking great! Keep it up.`
     : 'Add scores to see how you are tracking.'
+  const semesterOptions = state.semesters.map((semester) => ({
+    value: semester.id,
+    label: `${semester.label}${semester.isActive ? ' (active)' : ''}`,
+  }))
+  const semesterSwitchDisabled =
+    !online || switching || state.semesters.length < 2
 
   return (
     <>
@@ -251,28 +257,14 @@ export function HomePage() {
             <p className={styles.heroBubble}>{heroMessage}</p>
           </div>
 
-          <div className={styles.semesterPill}>
-            <span className={styles.semesterLabel}>
-              {state.setup.semester.label}
-            </span>
-            <span className={styles.semesterSwitch} aria-hidden="true">
-              Switch
-            </span>
-            <select
-              className={styles.semesterSelect}
-              aria-label="Semester"
-              value={state.setup.semester.id}
-              onChange={(event) => void handleSwitch(event.target.value)}
-              disabled={!online || switching || state.semesters.length < 2}
-            >
-              {state.semesters.map((semester) => (
-                <option key={semester.id} value={semester.id}>
-                  {semester.label}
-                  {semester.isActive ? ' (active)' : ''}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            variant="pill"
+            label="Semester"
+            value={state.setup.semester.id}
+            options={semesterOptions}
+            onChange={(value) => void handleSwitch(value)}
+            disabled={semesterSwitchDisabled}
+          />
 
           <h1 className={styles.phoneTitle}>Current grades</h1>
         </div>
@@ -287,19 +279,11 @@ export function HomePage() {
               <Select
                 label="Semester"
                 value={state.setup.semester.id}
-                onChange={(event) => void handleSwitch(event.target.value)}
-                disabled={
-                  !online || switching || state.semesters.length < 2
-                }
+                options={semesterOptions}
+                onChange={(value) => void handleSwitch(value)}
+                disabled={semesterSwitchDisabled}
                 className={styles.switcher}
-              >
-                {state.semesters.map((semester) => (
-                  <option key={semester.id} value={semester.id}>
-                    {semester.label}
-                    {semester.isActive ? ' (active)' : ''}
-                  </option>
-                ))}
-              </Select>
+              />
               <Button
                 className={styles.addScoreButton}
                 onClick={() => setDialogOpen(true)}

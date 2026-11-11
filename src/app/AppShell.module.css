@@ -18,6 +18,21 @@
   margin: 0 auto;
 }
 
+/* Route change: opacity-only so fixed children (like the phone FAB) keep
+   their viewport anchoring instead of snapping to a transformed ancestor. */
+.page {
+  animation: fade-in var(--duration-base) var(--ease-out) both;
+}
+
+.bootVeil {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background-color: var(--color-bg-page);
+  pointer-events: none;
+  animation: veil-out var(--duration-slow) var(--ease-in) forwards;
+}
+
 .offlineBanner {
   margin: 0 0 var(--space-4);
   padding: var(--space-3) var(--space-4);
@@ -27,6 +42,7 @@
   color: var(--color-text);
   font-size: var(--text-small);
   line-height: var(--text-small-line);
+  animation: rise-in var(--duration-base) var(--ease-out) both;
 }
 
 .bottomNav {
@@ -185,6 +201,9 @@
   color: var(--color-primary-hover);
   font-size: var(--text-body);
   font-weight: var(--weight-bold);
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    opacity var(--duration-fast) var(--ease-out);
 }
 
 .logoutButton:hover:not(:disabled) {
@@ -206,6 +225,9 @@
   font-size: 1.0625rem;
   font-weight: var(--weight-bold);
   line-height: 1.5rem;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    opacity var(--duration-fast) var(--ease-out);
 }
 
 .signOut:hover:not(:disabled) {

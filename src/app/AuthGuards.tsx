@@ -1,14 +1,19 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { CatMascot } from '../components/brand/CatMascot'
 import { useAuth } from '../features/auth/useAuth'
 import styles from './AuthGuards.module.css'
 
 export function AuthLoadingScreen() {
   return (
     <div className={styles.screen} role="status" aria-live="polite">
-      <span className={styles.mark} aria-hidden="true">
-        N
-      </span>
-      <p className={styles.text}>Checking your session…</p>
+      <div className={styles.lockup}>
+        <CatMascot className={styles.mascot} />
+        <span className={styles.wordmark} aria-hidden="true">
+          <span className={styles.brandNeu}>NEU</span>
+          <span className={styles.brandMing}>ming</span>
+        </span>
+        <p className={styles.text}>Checking your session…</p>
+      </div>
     </div>
   )
 }

@@ -114,38 +114,35 @@ export function ClassDialog({
         <Select
           label="Subject"
           value={values.subjectId}
-          onChange={(event) => {
-            update({ subjectId: event.target.value })
+          options={
+            subjects.length === 0
+              ? [{ value: '', label: 'No subjects available' }]
+              : subjects.map((subject) => ({
+                  value: subject.id,
+                  label: subject.name,
+                }))
+          }
+          onChange={(value) => {
+            update({ subjectId: value })
             setErrors((current) => ({ ...current, subjectId: undefined }))
           }}
           error={errors.subjectId}
           disabled={subjects.length === 0}
-        >
-          {subjects.length === 0 ? (
-            <option value="">No subjects available</option>
-          ) : null}
-          {subjects.map((subject) => (
-            <option key={subject.id} value={subject.id}>
-              {subject.name}
-            </option>
-          ))}
-        </Select>
+        />
 
         <Select
           label="Day"
           value={values.dayOfWeek}
-          onChange={(event) => {
-            update({ dayOfWeek: event.target.value })
+          options={SCHEDULE_DAYS.map((day) => ({
+            value: String(day.value),
+            label: day.long,
+          }))}
+          onChange={(value) => {
+            update({ dayOfWeek: value })
             setErrors((current) => ({ ...current, dayOfWeek: undefined }))
           }}
           error={errors.dayOfWeek}
-        >
-          {SCHEDULE_DAYS.map((day) => (
-            <option key={day.value} value={day.value}>
-              {day.long}
-            </option>
-          ))}
-        </Select>
+        />
 
         <div className={styles.row}>
           <Input

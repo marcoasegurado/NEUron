@@ -66,6 +66,20 @@
   color: var(--color-text-secondary);
   font-size: var(--text-small);
   font-weight: var(--weight-semibold);
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.dayTab:hover {
+  border-color: var(--color-border-strong);
+  transform: translateY(-1px);
+}
+
+.dayTab:active {
+  transform: translateY(0);
 }
 
 .dayTabActive {
@@ -155,11 +169,20 @@
   background-color: var(--tone-bg, var(--color-bg-elevated));
   color: var(--color-text);
   text-align: left;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
 }
 
 .agendaItem:hover {
   border-color: var(--tone-border, var(--color-border-strong));
   box-shadow: var(--shadow-card);
+  transform: translateY(-1px);
+}
+
+.agendaItem:active {
+  transform: translateY(0);
 }
 
 .agendaTime {

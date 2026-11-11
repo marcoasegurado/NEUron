@@ -10,48 +10,46 @@
   color: var(--color-text-secondary);
 }
 
-.control {
-  position: relative;
+.pill {
+  align-self: flex-start;
 }
 
-.select {
-  width: 100%;
-  min-height: 44px;
-  padding: 0 var(--space-6) 0 var(--space-4);
-  border: 1px solid var(--color-border);
+/*
+ * Doubled class keeps the pill shell ahead of the shared trigger rules,
+ * regardless of module order in the bundle.
+ */
+.pillTrigger.pillTrigger {
+  width: auto;
+  min-height: 40px;
+  padding: 0 var(--space-5);
+  border-width: 2px;
+  border-color: var(--color-border-strong);
   border-radius: var(--radius-pill);
-  background-color: var(--color-bg-elevated);
-  color: var(--color-text);
-  appearance: none;
-  cursor: pointer;
-  transition:
-    border-color var(--duration-fast) var(--ease-out),
-    box-shadow var(--duration-fast) var(--ease-out);
-}
-
-.select:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-focus-ring);
-}
-
-.invalid {
-  border-color: var(--color-danger);
-}
-
-.invalid:focus {
-  border-color: var(--color-danger);
-  box-shadow: 0 0 0 3px rgba(196, 69, 54, 0.25);
-}
-
-.chevron {
-  position: absolute;
-  top: 50%;
-  right: var(--space-4);
-  transform: translateY(-50%);
-  pointer-events: none;
-  color: var(--color-text-secondary);
   font-size: var(--text-small);
+}
+
+.pillTrigger.pillTrigger:hover:not(:disabled) {
+  border-color: var(--color-primary);
+}
+
+.pillContent {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.pillLabel {
+  overflow: hidden;
+  font-weight: var(--weight-bold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pillAction {
+  color: var(--color-primary);
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
 }
 
 .message {

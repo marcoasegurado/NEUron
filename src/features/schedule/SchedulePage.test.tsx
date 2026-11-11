@@ -222,7 +222,8 @@ describe('SchedulePage', () => {
     await user.click(screen.getAllByRole('button', { name: 'Add class' })[0])
 
     const dialog = screen.getByRole('dialog', { name: 'Add class' })
-    await user.selectOptions(within(dialog).getByLabelText('Day'), '1')
+    await user.click(within(dialog).getByLabelText('Day'))
+    await user.click(screen.getByRole('option', { name: 'Monday' }))
     fireEvent.change(within(dialog).getByLabelText('Start time'), {
       target: { value: '09:30' },
     })
