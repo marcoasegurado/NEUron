@@ -1,6 +1,6 @@
 # NEUming — Data Model
 
-**Status:** Logical entities and relationships are identified. The storage target is Cloudflare D1, and the `neuron` database is created and bound as `DB`. Auth is defined in `migrations/0001_auth.sql` and `migrations/0002_add_username.sql`; academic structure is defined in `migrations/0003_academic_structure.sql`; activities are defined in `migrations/0004_activities.sql`; schedules are defined in `migrations/0005_schedule.sql`. Auth, academic structure, activities, and schedules are applied locally and remotely; the Phase 3, Phase 5, and Phase 6 APIs are deployed, and Phase 7 is deployed as version `e0dfb7d1-ddd0-46c3-a56b-c2a4f588e47b`. The conversion-table schema and global conversion-table ownership still need review before implementation.
+**Status:** Logical entities and relationships are identified. The storage target is Cloudflare D1, and the `neuron` database is created and bound as `DB`. Auth is defined in `migrations/0001_auth.sql` and `migrations/0002_add_username.sql`; academic structure is defined in `migrations/0003_academic_structure.sql`; activities are defined in `migrations/0004_activities.sql`; schedules are defined in `migrations/0005_schedule.sql`; the central conversion table and subject dropped-status column are defined in `migrations/0006_conversion_and_subject_status.sql`. Auth, academic structure, activities, and schedules are applied locally and remotely; `0006` is applied remotely only (local application needs workerd, which requires macOS 13.5+). The Phase 3, Phase 5, and Phase 6 APIs are deployed, Phase 7 is deployed as version `e0dfb7d1-ddd0-46c3-a56b-c2a4f588e47b`, and Phase 9 is deployed as `e1fe0b8f-3387-40d9-8eba-45f7eb71e4a7`, and Phase 10 is deployed as `d5957195-c327-4e5d-9751-7706e3cd6860`. Conversion-table ownership and historical behavior are resolved in Phase 10; the threshold values themselves remain unapproved.
 **Source of truth:** Consolidated data model for the NEUming rebuild. Derived from the original master brief (Part 6 and relevant rules from Parts 1 and 4), which has since been removed at the user's request. This file is now the reference for entities, relationships, and data decisions.
 
 > Add remaining D1 tables and migrations only after reviewing the current `neuron` schema and confirming the unresolved decisions with the user. Do not choose a schema that makes unresolved decisions difficult to change.
@@ -70,10 +70,10 @@ A user can have multiple semesters. Historical semesters must remain separated a
 - Subject name.
 - Units (number greater than zero; decimal values are allowed).
 - Professor (optional).
-- Active/inactive status, if needed for semester management.
+- Dropped marker (`is_active = 0` means dropped/withdrawn; default `1`).
 - Sort order, if needed for display.
 
-Each subject belongs to one semester and has its own grading categories and activities.
+Each subject belongs to one semester and has its own grading categories and activities. A dropped subject keeps its rows and scores but contributes no units and no grade to the semester GWA (`GRADING_RULES.md` §7).
 
 ### 2.6 Grading Category
 
@@ -120,10 +120,21 @@ One record represents one meeting. A class that meets Monday, Wednesday, and Fri
 ### 2.9 Percentage-to-Grade Conversion Table
 
 - A list of minimum percentage thresholds and corresponding numerical grades.
-- One table is shared by every subject within its confirmed ownership scope.
-- Validation and historical-version behavior follow `GRADING_RULES.md`.
+- One table is shared by every subject and every account (resolved in Phase 10), stored as one application-wide row set with no `user_id` and no `semester_id`.
+- Read-only to students; created and changed only by owner tooling (migration or script).
+- Validation and historical behavior follow `GRADING_RULES.md` §6.
 
-The ownership scope — per user or central application-wide — is unresolved. Do not choose a table layout that makes this decision difficult to change without documenting the tradeoff.
+Planned schema (`migrations/0006_conversion_and_subject_status.sql`), applied to remote D1 on 2026-11-11:
+
+| Column | Type | Rules |
+|---|---|---|
+| `id` | TEXT | Primary key |
+| `minimum_percentage` | REAL | Unique, `>= 0` and `<= 100`; one row must be `0` |
+| `grade` | REAL | `>= 1.0` and `<= 5.0` |
+| `created_at` | TEXT | Not null |
+| `updated_at` | TEXT | Not null |
+
+No snapshot/version table exists: one live table drives every semester, so a change recalculates past results (resolved in Phase 10).
 
 ## 3. Relationship summary
 
@@ -159,17 +170,17 @@ These must be resolved with the user before the dependent implementation work:
 
 | Decision | Current status | Needed before |
 |---|---|---|
-| D1 database and binding | `neuron` created in APAC and bound as `DB`; `0001_auth.sql` through `0005_schedule.sql` are applied locally and remotely | Resolved for Phase 7 |
-| Exact D1/SQL schema and migrations | Auth, academic-structure, activity, and schedule schemas are defined in `0001`–`0005`; the conversion table is still undefined | Phase 4+ / data-model approval |
+| D1 database and binding | `neuron` created in APAC and bound as `DB`; `0001_auth.sql` through `0005_schedule.sql` are applied locally and remotely; `0006_conversion_and_subject_status.sql` is applied remotely (local application blocked by workerd on macOS 12.6) | Resolved for Phase 10 |
+| Exact D1/SQL schema and migrations | Auth, academic-structure, activity, and schedule schemas are defined in `0001`–`0005`; the conversion table and subject dropped-status column are defined in `0006` | Resolved for Phase 10 |
 | Authentication provider and stable user ID | Resolved: custom email/password with UUID user IDs and D1 sessions | Resolved |
 | Password hashing and session lifetime | Resolved baseline: PBKDF2-HMAC-SHA256 at 10,000 iterations; 7-day sessions; 1-hour reset tokens | Resolved |
 | Workers plan and hashing CPU cost | Lower-iteration path chosen for Workers Free; production login succeeded with 10,000 iterations. Add rate limiting before relying on it for real accounts | Resolved for Phase 2; rate limiting remains a hardening task |
 | Account provisioning | Resolved: no public registration; the owner creates separate accounts manually with `npm run cf:account:create`. Any valid email domain is allowed, and login accepts username or email | Resolved |
 | Resend account and sender | API key and verified `AUTH_EMAIL_FROM` are not configured | Before password-reset production test |
 | Auth rate limiting / email ownership verification | Not specified or implemented | Before hardening / production if required |
-| Conversion table ownership | One shared table across subjects is confirmed; whether per account or central across users is not | Phase 10 / data-model approval |
-| Historical conversion table changes | Recalculate past semesters or preserve prior table version is undecided | Phase 10 |
-| Dropped/withdrawn subjects | Whether/how excluded from GWA is undecided | Phase 10 |
+| Conversion table ownership | Resolved: one application-wide table read by every account, read-only to students, changed only by owner tooling | Resolved (Phase 10) |
+| Historical conversion table changes | Resolved: one live table with no snapshot; changes recalculate past semesters too | Resolved (Phase 10) |
+| Dropped/withdrawn subjects | Resolved: `subjects.is_active = 0` means dropped; excluded from GWA units and grades, scores stay visible | Resolved (Phase 10) |
 | Schedule day range | Resolved: Monday–Saturday, stored as `day_of_week` `1`–`6` | Resolved |
 | Schedule overlap behavior | Resolved: overlaps are saved and flagged; no blocking constraint | Resolved |
 | Multi-day class storage | Resolved: one `class_schedules` row per meeting day | Resolved |

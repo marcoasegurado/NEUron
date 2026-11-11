@@ -13,7 +13,8 @@
     "cf:dev": "npm run build && wrangler dev",
     "cf:deploy": "npm run build && wrangler deploy",
     "cf:d1:list": "wrangler d1 list",
-    "cf:account:create": "node scripts/create-account.mjs"
+    "cf:account:create": "node scripts/create-account.mjs",
+    "cf:conversion:load": "node scripts/set-conversion-table.mjs"
   },
   "dependencies": {
     "react": "^19.3.1",

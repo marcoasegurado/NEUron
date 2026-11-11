@@ -86,10 +86,20 @@
 }
 
 .subjectName {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
   font-size: var(--text-h3);
   line-height: var(--text-h3-line);
   font-weight: var(--weight-bold);
   overflow-wrap: anywhere;
+}
+
+.droppedNote {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: var(--text-small-line);
 }
 
 .subjectMeta {

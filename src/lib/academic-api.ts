@@ -7,6 +7,8 @@ export interface Semester {
   term: string
   label: string
   isActive: boolean
+  units?: number
+  subjectCount?: number
   createdAt: string
   updatedAt: string
 }
@@ -40,6 +42,7 @@ export interface Subject {
   name: string
   units: number
   professor: string | null
+  isActive: boolean
   sortOrder: number
   createdAt: string
   updatedAt: string
@@ -164,6 +167,22 @@ export function createSubject(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(input),
+    },
+  )
+}
+
+export function updateSubjectStatus(
+  subjectId: string,
+  active: boolean,
+): Promise<{ subject: Subject }> {
+  return apiRequest<{ subject: Subject }>(
+    `/api/subjects/${encodeURIComponent(subjectId)}`,
+    {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ active }),
     },
   )
 }

@@ -118,16 +118,36 @@ Suggested data shape (illustrative only):
 
 **Do not treat these example numbers as the official NEU conversion table.** The actual NEU thresholds and grade steps must be checked against a current official NEU document or confirmed by the user. Do not copy the old repository's conversion values as official by default.
 
-### Conversion-table ownership still needs a data decision
+### Conversion-table ownership (resolved — Phase 10)
 
-Confirmed: one table is shared by all subjects.
-Not yet confirmed: whether the table is configurable per student account or centrally managed across all NEUming accounts.
+Confirmed:
 
-The Settings proposal assumes the table can be managed in a settings area, but the coding agent must not decide its ownership scope or permissions without user approval.
+- One table is shared by all subjects.
+- The table is **central across all NEUming accounts**: a single application-wide table, not per-account and not per-semester.
+- Students **read** the table in Settings and cannot edit it in the app.
+- The table is created and changed only by owner-controlled tooling (a D1 migration or a script), never by a request from the browser or a student session.
+- There is no per-account override, no per-subject table, and no per-semester table.
 
-Changing the global table may change every affected subject grade and the semester GWA. The UI should clearly warn the user before saving a change.
+Because editing is not exposed in the app, there is no in-app "save change" warning. The owner tooling must report how many semesters a change affects before it is applied.
 
-It is also unresolved whether a conversion-table edit should recalculate historical semesters or preserve a historical snapshot/version. Do not silently choose either behavior.
+### Loading or changing the table (owner procedure)
+
+There is no in-app editor. The owner loads the table with a script that validates first and writes only when told to:
+
+1. Save the verified rows to a JSON file, as an array or `{ "rows": [...] }`. Each row is `{ "minimumPercentage": number, "grade": number }`.
+2. Dry run: `npm run cf:conversion:load -- --file <path>`. It validates the file and prints the ordered table plus how many semesters and subjects would be affected. It writes nothing.
+3. Apply: `npm run cf:conversion:load -- --file <path> --apply`.
+
+The script rejects an empty table, a missing `0` threshold, percentages outside `0`–`100`, grades outside `1.00`–`5.00`, and duplicate thresholds. `--local` targets the local D1 database instead of remote, but local execution needs a host where workerd can run.
+
+An apply replaces the whole table (`DELETE` then `INSERT` inside one transaction). Because one live table drives every semester, the next read recalculates past semesters too; no backfill or version table exists.
+
+### Historical conversion-table behavior (resolved — Phase 10)
+
+- One live table is used everywhere. There is no snapshot and no stored table version.
+- A table change recalculates every convertible subject grade and every semester GWA, including past semesters.
+- Degraded results are surfaced, not hidden: a past semester whose grades become unreachable after a table edit shows the normal pending state with the conversion reason.
+- No historical grades are stored as a second source of truth, so nothing needs backfilling after a change.
 
 ## 7. Semester GWA
 
@@ -139,6 +159,7 @@ Rules:
 
 - Calculate GWA separately for each semester.
 - Include every active subject configured in that semester.
+- Exclude subjects marked `dropped`: a dropped subject contributes no units and no grade to the GWA or to the semester unit total, but its categories, activities, and percentage stay visible on Subjects.
 - Use exact numerical subject grades returned by the global conversion table.
 - Do not round subject grades or intermediate products before computing GWA.
 - Display the final GWA rounded to two decimal places.

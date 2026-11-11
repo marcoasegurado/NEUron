@@ -404,7 +404,8 @@ Implementation status:
 - `calculateTargetPercentage` in `src/lib/grading/grading.ts` returns `invalid-target`, `blocked`, `reached`, `required`, or `unreachable`. It reuses `calculateCategoryAverage` and `validateWeights`; the UI never computes the formula inline.
 - `TargetGradeDialog` opens from the expanded subject card, calculates live as the target changes, shows the current percentage, remaining weight, and required average, and is read-only.
 - Tests cover the `GRADING_RULES.md` 83.75% example, already-reached, no remaining weight, above-100% unreachable, the exact 100% boundary, invalid targets, blocked states, inactive categories, and recorded zero. `SubjectsPage.test.tsx` covers opening the dialog and the reached state.
-- Build and the full test suite pass. Deployed as version `e1fe0b8f-3387-40d9-8eba-45f7eb71e4a7`; production QA is pending.
+- Build and the full test suite pass. Deployed as version `e1fe0b8f-3387-40d9-8eba-45f7eb71e4a7`.
+- **Production QA waived by the user on 2026-11-11** so Phase 10 could start. Phase 9 is therefore implemented and deployed but not marked complete; if the calculator is QA'd later, close it here.
 
 **Done when:** Calculator outputs have test cases; calculations reuse the same weighted category averages as the grading engine; percentage targets work without the conversion table; grade targets remain deferred to Phase 10; no actual grade records are modified.
 
@@ -413,14 +414,27 @@ Implementation status:
 **Goal:** Manage account-level and semester-level settings.
 
 Tasks:
-- [ ] Design/spec the Settings page; only the navigation item is confirmed in the approved screen inventory.
-- [ ] Finalize conversion-table ownership scope (per-account or centrally managed).
+- [x] Design/spec the Settings page; only the navigation item is confirmed in the approved screen inventory. → Semester, Grade scale, and Account cards specified in `DESIGN.md` as a proposal awaiting approval.
+- [x] Finalize conversion-table ownership scope (per-account or centrally managed). → Central application-wide table, read-only to students.
 - [ ] Implement the one shared conversion table in the approved settings location.
-- [ ] Warn before saving changes that may affect every subject grade and semester GWA.
+- [x] Warn before saving changes that may affect every subject grade and semester GWA. → No in-app editing exists; `npm run cf:conversion:load` prints the affected semester and subject counts and writes only with `--apply`.
 - [ ] Support viewing and switching semesters.
-- [ ] Define creation of a new semester and retention of past semesters.
-- [ ] Resolve historical conversion-table behavior before enabling edits that can alter past results.
-- [ ] Add other account/settings actions only after their behavior is specified.
+- [x] Define creation of a new semester and retention of past semesters. → Creation stays in the existing Setup flow; every past semester is retained and listed in Settings.
+- [x] Resolve historical conversion-table behavior before enabling edits that can alter past results. → One live table, no snapshot; changes recalculate past semesters.
+- [ ] Add other account/settings actions only after their behavior is specified. → Phase 10 adds Sign out only.
+- [x] Add dropped/withdrawn subject support: `subjects.is_active = 0`, excluded from GWA units and grade, scores stay visible.
+
+Implementation status (2026-11-11, deployed as `d5957195-c327-4e5d-9751-7706e3cd6860`, authenticated QA pending):
+- `migrations/0006_conversion_and_subject_status.sql` creates the central `conversion_rows` table and adds `subjects.is_active`. It deliberately seeds no rows, because the official NEU thresholds are still unapproved.
+- `GET /api/settings/conversion` returns the table with `configured`, `valid`, and `errors`; it is read-only and answers other methods with `405`.
+- `PATCH /api/subjects/:id` accepts `{ active }`, validates subject → semester → user, and returns `404` for subjects the caller does not own.
+- `GET /api/semesters` now also returns `units` and `subjectCount`, counting only non-dropped subjects.
+- `SettingsPage` implements the Semester, Grade scale, and Account cards, including the switch confirmation modal and the not-configured grade-scale state.
+- Dropped subjects show a `Dropped` badge and a Restore action on Subjects, keep their scores, and are excluded from Home's grid and from GWA units.
+- `npx tsc -b`, `npm run build`, and `npx vitest run src` (193 tests) pass. `0006` is applied to **remote** D1 (verified: `conversion_rows` exists, `subjects.is_active` present, table count 10). Applying it locally is blocked on this machine because `wrangler d1 execute --local` needs workerd, which refuses to run on macOS 12.6 (minimum 13.5).
+- Deployed as version `d5957195-c327-4e5d-9751-7706e3cd6860`. Production checks pass: `/api/health` returns `{"ok":true}`, `/api/settings/conversion` and `/api/semesters` return `401` when unauthenticated, `PATCH /api/subjects/:id` returns `401` when unauthenticated, `POST /api/settings/conversion` returns `405`, and `/`, `/settings`, and `/manifest.webmanifest` return `200`.
+- Authenticated production QA on 2026-11-11 confirmed the Settings page works. The Grade scale correctly shows `Official NEU thresholds not set`, because no threshold rows are approved yet. Semester switching and dropped-subject QA are still to be confirmed.
+- `scripts/set-conversion-table.mjs` (`npm run cf:conversion:load`) is the owner path for loading thresholds: it validates an approved JSON file, prints the affected semester and subject counts, writes nothing without `--apply`, and replaces the table in one transaction. Verified against remote D1: an invalid file is rejected with per-row errors, a valid dry run prints the table and `1 semester(s) and 8 subject(s)`, and `conversion_rows` still contains 0 rows afterward.
 
 **Done when:** Approved settings are manageable through UI; conversion validation works; table changes affect the intended grades; historical semesters remain accessible and follow the approved versioning rule.
 
@@ -472,13 +486,13 @@ These are intentionally unresolved. The coding agent must not silently choose an
 | Resend account and sender | Resend API key and a verified sender (`AUTH_EMAIL_FROM`) are not configured yet | Before password-reset production test |
 | Official NEU percentage-to-grade thresholds | Not yet verified; old repository values are not approved defaults | Phase 4 / Phase 10 |
 | Login and Forgot Password UI | Resolved: both reuse the auth layout and are specified in `DESIGN.md`; there is no public Register screen | Resolved |
-| Settings page and controls | Settings navigation exists; complete page design not identified | Phase 10 |
+| Settings page and controls | Resolved: Semester (list + switch), read-only Grade scale, and Account cards, specified in `DESIGN.md` | Resolved (Phase 10) |
 | GWA card/section design | Resolved: Home card above the subject grid with complete, pending, empty, loading, and error states specified in `DESIGN.md` | Resolved |
 | Target Grade Calculator assumptions | Resolved: percentage target, one remaining-weight bucket, Subjects-page modal, standard edge-case messages | Resolved |
 | Schedule day range | Resolved: Monday–Saturday, stored as `day_of_week` `1`–`6` | Resolved |
-| Conversion table ownership | One shared table across subjects is confirmed; whether per account or central across users is not | Phase 10 / data-model approval |
-| Historical conversion table changes | Recalculate past semesters or preserve prior table version is undecided | Phase 10 |
-| Dropped/withdrawn subjects | Whether/how excluded from GWA is undecided | Phase 10 |
+| Conversion table ownership | Resolved: one application-wide table shared by every account and subject, read-only to students, changed only by owner tooling | Resolved (Phase 10) |
+| Historical conversion table changes | Resolved: one live table with no snapshot; a change recalculates past semesters too | Resolved (Phase 10) |
+| Dropped/withdrawn subjects | Resolved: `subjects.is_active = 0` marks a dropped subject; it is excluded from GWA units and grade while its scores stay visible | Resolved (Phase 10) |
 | Schedule overlap behavior | Resolved: overlaps are allowed and saved, with a visible conflict warning in both views and the editor | Resolved |
 | Multi-day class storage | Resolved: one entry per day; a MWF class is three entries | Resolved |
 | Schedule subject link | Resolved: every class must reference a subject in the same semester | Resolved |
@@ -548,4 +562,4 @@ Do not block unrelated work on decisions that are only needed in a later phase. 
 - Whether login rate limiting and email-ownership verification are required before real accounts.
 - Resend account, verified sender, and API key configuration.
 
-**Current instruction:** Phases 0–8 are complete and deployed. Phase 9's percentage-target calculator is committed as `fba5831`, pushed to `origin/main`, and deployed as version `e1fe0b8f-3387-40d9-8eba-45f7eb71e4a7`. Its grading and page tests pass; complete the authenticated production QA, then mark Phase 9 complete if it passes. Grade targets and the shared conversion table remain Phase 10 work. Do not start Phase 10 automatically.
+**Current instruction:** Phases 0–8 are complete and deployed. Phase 9's percentage-target calculator is committed as `fba5831`, pushed, and deployed as version `e1fe0b8f-3387-40d9-8eba-45f7eb71e4a7`; its tests pass, but the user waived production QA on 2026-11-11, so Phase 9 stays unclosed. Phase 10 (Settings and semester management) is implemented and deployed as version `d5957195-c327-4e5d-9751-7706e3cd6860`: central read-only conversion table, semester list with switching, dropped-subject support, and the Settings page. Its automated checks and unauthenticated production checks pass. What remains for Phase 10 is authenticated production QA of Settings and dropped subjects, and the official NEU threshold rows, which stay unapproved and therefore leave the grade scale empty and grades pending. Do not invent threshold data. Do not start Phase 11 automatically.

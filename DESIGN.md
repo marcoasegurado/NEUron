@@ -371,8 +371,34 @@ Each screen must be implemented for the listed layouts and states. Screens marke
   - **Details and delete:** details show day, time, and room with Close, Edit, and Delete. Delete opens a confirmation modal that repeats the subject, day, time, and room. Successful changes refetch the schedule and recalculate conflicts.
   - This is the current visual baseline; it follows the shared tokens and reuses the shared `Card`, `Modal`, `Input`, `Select`, `Button`, `Badge`, and `EmptyState` components.
 
-### Settings — needs spec
-- Only the navigation entry is confirmed. Full page content and controls must be specified before implementation.
+### Settings — proposed baseline (Phase 10, awaiting approval)
+- **Entry:** the existing `Settings` navigation item. One scrolling page of stacked cards, no tabs and no sub-routes.
+- **Sections, in order:** Semester, Grade scale, Account.
+- **Semester card:**
+  - Rows list every semester the account owns, newest first: label (`1st Semester 2026–2027`), term, `<units> units · <n> subjects`, and an `Active` badge on the current one.
+  - Only inactive rows show a secondary `Activate` action. It opens the shared confirmation modal: `Switch to <label>? Home, Subjects, and Schedule will show this semester.` with Cancel and `Switch semester`.
+  - The active row has no action; it never offers to switch to itself.
+  - The card footer holds a secondary `Set up new semester` action that opens the existing Semester setup flow. Semester creation is not duplicated here.
+  - Empty state: `No semesters yet` with the same `Set up new semester` action.
+- **Grade scale card (read-only):**
+  - Heading `Grade scale`, helper line `One shared table is used for every subject and semester.`
+  - Rows, highest threshold first: `≥ 98.00%` beside the grade to two decimals (`1.00`), using tabular numerals. Every configured row is listed; the card does not paginate or truncate.
+  - Not configured: `Official NEU thresholds not set` with `Percentages stay exact, and numeric grades and GWA show Pending until the table is configured.` Example thresholds are never shown as if they were real data.
+  - Students cannot edit the table. A muted footer note reads `Managed by the NEUming owner.`
+- **Account card:** display name, username, and email as read-only rows, plus the existing Sign out action. No password-change or email-change control is added in Phase 10; password reset stays in the Forgot password flow.
+- **Phone:** single column, full-width cards, section heading above each card, Sign out as a full-width secondary button.
+- **Desktop (`1024px`+):** single column capped at `880px` with the same section order; the Grade scale rows split into two columns so the list stays short.
+- **States:** page-level loading, inline error with retry, `Switching…` while the row action is disabled, switch error that leaves the active semester unchanged, grade scale not configured, empty semester list.
+- **Accessibility:** the active semester is marked by the `Active` badge text, not color alone; each `Activate` action has an accessible name naming its semester; the confirmation modal contains focus and returns it to the action.
+- **Visual:** reuses shared `Card`, `Badge`, `Button`, `Modal`, and `EmptyState`; cream surfaces, a soft orange border on the active semester row, no new navigation.
+- **Implemented (Phase 10, visual spec awaiting approval):** the three cards, the switch confirmation modal, the read-only scale list, and the not-configured state are built to this baseline. `GET /api/settings/conversion` and `PATCH /api/subjects/:id` back the page; `GET /api/semesters` now returns per-semester units and subject counts. Deployed as version `d5957195-c327-4e5d-9751-7706e3cd6860` and confirmed working in production on 2026-11-11; the not-configured state is correct until approved thresholds are loaded.
+
+### Dropped subjects
+- **Action:** a subject can be marked `Dropped` from its expanded card on Subjects. Dropping asks for confirmation that names the subject and states that it will stop counting toward the semester GWA.
+- **Visibility:** dropped subjects stay listed with a `Dropped` badge and keep their categories, weights, and scores readable. They are excluded from Semester GWA, from the semester unit total, and from the Home subject grid counts.
+- **Reverse:** a dropped subject offers `Restore subject`, which returns it to the GWA immediately.
+- **States:** dropping, drop error, restored.
+- **Dependency:** `GRADING_RULES.md` §7 defines the exclusion; the UI never computes it inline.
 
 ### Semester GWA
 - **Placement:** Home, directly below the page header and status banner and above the subject grid. Phone and desktop use the same card; only the internal arrangement changes. No GWA navigation item is added.
@@ -441,8 +467,5 @@ Every data surface must intentionally handle:
 
 These still need approved specifications before implementation:
 
-- Settings page and controls.
-- Target Grade Calculator.
 - Tablet-specific refinements.
-- Conversion-table management UI.
 - Exact final token values (colors, typography, shadows) if the proposed baselines are not approved.

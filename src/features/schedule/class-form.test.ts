@@ -19,6 +19,7 @@ function subject(id: string, name: string): Subject {
     name,
     units: 3,
     professor: null,
+    isActive: true,
     sortOrder: 0,
     createdAt: '2026-11-08T00:00:00.000Z',
     updatedAt: '2026-11-08T00:00:00.000Z',

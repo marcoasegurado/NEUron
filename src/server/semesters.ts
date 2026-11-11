@@ -18,6 +18,7 @@ import {
   type GradingCategoryRow,
   type SemesterRow,
   type SemesterSetup,
+  type SemesterSummaryRow,
   type SubjectRow,
   type SubjectWithCategories,
 } from './academic'
@@ -58,7 +59,7 @@ async function loadSemesterSetup(
     (
       await db
         .prepare(
-          `SELECT id, semester_id, name, units, professor, sort_order,
+          `SELECT id, semester_id, name, units, professor, is_active, sort_order,
                   created_at, updated_at
            FROM subjects
            WHERE semester_id = ?
@@ -136,17 +137,30 @@ async function handleListSemesters(
 ): Promise<Response> {
   const user = await requireUser(request, env)
   const result = await env.DB.prepare(
-    `SELECT id, user_id, academic_year, term, label, is_active,
-            created_at, updated_at
-     FROM semesters
-     WHERE user_id = ?
-     ORDER BY is_active DESC, created_at DESC`,
+    `SELECT s.id, s.user_id, s.academic_year, s.term, s.label, s.is_active,
+            s.created_at, s.updated_at,
+            COALESCE(agg.units, 0) AS units,
+            COALESCE(agg.subject_count, 0) AS subject_count
+     FROM semesters s
+     LEFT JOIN (
+       SELECT semester_id,
+              SUM(CASE WHEN is_active = 1 THEN units ELSE 0 END) AS units,
+              SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) AS subject_count
+       FROM subjects
+       GROUP BY semester_id
+     ) agg ON agg.semester_id = s.id
+     WHERE s.user_id = ?
+     ORDER BY s.is_active DESC, s.created_at DESC`,
   )
     .bind(user.id)
-    .all<SemesterRow>()
+    .all<SemesterSummaryRow>()
 
   return json({
-    semesters: (result.results ?? []).map(toSemester),
+    semesters: (result.results ?? []).map((row) => ({
+      ...toSemester(row),
+      units: row.units,
+      subjectCount: row.subject_count,
+    })),
   })
 }
 
@@ -322,6 +336,7 @@ async function handleCreateSubject(
     name: input.name,
     units: input.units,
     professor: input.professor,
+    is_active: 1,
     sort_order: sortRow?.next ?? existing.length,
     created_at: now,
     updated_at: now,

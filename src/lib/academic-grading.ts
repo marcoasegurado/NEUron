@@ -7,6 +7,7 @@ export function toGradingSubject(subject: ApiSubject): GradingSubject {
     name: subject.name,
     units: subject.units,
     professor: subject.professor ?? undefined,
+    active: subject.isActive,
     categories: subject.categories.map((category) => ({
       id: category.id,
       name: category.name,

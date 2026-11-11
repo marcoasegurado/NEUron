@@ -1,9 +1,11 @@
 import { handleActivityRequest } from './server/activities'
 import { handleAuthRequest } from './server/auth'
+import { handleConversionRequest } from './server/conversion'
 import type { Env } from './server/db'
 import { HttpError, json } from './server/http'
 import { handleScheduleRequest } from './server/schedule'
 import { handleSemesterRequest } from './server/semesters'
+import { handleSubjectRequest } from './server/subjects'
 
 async function databaseHealth(env: Env): Promise<Response> {
   try {
@@ -64,6 +66,16 @@ export default {
         const activityResponse = await handleActivityRequest(request, env)
         if (activityResponse) {
           return activityResponse
+        }
+
+        const subjectResponse = await handleSubjectRequest(request, env)
+        if (subjectResponse) {
+          return subjectResponse
+        }
+
+        const conversionResponse = await handleConversionRequest(request, env)
+        if (conversionResponse) {
+          return conversionResponse
         }
 
         return json({ error: 'API route not found.' }, 404)

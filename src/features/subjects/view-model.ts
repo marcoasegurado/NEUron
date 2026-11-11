@@ -85,6 +85,7 @@ export function buildSubjectsView(subjects: ApiSubject[]): SubjectsView {
           name: subject.name,
           units: subject.units,
           professor: subject.professor,
+          active: subject.isActive,
           percentage: null,
           pendingReason: 'no-categories' as const,
           pendingMessage: '',

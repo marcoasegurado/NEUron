@@ -14,6 +14,7 @@ import {
   deleteActivity,
   getSemester,
   listSemesters,
+  updateSubjectStatus,
   type Activity,
   type Semester,
   type SemesterSetup,
@@ -30,6 +31,7 @@ import {
   buildSubjectsView,
   formatActivityDate,
   type ActivityDetail,
+  type SubjectDetail,
 } from './view-model'
 import styles from './SubjectsPage.module.css'
 
@@ -70,6 +72,9 @@ export function SubjectsPage() {
   const [deleteTarget, setDeleteTarget] = useState<ActivityDetail | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [statusTarget, setStatusTarget] = useState<SubjectDetail | null>(null)
+  const [statusSaving, setStatusSaving] = useState(false)
+  const [statusError, setStatusError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
   useEffect(() => {
@@ -144,6 +149,42 @@ export function SubjectsPage() {
     setDeleteTarget(null)
     setDeleteError(null)
   }, [])
+
+  const closeStatus = useCallback(() => {
+    if (statusSaving) {
+      return
+    }
+    setStatusTarget(null)
+    setStatusError(null)
+  }, [statusSaving])
+
+  async function handleStatusChange() {
+    if (!statusTarget || statusSaving) {
+      return
+    }
+    const nextActive = !statusTarget.active
+    setStatusSaving(true)
+    setStatusError(null)
+    try {
+      await updateSubjectStatus(statusTarget.id, nextActive)
+      setStatusTarget(null)
+      setNotice(
+        nextActive
+          ? `“${statusTarget.name}” restored to the semester GWA.`
+          : `“${statusTarget.name}” dropped. Its scores are kept, but it no longer counts toward the GWA.`,
+      )
+      await refresh()
+    } catch (error) {
+      setStatusError(
+        academicErrorMessage(
+          error,
+          'The subject could not be updated. Try again.',
+        ),
+      )
+    } finally {
+      setStatusSaving(false)
+    }
+  }
 
   const handleSaved = useCallback(
     async (activity: Activity) => {
@@ -363,6 +404,9 @@ export function SubjectsPage() {
                       <span className={styles.subjectCopy}>
                         <span className={styles.subjectName}>
                           {subject.name}
+                          {subject.active ? null : (
+                            <Badge tone="neutral">Dropped</Badge>
+                          )}
                         </span>
                         <span className={styles.subjectMeta}>
                           {subject.units}{' '}
@@ -412,7 +456,29 @@ export function SubjectsPage() {
                       >
                         Target grade
                       </Button>
+                      <Button
+                        variant="secondary"
+                        className={styles.targetButton}
+                        onClick={() => {
+                          setStatusError(null)
+                          setStatusTarget(subject)
+                        }}
+                        aria-label={
+                          subject.active
+                            ? `Drop ${subject.name} from the semester GWA`
+                            : `Restore ${subject.name} to the semester GWA`
+                        }
+                      >
+                        {subject.active ? 'Drop subject' : 'Restore subject'}
+                      </Button>
                     </div>
+
+                    {subject.active ? null : (
+                      <p className={styles.droppedNote}>
+                        This subject keeps its scores but does not count toward
+                        the semester GWA.
+                      </p>
+                    )}
 
                     <div className={styles.categoryList}>
                       {subject.categories.map((category) => (
@@ -557,6 +623,47 @@ export function SubjectsPage() {
           subject={targetSubject}
           onClose={() => setTargetSubjectId(null)}
         />
+      ) : null}
+
+      {statusTarget ? (
+        <Modal
+          title={statusTarget.active ? 'Drop subject' : 'Restore subject'}
+          description={
+            statusTarget.active
+              ? `Drop ${statusTarget.name}? It keeps its categories and scores, but stops counting toward your semester GWA.`
+              : `Restore ${statusTarget.name}? Its scores will count toward your semester GWA again.`
+          }
+          onClose={closeStatus}
+        >
+          <div className={styles.deleteBody}>
+            {statusError ? (
+              <p className={styles.submitError} role="alert">
+                {statusError}
+              </p>
+            ) : null}
+
+            <div className={styles.deleteActions}>
+              <Button
+                variant="ghost"
+                onClick={closeStatus}
+                disabled={statusSaving}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant={statusTarget.active ? 'destructive' : 'primary'}
+                onClick={() => void handleStatusChange()}
+                disabled={statusSaving}
+              >
+                {statusSaving
+                  ? 'Saving…'
+                  : statusTarget.active
+                    ? 'Drop subject'
+                    : 'Restore subject'}
+              </Button>
+            </div>
+          </div>
+        </Modal>
       ) : null}
 
       {deleteTarget ? (

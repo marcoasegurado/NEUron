@@ -52,6 +52,7 @@ function subject(categories: GradingCategory[]): Subject {
     name: 'Mathematics',
     units: 3,
     professor: 'Ms. Cruz',
+    isActive: true,
     sortOrder: 0,
     createdAt: '2026-11-08T00:00:00.000Z',
     updatedAt: '2026-11-08T00:00:00.000Z',
@@ -72,6 +73,7 @@ function scoredSubject(
     name,
     units,
     professor: null,
+    isActive: true,
     sortOrder: 0,
     createdAt: '2026-11-08T00:00:00.000Z',
     updatedAt: '2026-11-08T00:00:00.000Z',
@@ -232,6 +234,20 @@ describe('semester GWA view', () => {
       status: 'pending',
       reason: 'incomplete-subjects',
       pendingSubjectNames: ['History'],
+    })
+  })
+
+  it('excludes dropped subjects from GWA units and grades', () => {
+    const dropped = scoredSubject('dropped', 'Dropped Subject', 5, 50)
+    dropped.isActive = false
+
+    expect(
+      buildSemesterGwa([math, english, science, dropped], conversionTable),
+    ).toEqual({
+      status: 'graded',
+      gwa: 1.8,
+      units: 10,
+      subjectCount: 3,
     })
   })
 

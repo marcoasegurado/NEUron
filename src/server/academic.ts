@@ -9,12 +9,23 @@ export interface SemesterRow {
   updated_at: string
 }
 
+/**
+ * List-endpoint row: a semester plus counts of its active (non-dropped)
+ * subjects. Dropped subjects contribute no units and no subject count, which
+ * matches how they are excluded from the semester GWA.
+ */
+export interface SemesterSummaryRow extends SemesterRow {
+  units: number
+  subject_count: number
+}
+
 export interface SubjectRow {
   id: string
   semester_id: string
   name: string
   units: number
   professor: string | null
+  is_active: number
   sort_order: number
   created_at: string
   updated_at: string
@@ -71,6 +82,7 @@ export interface Subject {
   name: string
   units: number
   professor: string | null
+  isActive: boolean
   sortOrder: number
   createdAt: string
   updatedAt: string
@@ -143,6 +155,7 @@ export function toSubject(row: SubjectRow): Subject {
     name: row.name,
     units: row.units,
     professor: row.professor,
+    isActive: row.is_active === 1,
     sortOrder: row.sort_order,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

@@ -230,9 +230,10 @@ export function HomePage() {
   }
 
   const view = buildHomeView(state.setup.subjects)
-  const subjectCount = view.subjects.length
+  const activeSubjects = view.subjects.filter((subject) => subject.active)
+  const subjectCount = activeSubjects.length
   const gwa = buildSemesterGwa(state.setup.subjects)
-  const firstGraded = view.subjects.find(
+  const firstGraded = activeSubjects.find(
     (subject) => subject.percentage !== null,
   )
   const heroMessage = firstGraded
@@ -368,11 +369,27 @@ export function HomePage() {
       {subjectCount === 0 ? (
         <Card>
           <EmptyState
-            title="No subjects in this semester"
-            description="Add subjects and grading categories before recording scores."
+            title={
+              state.setup.subjects.length > 0
+                ? 'No active subjects'
+                : 'No subjects in this semester'
+            }
+            description={
+              state.setup.subjects.length > 0
+                ? 'Every subject is marked dropped. Restore one on Subjects to see its grades and GWA.'
+                : 'Add subjects and grading categories before recording scores.'
+            }
             action={
-              <Button onClick={() => navigate('/setup')}>
-                Set up semester
+              <Button
+                onClick={() =>
+                  navigate(
+                    state.setup.subjects.length > 0 ? '/subjects' : '/setup',
+                  )
+                }
+              >
+                {state.setup.subjects.length > 0
+                  ? 'Go to Subjects'
+                  : 'Set up semester'}
               </Button>
             }
           />
@@ -382,7 +399,7 @@ export function HomePage() {
           className={cx(styles.grid, isPhone && styles.phoneGrid)}
           aria-label="Subject percentages"
         >
-          {view.subjects.map((subject) => {
+          {activeSubjects.map((subject) => {
             if (isPhone) {
               const status = phoneStatus(subject)
 

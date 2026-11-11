@@ -52,6 +52,7 @@ function subject(categories: GradingCategory[]): Subject {
     name: 'Mathematics',
     units: 3,
     professor: 'Ms. Cruz',
+    isActive: true,
     sortOrder: 0,
     createdAt: '2026-11-08T00:00:00.000Z',
     updatedAt: '2026-11-08T00:00:00.000Z',

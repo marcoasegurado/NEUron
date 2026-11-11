@@ -19,6 +19,7 @@ export interface SubjectSummary {
   name: string
   units: number
   professor: string | null
+  active: boolean
   percentage: number | null
   pendingReason: SubjectPendingReason | null
   pendingMessage: string
@@ -82,6 +83,7 @@ export function buildHomeView(subjects: ApiSubject[]): HomeView {
           name: subject.name,
           units: subject.units,
           professor: subject.professor,
+          active: subject.isActive,
           percentage: result.percentage,
           pendingReason: null,
           pendingMessage: '',
@@ -104,6 +106,7 @@ export function buildHomeView(subjects: ApiSubject[]): HomeView {
         name: subject.name,
         units: subject.units,
         professor: subject.professor,
+        active: subject.isActive,
         percentage: null,
         pendingReason: result.reason,
         pendingMessage: pendingMessage(result.reason, incompleteNames),
