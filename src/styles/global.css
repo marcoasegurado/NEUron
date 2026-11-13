@@ -62,6 +62,12 @@ a:hover {
 /*
  * Shared motion keyframes. Kept global so CSS modules can reference the same
  * names; every duration and easing comes from tokens.css (DESIGN.md §9).
+ *
+ * CSS modules rewrite every animation name they see, so a module must escape
+ * these names with `global(...)` (for example
+ * `animation: global(rise-in) var(--duration-base) var(--ease-out) both;`).
+ * A plain `rise-in` there becomes a scoped name with no matching keyframes and
+ * the animation silently never runs.
  */
 @keyframes fade-in {
   from {

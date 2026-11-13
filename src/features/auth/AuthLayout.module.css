@@ -37,7 +37,7 @@
 .mascot {
   width: 152px;
   height: 152px;
-  animation: scale-in var(--duration-slow) var(--ease-out) both;
+  animation: global(scale-in) var(--duration-slow) var(--ease-out) both;
 }
 
 .wordmark {
@@ -46,7 +46,7 @@
   font-weight: var(--weight-bold);
   line-height: 1;
   letter-spacing: -0.02em;
-  animation: rise-in var(--duration-slow) var(--ease-out) 60ms both;
+  animation: global(rise-in) var(--duration-slow) var(--ease-out) 60ms both;
 }
 
 .wordmarkNeu {
@@ -83,7 +83,7 @@
   border: 1px solid var(--color-border);
   border-radius: 24px;
   box-shadow: var(--shadow-raised);
-  animation: rise-in var(--duration-slow) var(--ease-out) 80ms both;
+  animation: global(rise-in) var(--duration-slow) var(--ease-out) 80ms both;
 }
 
 .formHeader {

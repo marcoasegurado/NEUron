@@ -8,7 +8,7 @@
   padding: var(--space-4);
   background-color: var(--color-overlay);
   overflow-y: auto;
-  animation: fade-in var(--duration-fast) var(--ease-out) both;
+  animation: global(fade-in) var(--duration-fast) var(--ease-out) both;
 }
 
 .dialog {
@@ -21,7 +21,7 @@
   border-radius: var(--radius-dialog);
   background-color: var(--color-bg-surface);
   box-shadow: var(--shadow-raised);
-  animation: scale-in var(--duration-base) var(--ease-out) both;
+  animation: global(scale-in) var(--duration-base) var(--ease-out) both;
 }
 
 .head {
@@ -99,7 +99,7 @@
     padding: var(--space-5) var(--space-4)
       calc(var(--space-5) + env(safe-area-inset-bottom));
     border-radius: var(--radius-dialog) var(--radius-dialog) 0 0;
-    animation-name: sheet-up;
+    animation-name: global(sheet-up);
     animation-duration: var(--duration-slow);
   }
 

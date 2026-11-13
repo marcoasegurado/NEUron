@@ -21,7 +21,7 @@
 /* Route change: opacity-only so fixed children (like the phone FAB) keep
    their viewport anchoring instead of snapping to a transformed ancestor. */
 .page {
-  animation: fade-in var(--duration-base) var(--ease-out) both;
+  animation: global(fade-in) var(--duration-base) var(--ease-out) both;
 }
 
 .bootVeil {
@@ -30,7 +30,7 @@
   z-index: 200;
   background-color: var(--color-bg-page);
   pointer-events: none;
-  animation: veil-out var(--duration-slow) var(--ease-in) forwards;
+  animation: global(veil-out) var(--duration-slow) var(--ease-in) forwards;
 }
 
 .offlineBanner {
@@ -42,7 +42,7 @@
   color: var(--color-text);
   font-size: var(--text-small);
   line-height: var(--text-small-line);
-  animation: rise-in var(--duration-base) var(--ease-out) both;
+  animation: global(rise-in) var(--duration-base) var(--ease-out) both;
 }
 
 .bottomNav {

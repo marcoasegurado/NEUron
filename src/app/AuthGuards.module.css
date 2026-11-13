@@ -20,7 +20,7 @@
   display: block;
   width: 132px;
   height: 132px;
-  animation: scale-in var(--duration-slow) var(--ease-out) both;
+  animation: global(scale-in) var(--duration-slow) var(--ease-out) both;
 }
 
 .wordmark {
@@ -28,7 +28,7 @@
   font-weight: var(--weight-bold);
   line-height: 1;
   letter-spacing: -0.02em;
-  animation: rise-in var(--duration-slow) var(--ease-out) 60ms both;
+  animation: global(rise-in) var(--duration-slow) var(--ease-out) 60ms both;
 }
 
 .brandNeu {
@@ -43,5 +43,5 @@
   margin-top: var(--space-1);
   color: var(--color-text-secondary);
   font-size: var(--text-small);
-  animation: fade-in var(--duration-base) var(--ease-out) 120ms both;
+  animation: global(fade-in) var(--duration-base) var(--ease-out) 120ms both;
 }

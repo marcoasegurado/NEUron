@@ -93,7 +93,7 @@
   border-radius: 16px;
   background-color: var(--color-bg-elevated);
   box-shadow: var(--shadow-raised);
-  animation: dropdown-in var(--duration-fast) var(--ease-out) both;
+  animation: global(dropdown-in) var(--duration-fast) var(--ease-out) both;
 }
 
 .option {
