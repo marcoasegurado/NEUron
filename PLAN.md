@@ -470,15 +470,23 @@ Tasks:
 **Goal:** Verify the complete app before calling the rebuild ready.
 
 Tasks:
-- [ ] Test account sign-in by username/email, create semester, add scores, view grades, manage subjects, view schedule, and sign out.
-- [ ] Test complete/incomplete subject grades and GWA states.
-- [ ] Test account data isolation and Worker/D1 authorization checks.
+- [x] Test account sign-in by username/email, create semester, add scores, view grades, manage subjects, view schedule, and sign out. → API-level end-to-end pass on the local Worker + D1 (75 checks); UI pass still pending.
+- [ ] Test complete/incomplete subject grades and GWA states. → Percentages and pending states verified; the complete GWA state is blocked by the unapproved grade scale.
+- [x] Test account data isolation and Worker/D1 authorization checks. → 18 checks passed, including cross-account `404`s, cross-origin `403`, and signed-out `401`s.
 - [ ] Test phone, tablet, and desktop layouts.
 - [ ] Test refresh, browser restart, and supported offline scenarios.
 - [ ] Check labels, keyboard navigation, focus indicators, and readable contrast.
-- [ ] Check console errors, failed requests, and production build output.
-- [ ] Deploy release build to Cloudflare Workers and verify the production URL.
-- [ ] Update README with actual features, stack, local setup, environment variables, and deployment.
+- [ ] Check console errors, failed requests, and production build output. → Build output checked (no debug logging, no TODO markers, bundle `370 kB` / `111 kB` gzip); console and network checks still need a browser.
+- [x] Deploy release build to Cloudflare Workers and verify the production URL. → Deployed as version `9d88ce5b-5769-43d6-8cae-093197e3abb2`; `/` serves the new `index-C9YoNLXW.js` bundle, and the health, manifest, service-worker, and signed-out `401` checks all pass.
+- [x] Update README with actual features, stack, local setup, environment variables, and deployment.
+
+Implementation status (2026-11-14):
+- Local D1 was missing `0006_conversion_and_subject_status.sql`; it is now applied locally, so every migration `0001`–`0006` exists in both local and remote D1.
+- A two-account QA script drove the real Worker against local D1: sign-in by email and username, wrong password, cross-origin rejection, session cookie flags, semester creation with two subjects, score create/edit/delete/re-delete, exact percentages (`90` and `85`, recomputed independently from API payloads), score validation rejections, recorded zero accepted, schedule create/overlap/inverted/day-7/blank-room/edit/delete, drop and restore, semester switching, and sign-out with post-logout `401`. Result: 75/75 checks passed.
+- Account isolation passed: a second account sees no semesters and receives `404` for another account's semester, schedule, score edits, class deletes, and subject changes; a class cannot reference a subject from a different semester.
+- `AppShell` now removes the boot veil on a native `animationend` listener with a 1s fallback timer, so a missed animation can no longer leave the full-screen overlay covering the app. Two tests cover the animation path and the fallback path.
+- `README.md` was rewritten around the shipped app: features, grade-scale status, stack, local setup, migration order, account provisioning, grade-scale loading, deployment, environment variables, structure, and known limitations.
+- Remaining before close: the browser-only checks (layouts at phone/tablet/desktop, keyboard/focus/contrast, refresh and restart, console/network cleanliness) and a UI-level pass of the flows and states above. The complete-grade and complete-GWA states stay blocked until verified NEU thresholds are loaded.
 
 **Done when:** Critical flows pass; no known critical data-loss, access-control, or grading defects remain; production deployment is verified; README describes the rebuilt app accurately.
 

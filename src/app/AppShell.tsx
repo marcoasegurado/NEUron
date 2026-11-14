@@ -1,4 +1,10 @@
-import { useState, type ComponentType, type SVGProps } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ComponentType,
+  type SVGProps,
+} from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { CatMascot } from '../components/brand/CatMascot'
 import { useAuth } from '../features/auth/useAuth'
@@ -60,7 +66,26 @@ export function AppShell() {
   const location = useLocation()
   const online = useOnlineStatus()
   const [signingOut, setSigningOut] = useState(false)
+  const [veilVisible, setVeilVisible] = useState(true)
+  const veilRef = useRef<HTMLDivElement>(null)
   const initial = user?.displayName.trim().charAt(0).toUpperCase() || 'N'
+
+  // The veil is a full-screen overlay, so it must never depend only on a CSS
+  // animation running. The native animation listener removes it when the fade
+  // finishes, and the timer removes it anyway if the animation never starts.
+  useEffect(() => {
+    const node = veilRef.current
+    if (!node) {
+      return
+    }
+    const remove = () => setVeilVisible(false)
+    node.addEventListener('animationend', remove)
+    const timer = window.setTimeout(remove, 1000)
+    return () => {
+      node.removeEventListener('animationend', remove)
+      window.clearTimeout(timer)
+    }
+  }, [])
 
   async function handleSignOut() {
     if (signingOut) {
@@ -155,9 +180,17 @@ export function AppShell() {
 
       {/*
         One-shot cream veil: it fades out as the shell mounts, so the boot
-        splash and the signed-in app cross-fade instead of hard-cutting.
+        splash and the signed-in app cross-fade instead of hard-cutting. It is
+        removed on animation end, with a timer fallback in the effect above.
       */}
-      <div className={styles.bootVeil} aria-hidden="true" />
+      {veilVisible ? (
+        <div
+          ref={veilRef}
+          className={styles.bootVeil}
+          aria-hidden="true"
+          data-testid="boot-veil"
+        />
+      ) : null}
     </div>
   )
 }

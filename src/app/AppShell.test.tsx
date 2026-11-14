@@ -1,4 +1,4 @@
-import { act, cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { AuthContextValue } from '../features/auth/auth-context'
@@ -71,5 +71,34 @@ describe('AppShell offline banner', () => {
       window.dispatchEvent(new Event('online'))
     })
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+})
+
+describe('AppShell boot veil', () => {
+  it('removes the veil when the fade finishes', () => {
+    renderShell()
+
+    const veil = screen.getByTestId('boot-veil')
+    fireEvent(veil, new Event('animationend', { bubbles: true }))
+
+    expect(screen.queryByTestId('boot-veil')).not.toBeInTheDocument()
+    expect(screen.getByText('Home content')).toBeInTheDocument()
+  })
+
+  it('removes the veil even if the animation never runs', () => {
+    vi.useFakeTimers()
+    try {
+      renderShell()
+      expect(screen.getByTestId('boot-veil')).toBeInTheDocument()
+
+      act(() => {
+        vi.advanceTimersByTime(1200)
+      })
+
+      expect(screen.queryByTestId('boot-veil')).not.toBeInTheDocument()
+      expect(screen.getByText('Home content')).toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })
