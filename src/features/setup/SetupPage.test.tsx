@@ -56,9 +56,10 @@ async function setAcademicYear(
 }
 
 async function fillValidSubject(user: ReturnType<typeof userEvent.setup>) {
-  // The step change can commit after the click resolves on a loaded machine.
+  // The step change can commit after the click resolves on a loaded machine,
+  // and this suite runs under heavy parallel load, so wait generously.
   await user.type(
-    await screen.findByLabelText('Subject name'),
+    await screen.findByLabelText('Subject name', {}, { timeout: 5000 }),
     'Mathematics',
   )
   await user.type(screen.getByLabelText('Units'), '3')
@@ -94,7 +95,9 @@ describe('SetupPage', () => {
     await setAcademicYear(user)
     await user.click(screen.getByRole('button', { name: 'Continue to subjects' }))
 
-    expect(screen.getByRole('heading', { name: 'Subjects and weights' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'Subjects and weights' }),
+    ).toBeInTheDocument()
     await fillValidSubject(user)
     expect(screen.getByText('Total: 100%')).toBeInTheDocument()
 
@@ -154,7 +157,9 @@ describe('SetupPage', () => {
     await setAcademicYear(user)
     await user.click(screen.getByRole('button', { name: 'Continue to subjects' }))
 
-    expect(screen.getByRole('heading', { name: 'Subjects and weights' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'Subjects and weights' }),
+    ).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Review' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Save semester' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Review semester' })).toBeNull()
