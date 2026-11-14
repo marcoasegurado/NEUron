@@ -133,6 +133,19 @@ a:hover {
   }
 }
 
+/*
+ * Skeleton placeholders (DESIGN.md §6). Modules must reference this as
+ * `global(skeleton-shimmer)`; see the note above.
+ */
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

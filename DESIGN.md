@@ -142,7 +142,7 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 ### Phone
 
 - No shrunken sidebar. Use a compact single-column layout.
-- Every route below desktop width shows a locked top bar: cat mascot + two-tone `NEUming` wordmark on the left and an orange `Sign out` action on the right. It stays pinned while the page scrolls.
+- Every route below desktop width shows a locked top bar: cat mascot + two-tone `NEUming` wordmark on the left, then a Settings icon link, then an orange `Sign out` action on the right. It stays pinned while the page scrolls. The Settings icon is the entry point below `1024px`, where the sidebar is hidden; the bottom nav keeps its three items.
 - Bottom navigation with three items: Home, Subjects, Schedule.
 - Bottom nav height ~64px plus safe-area padding; the active item is an orange rounded pill with white icon/label, inactive items are muted brown with no background.
 - Home starts with a cat mascot beside a pale-yellow encouragement bubble, then a bordered semester pill (`label` + `Switch`), then the `Current grades` title.
@@ -243,8 +243,9 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 - Safe-area aware; never cover content or dialogs.
 
 **Phone account bar (proposal)**
-- Authenticated phone screens show a compact bar above the page header with the NEUming mark and a text Sign out action, so sign-out is reachable without adding a fourth bottom-nav item.
-- Hidden on desktop, where the sidebar profile block owns sign-out.
+- Authenticated phone screens show a compact bar above the page header with the NEUming mark, a Settings icon link, and a text Sign out action, so sign-out and Settings are reachable without adding a fourth bottom-nav item.
+- The Settings icon is the only Settings entry point below `1024px`; it is a `44px` touch target (40px below `360px`) using the same sliders icon as the sidebar.
+- Hidden on desktop, where the sidebar owns navigation and sign-out.
 - This is a proposal recorded during Phase 2; remove or restyle it if a dedicated profile/menu treatment is approved later.
 
 ### Semester switcher
@@ -272,6 +273,7 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 - Use skeletons shaped like the eventual content, not generic spinners, for page-level loads.
 - Use inline spinners for button and row-level saves.
 - Keep layout stable to avoid jumps.
+- **Implemented (Phase 12):** `src/components/ui/Skeleton.tsx` is the shimmer bar (cream note surface, `skeleton-shimmer` keyframes, static under reduced motion) and `PageSkeleton.tsx` composes it into three layouts that mirror the real pages: `list` for the full-width Subjects rows and Settings cards, `grid` for the Home summary plus 1/2/3-column subject grid, and `schedule` for the weekly board at `1024px+` with the agenda rows below it. The wrapper owns `role="status"`, `aria-live="polite"`, and `aria-busy="true"`; every bar is `aria-hidden`. Pages keep their `PageHeader` while the skeleton replaces the content area.
 
 ### Offline and installation (Phase 11)
 
@@ -325,7 +327,7 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 
 Tokens: `--duration-fast` 150ms, `--duration-base` 200ms, `--duration-slow` 250ms, `--ease-out`, `--ease-in`. Shared keyframes (`fade-in`, `rise-in`, `scale-in`, `sheet-up`, `veil-out`) live in `src/styles/global.css`; component CSS modules reference those names.
 
-- **App open.** While the session is checked, a branded splash shows the `CatMascot` + `NEU`/`ming` wordmark + `Checking your session…`. The mascot scales in (250ms), the wordmark rises (250ms, 60ms delay), and the status text fades (200ms, 120ms delay). `#root` fades in over 200ms, and the signed-in shell mounts a cream veil that fades out over 250ms (ease-in), so the splash and the app cross-fade instead of hard-cutting. The auth screens reuse the same language: mascot scale-in, wordmark rise, form card rise with an 80ms delay.
+- **App open.** While the session is checked, a branded splash shows the `CatMascot` + `NEU`/`ming` wordmark + `Checking your session…`. The mascot scales in (250ms), the wordmark rises (250ms, 60ms delay), and the status text fades (200ms, 120ms delay). `#root` fades in over 200ms, and the signed-in shell mounts a cream veil that fades out over 250ms (ease-in), so the splash and the app cross-fade instead of hard-cutting. The static markup inside `#root` in `index.html` paints the same lockup before React parses, so the first paint is the splash rather than blank cream; the first React render replaces it. The auth screens reuse the same language: mascot scale-in, wordmark rise, form card rise with an 80ms delay.
 - **Route change.** The `<Outlet />` wrapper is keyed on `pathname` and fades in over 200ms. It animates opacity only, so fixed children such as the phone Add Score FAB keep their viewport anchoring.
 - **Cards.** Home status banner, semester GWA card, Home/Subjects subject cards, and Settings cards rise 8px + fade over 200ms when they mount.
 - **Dialogs.** The overlay fades in over 150ms; the dialog scales from 0.96 over 200ms; on phones the sheet slides up 24px over 250ms.

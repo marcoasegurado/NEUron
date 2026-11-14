@@ -8,6 +8,7 @@ import {
   Card,
   EmptyState,
   Modal,
+  PageSkeleton,
   Toast,
 } from '../../components/ui'
 import {
@@ -200,11 +201,7 @@ export function SchedulePage() {
           stickyOnPhone
           compactOnPhone
         />
-        <Card>
-          <p className={styles.loading} role="status">
-            Loading your schedule…
-          </p>
-        </Card>
+        <PageSkeleton label="Loading your schedule…" count={4} layout="schedule" />
       </>
     )
   }

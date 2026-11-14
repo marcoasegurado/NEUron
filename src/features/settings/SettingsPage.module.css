@@ -1,7 +1,3 @@
-.loading {
-  color: var(--color-text-secondary);
-}
-
 .loadError {
   display: flex;
   flex-direction: column;

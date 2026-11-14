@@ -8,6 +8,7 @@ import {
   Card,
   EmptyState,
   Modal,
+  PageSkeleton,
   Toast,
 } from '../../components/ui'
 import {
@@ -119,9 +120,7 @@ export function SettingsPage() {
       />
 
       {state.status === 'loading' ? (
-        <p className={styles.loading} role="status">
-          Loading settings…
-        </p>
+        <PageSkeleton label="Loading settings…" count={3} layout="list" />
       ) : null}
 
       {state.status === 'error' ? (

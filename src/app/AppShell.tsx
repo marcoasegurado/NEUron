@@ -149,14 +149,33 @@ export function AppShell() {
               <span className={styles.brandMing}>ming</span>
             </span>
           </div>
-          <button
-            type="button"
-            className={styles.signOut}
-            onClick={handleSignOut}
-            disabled={signingOut}
-          >
-            {signingOut ? 'Signing out…' : 'Sign out'}
-          </button>
+          <div className={styles.mobileActions}>
+            {/*
+              The sidebar is hidden below 1024px, so the top bar carries the
+              Settings entry point there; the three-item bottom nav stays as
+              specified in DESIGN.md.
+            */}
+            <NavLink
+              to="/settings"
+              className={({ isActive }) =>
+                cx(
+                  styles.mobileSettings,
+                  isActive && styles.mobileSettingsActive,
+                )
+              }
+              aria-label="Settings"
+            >
+              <SettingsIcon className={styles.mobileSettingsIcon} />
+            </NavLink>
+            <button
+              type="button"
+              className={styles.signOut}
+              onClick={handleSignOut}
+              disabled={signingOut}
+            >
+              {signingOut ? 'Signing out…' : 'Sign out'}
+            </button>
+          </div>
         </header>
 
         <div className={styles.content}>

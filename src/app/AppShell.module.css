@@ -255,12 +255,50 @@
 
 .mobileBrand {
   display: flex;
+  min-width: 0;
+  overflow: hidden;
   align-items: center;
   gap: var(--space-2);
   font-size: 1.75rem;
   font-weight: var(--weight-bold);
   letter-spacing: -0.02em;
   line-height: 1;
+}
+
+.mobileActions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.mobileSettings {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  color: var(--color-text-secondary);
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.mobileSettings:hover {
+  background-color: var(--color-primary-soft);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.mobileSettingsActive,
+.mobileSettingsActive:hover {
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary-hover);
+}
+
+.mobileSettingsIcon {
+  width: 24px;
+  height: 24px;
 }
 
 .mobileBrandMark {
@@ -273,6 +311,46 @@
 @media (max-width: 639px) {
   .main {
     padding-bottom: calc(var(--bottom-nav-height) + 104px);
+  }
+}
+
+/*
+ * Three 92px nav pills plus padding do not fit a 320px viewport, which widened
+ * the layout viewport and pushed the Home FAB off-screen. Shrink the pills on
+ * very narrow phones so the bar always matches the viewport width.
+ */
+@media (max-width: 359px) {
+  .navItemCompact {
+    min-width: 76px;
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .mobileBar {
+    gap: var(--space-2);
+  }
+
+  .mobileBrand {
+    gap: 6px;
+    font-size: 1.25rem;
+  }
+
+  .mobileBrandMark {
+    width: 40px;
+    height: 40px;
+  }
+
+  .mobileActions {
+    gap: 4px;
+  }
+
+  .mobileSettings {
+    width: 40px;
+    height: 40px;
+  }
+
+  .signOut {
+    padding: var(--space-1) var(--space-2);
+    font-size: 0.95rem;
   }
 }
 

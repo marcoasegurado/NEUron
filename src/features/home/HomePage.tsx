@@ -9,6 +9,7 @@ import {
   Button,
   Card,
   EmptyState,
+  PageSkeleton,
   Progress,
   Select,
   Toast,
@@ -172,17 +173,26 @@ export function HomePage() {
   }
 
   if (state.status === 'loading') {
-    return (
+    const skeleton = (
+      <PageSkeleton
+        label="Loading your dashboard…"
+        summary
+        count={4}
+        layout="grid"
+      />
+    )
+
+    // The phone layout has no page header, so it must not show one while
+    // loading either.
+    return isPhone ? (
+      skeleton
+    ) : (
       <>
         <PageHeader
           title="Home"
           description="Loading your active semester."
         />
-        <Card>
-          <p className={styles.loading} role="status">
-            Loading your dashboard…
-          </p>
-        </Card>
+        {skeleton}
       </>
     )
   }

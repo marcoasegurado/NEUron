@@ -177,6 +177,16 @@ afterEach(() => {
 })
 
 describe('HomePage', () => {
+  it('shows the page skeleton while the semester loads', async () => {
+    fetchMock.mockImplementation(() => new Promise(() => {}))
+    renderHome()
+
+    const status = screen.getByRole('status')
+    expect(status).toHaveTextContent('Loading your dashboard…')
+    expect(status).toHaveAttribute('aria-busy', 'true')
+    expect(screen.getByText('Home')).toBeInTheDocument()
+  })
+
   it('shows the empty state when no semester is active', async () => {
     fetchMock.mockResolvedValue(ok({ semesters: [] }))
     renderHome()

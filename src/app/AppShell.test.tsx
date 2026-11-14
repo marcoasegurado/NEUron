@@ -74,6 +74,22 @@ describe('AppShell offline banner', () => {
   })
 })
 
+describe('AppShell mobile navigation', () => {
+  it('keeps Settings reachable from the top bar below 1024px', () => {
+    const { container } = renderShell()
+
+    // jsdom renders at the 1024px desktop layout, where the top bar is hidden,
+    // so assert on the markup the phone/tablet layout uses.
+    const topBar = container.querySelector('header')
+    const settingsLink = topBar?.querySelector<HTMLAnchorElement>(
+      'a[aria-label="Settings"]',
+    )
+
+    expect(settingsLink).not.toBeNull()
+    expect(settingsLink).toHaveAttribute('href', '/settings')
+  })
+})
+
 describe('AppShell boot veil', () => {
   it('removes the veil when the fade finishes', () => {
     renderShell()

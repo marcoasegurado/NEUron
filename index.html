@@ -9,6 +9,7 @@
     <meta name="color-scheme" content="light" />
     <meta name="application-name" content="NEUming" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="NEUming" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta
@@ -17,9 +18,76 @@
     />
     <meta name="theme-color" content="#fbf4e3" />
     <title>NEUming</title>
+    <style>
+      /*
+       * Static pre-mount splash. The app's own splash only exists after React
+       * has parsed and mounted, which leaves a short blank-cream window on slow
+       * first loads; this markup inside #root covers it and is replaced by the
+       * first React render. Values mirror tokens.css and AuthGuards.module.css.
+       */
+      html,
+      body {
+        margin: 0;
+        background-color: #fbf4e3;
+      }
+
+      .boot-splash {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        min-height: 100vh;
+        background-color: #fbf4e3;
+        color: #3d2b1f;
+        font-family:
+          'Nunito Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto,
+          sans-serif;
+        text-align: center;
+      }
+
+      .boot-splash__mascot {
+        display: block;
+        width: 132px;
+        height: 132px;
+      }
+
+      .boot-splash__wordmark {
+        display: inline-flex;
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: -0.02em;
+      }
+
+      .boot-splash__neu {
+        color: #f97316;
+      }
+
+      .boot-splash__text {
+        margin: 4px 0 0;
+        color: #8a7361;
+        font-size: 0.875rem;
+        line-height: 1.45;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="boot-splash" role="status" aria-live="polite">
+        <img
+          class="boot-splash__mascot"
+          src="/icons/icon-192.png"
+          alt=""
+          width="132"
+          height="132"
+        />
+        <span class="boot-splash__wordmark" aria-hidden="true">
+          <span class="boot-splash__neu">NEU</span><span>ming</span>
+        </span>
+        <p class="boot-splash__text">Checking your session…</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

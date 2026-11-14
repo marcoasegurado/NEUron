@@ -8,6 +8,7 @@ import {
   Card,
   EmptyState,
   Modal,
+  PageSkeleton,
   Toast,
 } from '../../components/ui'
 import {
@@ -256,11 +257,7 @@ export function SubjectsPage() {
           description="Loading your active semester."
           stickyOnPhone
         />
-        <Card>
-          <p className={styles.loading} role="status">
-            Loading your subjects…
-          </p>
-        </Card>
+        <PageSkeleton label="Loading your subjects…" count={4} layout="list" />
       </>
     )
   }

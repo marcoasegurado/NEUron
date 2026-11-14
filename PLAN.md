@@ -470,13 +470,13 @@ Tasks:
 **Goal:** Verify the complete app before calling the rebuild ready.
 
 Tasks:
-- [x] Test account sign-in by username/email, create semester, add scores, view grades, manage subjects, view schedule, and sign out. → API-level end-to-end pass on the local Worker + D1 (75 checks); UI pass still pending.
+- [x] Test account sign-in by username/email, create semester, add scores, view grades, manage subjects, view schedule, and sign out. → API-level end-to-end pass on the local Worker + D1 (75 checks) plus the UI pass recorded below.
 - [ ] Test complete/incomplete subject grades and GWA states. → Percentages and pending states verified; the complete GWA state is blocked by the unapproved grade scale.
 - [x] Test account data isolation and Worker/D1 authorization checks. → 18 checks passed, including cross-account `404`s, cross-origin `403`, and signed-out `401`s.
-- [ ] Test phone, tablet, and desktop layouts.
-- [ ] Test refresh, browser restart, and supported offline scenarios.
-- [ ] Check labels, keyboard navigation, focus indicators, and readable contrast.
-- [ ] Check console errors, failed requests, and production build output. → Build output checked (no debug logging, no TODO markers, bundle `370 kB` / `111 kB` gzip); console and network checks still need a browser.
+- [x] Test phone, tablet, and desktop layouts. → Headless-Chrome pass on the local Worker at `1440×900`, `834×1112`, and `390×844` (plus `320px` and `360px` spot checks) across login, Home, Subjects, Schedule, and Settings; no horizontal overflow, no clipped controls, and every skeleton captured at each width.
+- [ ] Test refresh, browser restart, and supported offline scenarios. → Refresh verified (boot splash, then splash-to-app handoff); offline was verified by the Phase 11 owner QA. A full browser-restart and installed-app pass is still open.
+- [ ] Check labels, keyboard navigation, focus indicators, and readable contrast. → Labels, heading order, `main`/`nav` landmarks, and Tab focus rings (3px orange) pass with zero unlabelled buttons; a numeric contrast audit is still open.
+- [x] Check console errors, failed requests, and production build output. → Build output checked (no debug logging, no TODO markers, bundle `373 kB` / `112 kB` gzip); browser console has no warnings or page errors, only the expected signed-out `401` resource entries.
 - [x] Deploy release build to Cloudflare Workers and verify the production URL. → Deployed as version `9d88ce5b-5769-43d6-8cae-093197e3abb2`; `/` serves the new `index-C9YoNLXW.js` bundle, and the health, manifest, service-worker, and signed-out `401` checks all pass.
 - [x] Update README with actual features, stack, local setup, environment variables, and deployment.
 
@@ -486,7 +486,14 @@ Implementation status (2026-11-14):
 - Account isolation passed: a second account sees no semesters and receives `404` for another account's semester, schedule, score edits, class deletes, and subject changes; a class cannot reference a subject from a different semester.
 - `AppShell` now removes the boot veil on a native `animationend` listener with a 1s fallback timer, so a missed animation can no longer leave the full-screen overlay covering the app. Two tests cover the animation path and the fallback path.
 - `README.md` was rewritten around the shipped app: features, grade-scale status, stack, local setup, migration order, account provisioning, grade-scale loading, deployment, environment variables, structure, and known limitations.
-- Remaining before close: the browser-only checks (layouts at phone/tablet/desktop, keyboard/focus/contrast, refresh and restart, console/network cleanliness) and a UI-level pass of the flows and states above. The complete-grade and complete-GWA states stay blocked until verified NEU thresholds are loaded.
+
+UI pass and skeleton loading (2026-11-15):
+- Page-level loads now use shared skeletons instead of text placeholders: `Skeleton` (shimmer bar) and `PageSkeleton` (`list`, `grid`, `schedule` layouts). Home renders the GWA summary card plus the real 1/2/3-column grid, Subjects and Settings render full-width stacked cards, and Schedule renders the weekly board at `1024px+` with agenda rows below it. Each wrapper is `role="status"` with `aria-live="polite"` and `aria-busy="true"`; the bars are `aria-hidden`. Covered by `PageSkeleton.test.tsx` and a Home loading-state test.
+- Fixed a navigation defect found by the UI pass: Settings was only reachable from the sidebar, which is hidden below `1024px`. The locked phone/tablet top bar now carries a `44px` Settings icon link next to `Sign out`, so the bottom nav keeps its three specified items. Covered by an `AppShell` test.
+- Added a static splash inside `#root` in `index.html` (cream background, mascot, wordmark, `Checking your session…`) so the first paint is the splash instead of blank cream before React parses; the first React render replaces it. Verified on a cold phone-width load: splash at ~130ms, app shell by ~500ms.
+- Added `mobile-web-app-capable` next to the deprecated `apple-mobile-web-app-capable`, which cleared the Chrome console warning.
+- Fixed two narrow-phone overflows: the three 92px bottom-nav pills widened a 320px layout viewport (now 76px below `360px`), and the phone semester pill pushed past 320px (now capped at `max-width: 100%` with ellipsis). At `320px` the top bar also shrinks the mascot/wordmark so the full `NEUming` wordmark stays visible.
+- Remaining before close: the complete-grade and complete-GWA states stay blocked until verified NEU thresholds are loaded; a numeric contrast audit and a browser-restart/installed-app pass are still open.
 
 **Done when:** Critical flows pass; no known critical data-loss, access-control, or grading defects remain; production deployment is verified; README describes the rebuilt app accurately.
 
