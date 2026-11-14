@@ -45,5 +45,11 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: true,
+    // jsdom startup plus user-event typing is slow on low-core machines, and
+    // an environment setup can take several seconds per file. The default 5s
+    // ceiling produced load-dependent failures in the setup flow; 20s only
+    // raises the ceiling and does not change how quickly a test finishes.
+    testTimeout: 20000,
+    hookTimeout: 20000,
   },
 })
