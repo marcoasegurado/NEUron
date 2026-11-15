@@ -10,9 +10,12 @@ const authValue: AuthContextValue = {
     id: 'user-1',
     email: 'student@example.com',
     displayName: 'Test Student',
+    role: 'student',
+    isDemo: false,
   },
   status: 'authenticated',
   login: vi.fn(),
+  demoLogin: vi.fn(),
   logout: vi.fn(),
   refresh: vi.fn(),
 }
@@ -24,9 +27,9 @@ function setNavigatorOnline(value: boolean) {
   })
 }
 
-function renderShell() {
+function renderShell(value: AuthContextValue = authValue) {
   return render(
-    <AuthContext.Provider value={authValue}>
+    <AuthContext.Provider value={value}>
       <MemoryRouter initialEntries={['/home']}>
         <Routes>
           <Route element={<AppShell />}>
@@ -71,6 +74,23 @@ describe('AppShell offline banner', () => {
       window.dispatchEvent(new Event('online'))
     })
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+})
+
+describe('AppShell demo banner', () => {
+  it('marks the shared demo account without affecting normal accounts', () => {
+    renderShell({
+      ...authValue,
+      user: authValue.user
+        ? { ...authValue.user, isDemo: true }
+        : null,
+    })
+
+    expect(
+      screen.getByText(
+        'You are exploring the shared demo account. Changes are visible to everyone and may be reset.',
+      ),
+    ).toBeInTheDocument()
   })
 })
 

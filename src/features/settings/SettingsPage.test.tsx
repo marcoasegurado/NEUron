@@ -38,15 +38,21 @@ function ok(data: unknown, status = 200) {
   }
 }
 
-function renderPage(logout = vi.fn()) {
+function renderPage(
+  logout = vi.fn(),
+  role: 'student' | 'owner' = 'student',
+) {
   const auth: AuthContextValue = {
     user: {
       id: 'user-1',
       email: 'student@neu.edu.ph',
       displayName: 'Ada Student',
+      role,
+      isDemo: false,
     },
     status: 'authenticated',
     login: vi.fn(),
+    demoLogin: vi.fn(),
     logout,
     refresh: vi.fn(),
   }
@@ -63,6 +69,7 @@ function renderPage(logout = vi.fn()) {
 function mockSettings({
   semesters,
   conversion,
+  pending = [],
 }: {
   semesters: Semester[]
   conversion: {
@@ -71,8 +78,16 @@ function mockSettings({
     valid: boolean
     errors: string[]
   }
+  pending?: Array<{
+    id: string
+    email: string
+    username: string
+    displayName: string
+    createdAt: string
+  }>
 }) {
   let current = semesters
+  let accounts = pending
 
   fetchMock.mockImplementation((url: string, init?: RequestInit) => {
     const method = init?.method ?? 'GET'
@@ -83,6 +98,19 @@ function mockSettings({
 
     if (url === '/api/settings/conversion' && method === 'GET') {
       return Promise.resolve(ok(conversion))
+    }
+
+    if (url === '/api/admin/accounts' && method === 'GET') {
+      return Promise.resolve(ok({ accounts }))
+    }
+
+    const decision = url.match(
+      /^\/api\/admin\/accounts\/([^/]+)\/(approve|reject)$/,
+    )
+    if (decision && method === 'POST') {
+      const account = accounts.find((entry) => entry.id === decision[1])
+      accounts = accounts.filter((entry) => entry.id !== decision[1])
+      return Promise.resolve(ok({ account }))
     }
 
     if (
@@ -252,5 +280,56 @@ describe('settings page', () => {
     await waitFor(() => {
       expect(logout).toHaveBeenCalled()
     })
+  })
+
+  it('hides account requests from non-owners', async () => {
+    mockSettings({
+      semesters: [semester('semester-2', '1st Semester 2026-2027', true, 18, 5)],
+      conversion: { rows: [], configured: false, valid: false, errors: [] },
+    })
+
+    renderPage()
+
+    expect(await screen.findByText('Ada Student')).toBeInTheDocument()
+    expect(screen.queryByText('Account requests')).not.toBeInTheDocument()
+  })
+
+  it('lets the owner approve a pending account request', async () => {
+    const user = userEvent.setup()
+
+    mockSettings({
+      semesters: [semester('semester-2', '1st Semester 2026-2027', true, 18, 5)],
+      conversion: { rows: [], configured: false, valid: false, errors: [] },
+      pending: [
+        {
+          id: 'request-1',
+          email: 'new@neu.edu.ph',
+          username: 'newstudent',
+          displayName: 'New Student',
+          createdAt: '2026-11-15T00:00:00.000Z',
+        },
+      ],
+    })
+
+    renderPage(vi.fn(), 'owner')
+
+    expect(await screen.findByText('Account requests')).toBeInTheDocument()
+    expect(await screen.findByText('New Student')).toBeInTheDocument()
+
+    await user.click(
+      screen.getByRole('button', { name: 'Approve New Student' }),
+    )
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/admin/accounts/request-1/approve',
+        expect.objectContaining({ method: 'POST' }),
+      )
+    })
+
+    expect(
+      await screen.findByText('New Student can now log in.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('New Student')).not.toBeInTheDocument()
   })
 })

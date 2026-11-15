@@ -7,6 +7,7 @@ export interface AuthContextValue {
   user: AuthUser | null
   status: AuthStatus
   login: (identifier: string, password: string) => Promise<AuthUser>
+  demoLogin: () => Promise<AuthUser>
   logout: () => Promise<void>
   refresh: () => Promise<void>
 }

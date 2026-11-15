@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from 'react'
 import {
+  demoLoginRequest,
   fetchCurrentUser,
   loginRequest,
   logoutRequest,
@@ -66,6 +67,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return current
   }, [])
 
+  const demoLogin = useCallback(async () => {
+    const current = await demoLoginRequest()
+    await clearOfflineData()
+    setUser(current)
+    setStatus('authenticated')
+    return current
+  }, [])
+
   const logout = useCallback(async () => {
     try {
       await logoutRequest()
@@ -79,8 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value: AuthContextValue = useMemo(
-    () => ({ user, status, login, logout, refresh }),
-    [user, status, login, logout, refresh],
+    () => ({ user, status, login, demoLogin, logout, refresh }),
+    [user, status, login, demoLogin, logout, refresh],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

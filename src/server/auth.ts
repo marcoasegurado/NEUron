@@ -19,7 +19,10 @@ import {
   isValidEmail,
   isValidUsername,
   normalizeEmail,
+  requireDisplayName,
+  requireEmail,
   requirePassword,
+  requireUsername,
 } from './validation'
 
 const SESSION_COOKIE = 'neuron_session'
@@ -33,27 +36,37 @@ const DUMMY_PASSWORD_HASH = [
   `${'A'.repeat(43)}=`,
 ].join('$')
 
+export type AccountStatus = 'active' | 'pending' | 'rejected'
+export type AccountRole = 'student' | 'owner'
+
 interface UserRow {
   id: string
   email: string
   display_name: string
   password_hash: string
+  status: AccountStatus
+  role: AccountRole
+  is_demo: number
 }
 
 interface SessionUserRow {
   id: string
   email: string
   display_name: string
+  role: AccountRole
+  is_demo: number
 }
 
 interface ResetTokenRow {
   user_id: string
 }
 
-interface PublicUser {
+export interface PublicUser {
   id: string
   email: string
   displayName: string
+  role: AccountRole
+  isDemo: boolean
 }
 
 function toPublicUser(row: SessionUserRow): PublicUser {
@@ -61,6 +74,8 @@ function toPublicUser(row: SessionUserRow): PublicUser {
     id: row.id,
     email: row.email,
     displayName: row.display_name,
+    role: row.role,
+    isDemo: row.is_demo === 1,
   }
 }
 
@@ -132,7 +147,9 @@ async function findUserByEmail(
 ): Promise<UserRow | null> {
   return db
     .prepare(
-      'SELECT id, email, display_name, password_hash FROM users WHERE email = ?',
+      `SELECT id, email, display_name, password_hash, status, role, is_demo
+       FROM users
+       WHERE email = ?`,
     )
     .bind(email)
     .first<UserRow>()
@@ -144,7 +161,7 @@ async function findUserByIdentifier(
 ): Promise<UserRow | null> {
   return db
     .prepare(
-      `SELECT id, email, display_name, password_hash
+      `SELECT id, email, display_name, password_hash, status, role, is_demo
        FROM users
        WHERE email = ? OR username = ?`,
     )
@@ -186,10 +203,10 @@ export async function getSessionUser(
 
   const tokenHash = await hashToken(token)
   const row = await env.DB.prepare(
-    `SELECT u.id, u.email, u.display_name
+    `SELECT u.id, u.email, u.display_name, u.role, u.is_demo
      FROM sessions s
      JOIN users u ON u.id = s.user_id
-     WHERE s.token_hash = ? AND s.expires_at > ?`,
+     WHERE s.token_hash = ? AND s.expires_at > ? AND u.status = 'active'`,
   )
     .bind(tokenHash, new Date().toISOString())
     .first<SessionUserRow>()
@@ -229,9 +246,103 @@ async function handleLogin(
     throw new HttpError(401, 'Invalid email, username, or password.')
   }
 
+  // Status is checked only after the password matches, so the login response
+  // never reveals whether an unverified identifier belongs to a real account.
+  if (user.status === 'pending') {
+    throw new HttpError(403, 'Your account is waiting for owner approval.')
+  }
+  if (user.status === 'rejected') {
+    throw new HttpError(
+      403,
+      'This account was not approved. Contact the NEUming owner.',
+    )
+  }
+
   const token = await createSession(env.DB, user.id)
   return withSessionCookie(
     json({ user: toPublicUser(user) }),
+    request,
+    token,
+  )
+}
+
+const PENDING_APPROVAL_MESSAGE =
+  'Your account request is in. The NEUming owner will review it, then you can log in.'
+
+async function handleRegister(
+  request: Request,
+  env: Env,
+): Promise<Response> {
+  assertSameOrigin(request)
+  const body = await readJson(request)
+  const email = requireEmail(body.email)
+  const username = requireUsername(body.username)
+  const displayName = requireDisplayName(body.displayName)
+  const password = requirePassword(body.password)
+
+  const existing = await env.DB.prepare(
+    'SELECT id, email, username FROM users WHERE email = ? OR username = ?',
+  )
+    .bind(email, username)
+    .first<{ id: string; email: string; username: string | null }>()
+
+  if (existing) {
+    throw new HttpError(
+      409,
+      existing.email === email
+        ? 'An account with this email already exists.'
+        : 'That username is already taken.',
+    )
+  }
+
+  const passwordHash = await hashPassword(password)
+  const now = new Date().toISOString()
+
+  try {
+    await env.DB.prepare(
+      `INSERT INTO users
+        (id, email, username, display_name, password_hash, created_at,
+         updated_at, status, role, is_demo)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', 'student', 0)`,
+    )
+      .bind(createId(), email, username, displayName, passwordHash, now, now)
+      .run()
+  } catch (error) {
+    // The unique indexes still guard against two simultaneous requests.
+    if (String(error).toLowerCase().includes('unique')) {
+      throw new HttpError(
+        409,
+        'An account with this email or username already exists.',
+      )
+    }
+    throw error
+  }
+
+  return json({ ok: true, message: PENDING_APPROVAL_MESSAGE }, 201)
+}
+
+async function handleDemoLogin(
+  request: Request,
+  env: Env,
+): Promise<Response> {
+  assertSameOrigin(request)
+
+  const demo = await env.DB.prepare(
+    `SELECT id, email, display_name, role, is_demo
+     FROM users
+     WHERE is_demo = 1 AND status = 'active'`,
+  ).first<SessionUserRow>()
+
+  if (!demo) {
+    throw new HttpError(
+      503,
+      'The demo account is not available right now. Please try again later.',
+    )
+  }
+
+  const token = await createSession(env.DB, demo.id)
+  return withSessionCookie(
+    json({ user: toPublicUser(demo) }),
     request,
     token,
   )
@@ -373,6 +484,12 @@ export async function handleAuthRequest(
 
   if (path === '/api/auth/login' && method === 'POST') {
     return handleLogin(request, env)
+  }
+  if (path === '/api/auth/register' && method === 'POST') {
+    return handleRegister(request, env)
+  }
+  if (path === '/api/auth/demo' && method === 'POST') {
+    return handleDemoLogin(request, env)
   }
   if (path === '/api/auth/logout' && method === 'POST') {
     return handleLogout(request, env)

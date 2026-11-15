@@ -23,7 +23,7 @@ function redirectTarget(state: unknown): string {
 }
 
 export function LoginPage() {
-  const { login } = useAuth()
+  const { login, demoLogin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [identifier, setIdentifier] = useState('')
@@ -31,6 +31,7 @@ export function LoginPage() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [openingDemo, setOpeningDemo] = useState(false)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -59,10 +60,28 @@ export function LoginPage() {
     }
   }
 
+  async function handleDemo() {
+    setError(null)
+    setOpeningDemo(true)
+    try {
+      await demoLogin()
+      navigate(redirectTarget(location.state), { replace: true })
+    } catch (demoError) {
+      setError(authErrorMessage(demoError))
+    } finally {
+      setOpeningDemo(false)
+    }
+  }
+
   return (
     <AuthLayout
       title="Welcome back!"
       description="Log in to see how your semester is going."
+      footer={
+        <p>
+          New here? <Link to="/register">Create an account</Link>
+        </p>
+      }
     >
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
         {error ? (
@@ -93,9 +112,30 @@ export function LoginPage() {
           <Link to="/forgot-password">Forgot password?</Link>
         </div>
 
-        <Button type="submit" size="lg" block disabled={submitting}>
+        <Button
+          type="submit"
+          size="lg"
+          block
+          disabled={submitting || openingDemo}
+        >
           {submitting ? 'Signing in…' : 'Log in'}
         </Button>
+
+        <div className={styles.divider}>or</div>
+
+        <Button
+          type="button"
+          variant="secondary"
+          size="lg"
+          block
+          onClick={handleDemo}
+          disabled={submitting || openingDemo}
+        >
+          {openingDemo ? 'Opening the demo…' : 'Try the demo'}
+        </Button>
+        <p className={styles.supporting}>
+          Explore NEUming with shared sample data. No account needed.
+        </p>
       </form>
     </AuthLayout>
   )

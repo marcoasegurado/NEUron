@@ -13,10 +13,13 @@ function authValue(status: AuthContextValue['status']): AuthContextValue {
             id: 'user-1',
             email: 'student@example.com',
             displayName: 'Test Student',
+            role: 'student',
+            isDemo: false,
           }
         : null,
     status,
     login: vi.fn(),
+    demoLogin: vi.fn(),
     logout: vi.fn(),
     refresh: vi.fn(),
   }

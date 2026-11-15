@@ -19,6 +19,7 @@ import {
 } from '../../lib/academic-api'
 import { useAuth } from '../auth/useAuth'
 import { getConversionTable, type ConversionTableResponse } from './api'
+import { PendingAccountsCard } from './PendingAccountsCard'
 import { buildGradeScale, semesterStatsLabel } from './view-model'
 import styles from './SettingsPage.module.css'
 
@@ -206,6 +207,8 @@ export function SettingsPage() {
               </Button>
             </div>
           </Card>
+
+          {user?.role === 'owner' ? <PendingAccountsCard /> : null}
 
           <Card className={styles.card}>
             <div className={styles.sectionHead}>

@@ -12,8 +12,9 @@ Because professors grade differently, every subject owns its own categories and 
 
 **Accounts**
 
-- Sign in with a username or any valid email address.
-- No public registration: the owner provisions accounts manually.
+- Sign in with a username or any valid email address, or open the shared demo in one click.
+- Self-registration: anyone can request an account, but it stays pending until the owner approves it in Settings.
+- Owner-only `Account requests` card for approving or rejecting new accounts.
 - Password reset by email (Resend) with single-use, 1-hour tokens.
 - D1-backed sessions in an `HttpOnly`, `SameSite=Lax` cookie, `Secure` over HTTPS, 7-day lifetime.
 - Protected routes and sign-out; the offline cache is dropped on sign-out and on semester switch so a shared device never shows another account's data.
@@ -48,6 +49,7 @@ Because professors grade differently, every subject owns its own categories and 
 **Settings**
 
 - Semester list with switching and past-semester access.
+- Owner-only account requests with Approve and Reject actions.
 - Read-only grade scale (the shared conversion table).
 - Account card with sign-out.
 
@@ -69,7 +71,7 @@ The official NEU percentage-to-grade thresholds have **not** been verified, so t
 | Styling | CSS modules, design tokens from `DESIGN.md` |
 | API | Cloudflare Worker (`src/worker.ts`) |
 | Database | Cloudflare D1 (`neuron`, binding `DB`) |
-| Auth | Custom email/password, PBKDF2-HMAC-SHA256, D1 sessions |
+| Auth | Custom email/password, PBKDF2-HMAC-SHA256, D1 sessions; self-registration with owner approval; one-click shared demo |
 | Email | Resend for password resets |
 | Hosting | Cloudflare Workers with static assets |
 | Testing | Vitest, Testing Library, jsdom |
@@ -123,18 +125,38 @@ npx wrangler d1 execute neuron --local  --file migrations/0003_academic_structur
 npx wrangler d1 execute neuron --local  --file migrations/0004_activities.sql
 npx wrangler d1 execute neuron --local  --file migrations/0005_schedule.sql
 npx wrangler d1 execute neuron --local  --file migrations/0006_conversion_and_subject_status.sql
+npx wrangler d1 execute neuron --local  --file migrations/0007_accounts_and_roles.sql
 ```
 
 Swap `--local` for `--remote` to target production D1.
 
-### Create an account
+### Accounts, registration, and the demo
 
-Accounts are provisioned by the owner; the password is typed interactively and never passed as an argument:
+Anyone can request an account from the public `/register` screen. A request is stored as `pending` and cannot sign in until the owner approves it.
 
-```bash
-npm run cf:account:create -- --email you@neu.edu.ph --username yourname --name "Your Name"
-npm run cf:account:create -- --local --email you@neu.edu.ph --username yourname --name "Your Name"
-```
+- **Approve or reject** — sign in as the owner, open **Settings**, and use the **Account requests** card.
+- **Grant the owner role** — only this command can do it; the app never promotes an account:
+
+  ```bash
+  npm run cf:account:promote -- --identifier you@neu.edu.ph
+  npm run cf:account:promote -- --local --identifier yourname
+  ```
+
+- **Manual provisioning** — the owner can still create an already-active account; the password is typed interactively and never passed as an argument:
+
+  ```bash
+  npm run cf:account:create -- --email you@neu.edu.ph --username yourname --name "Your Name"
+  npm run cf:account:create -- --local --email you@neu.edu.ph --username yourname --name "Your Name"
+  ```
+
+- **Demo** — `Try the demo` on the Login screen opens one shared, writable demo account with sample data. No password is exposed. Re-run this command to restore the sample semester after visitors change it:
+
+  ```bash
+  npm run cf:demo:reset
+  npm run cf:demo:reset -- --local
+  ```
+
+The demo seeds 1 semester, 4 subjects, 15 scores, and 7 class meetings. It is excluded from the owner's account requests list and cannot be promoted.
 
 ### Load the shared grade scale
 
@@ -179,7 +201,7 @@ src/
   styles/              Global styles and design tokens
 migrations/            D1 schema, applied in numeric order
 public/                Icons, manifest, service worker
-scripts/               Owner utilities (account creation, grade scale)
+scripts/               Owner utilities (account creation, owner promotion, demo reset, grade scale)
 ```
 
 Business rules stay out of components: grading lives in `src/lib/grading/`, and D1 access lives in `src/server/`. The browser talks only to `/api/*`.
@@ -196,7 +218,11 @@ Business rules stay out of components: grading lives in `src/lib/grading/`, and 
 
 - The shared grade scale is empty until verified NEU thresholds are loaded, so grades and GWA stay pending.
 - Password hashing uses 10,000 PBKDF2 iterations to fit the Workers Free CPU budget, which is below common OWASP guidance; login rate limiting is still required before real accounts are relied on.
-- Email ownership is not verified at account creation.
+- Public registration and the demo endpoint are not rate limited yet.
+- The demo account is shared and writable: every visitor sees the same data, and `npm run cf:demo:reset` is the only way to restore it.
+- Approved or rejected applicants are not emailed; Resend is unconfigured, so they must try logging in to learn the outcome.
+- The owner role is granted only with `npm run cf:account:promote`; no account is an owner by default.
+- Email ownership is not verified at account creation or registration.
 - Category deletion while activities exist is still undefined, so categories cannot be deleted.
 - There is no tablet-specific layout; tablets use the phone or desktop breakpoints.
 

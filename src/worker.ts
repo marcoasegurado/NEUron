@@ -1,4 +1,5 @@
 import { handleActivityRequest } from './server/activities'
+import { handleAdminRequest } from './server/accounts'
 import { handleAuthRequest } from './server/auth'
 import { handleConversionRequest } from './server/conversion'
 import type { Env } from './server/db'
@@ -51,6 +52,11 @@ export default {
         const authResponse = await handleAuthRequest(request, env)
         if (authResponse) {
           return authResponse
+        }
+
+        const adminResponse = await handleAdminRequest(request, env)
+        if (adminResponse) {
+          return adminResponse
         }
 
         const semesterResponse = await handleSemesterRequest(request, env)

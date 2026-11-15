@@ -14,6 +14,8 @@
     "cf:deploy": "npm run build && wrangler deploy",
     "cf:d1:list": "wrangler d1 list",
     "cf:account:create": "node scripts/create-account.mjs",
+    "cf:account:promote": "node scripts/promote-account.mjs",
+    "cf:demo:reset": "node scripts/seed-demo.mjs",
     "cf:conversion:load": "node scripts/set-conversion-table.mjs"
   },
   "dependencies": {

@@ -1,9 +1,20 @@
 import { ApiError, apiRequest } from '../../lib/api'
 
+export type AccountRole = 'student' | 'owner'
+
 export interface AuthUser {
   id: string
   email: string
   displayName: string
+  role: AccountRole
+  isDemo: boolean
+}
+
+export interface RegisterInput {
+  email: string
+  username: string
+  displayName: string
+  password: string
 }
 
 interface UserResponse {
@@ -34,6 +45,27 @@ export async function loginRequest(
     jsonBody({ identifier, password }),
   )
   return response.user
+}
+
+export async function demoLoginRequest(): Promise<AuthUser> {
+  const response = await apiRequest<UserResponse>(
+    '/api/auth/demo',
+    jsonBody({}),
+  )
+  return response.user
+}
+
+export async function registerRequest(
+  input: RegisterInput,
+): Promise<string> {
+  const response = await apiRequest<MessageResponse>(
+    '/api/auth/register',
+    jsonBody(input),
+  )
+  return (
+    response.message ??
+    'Your account request is in. The NEUming owner will review it.'
+  )
 }
 
 export async function logoutRequest(): Promise<void> {

@@ -260,6 +260,7 @@ Borders and shadows work together: 1px soft orange-brown border plus a low shado
 - Soft tinted surface, mascot optional, short supportive message.
 - Success, info, warning, and error variants map to the status colors.
 - Toasts are transient; persistent problems use an inline banner.
+- The shared-demo notice is a persistent soft-orange banner above the page content, using the primary border and soft primary surface. It is always shown while the demo account is signed in, including on phone.
 
 ### Empty states
 
@@ -344,23 +345,43 @@ Tokens: `--duration-fast` 150ms, `--duration-base` 200ms, `--duration-slow` 250m
 Each screen must be implemented for the listed layouts and states. Screens marked **needs spec** must receive an approved written specification before implementation.
 
 ### Auth layout baseline
-- Login, Forgot Password, and Reset Password share one frame.
+- Login, Register, Forgot Password, and Reset Password share one frame.
 - **Phone:** centered brand header with the `CatMascot` illustration, `NEU`-orange + `ming`-brown `NEUming` wordmark, and the muted tagline `Your grades, always in sight.` above the form card. The card uses `24px` radius, cream `16px`-radius inputs with orange borders, and a `52px` primary button. Decorative pale-yellow and peach circles sit at the top-right and bottom-left of the page.
 - **Desktop (1024px+):** two-panel layout. The app-orange left panel centers a cream halo behind the mascot, the wordmark (`NEU` cream, `ming` brown), the statement `Track every quiz, exam and project, and always know where you stand.`, and three translucent feature pills. The cream right panel centers the form card over decorative circles.
 - **Mascot note:** the auth panel and the sidebar/phone-bar brand marks all use the detailed `CatMascot` (`src/components/brand/CatMascot.tsx`, `152px` phone / `168px` desktop on the auth panel, `52px` sidebar, `48px` locked phone bar).
 - Auth fields use the shared `Input` component with visible labels and field-level errors; auth-specific sizing is applied through the layout CSS, not duplicated components.
-- Auth screens never reveal whether an email is registered.
+- Login and Forgot Password never reveal whether an email is registered. Registration is the one exception: it tells the visitor when the chosen email or username is already taken so they can pick another.
 
 ### Login
 - **Phone:** centered cat mascot, wordmark, and `Your grades, always in sight.` tagline above the form card; `Welcome back!` title, `Log in to see how your semester is going.` description, email-or-username field, password field with visibility control and `Enter your password` placeholder, primary Log in button, and forgot-password link.
 - **Desktop:** the two-panel auth layout above, with the form card centered on the cream side.
-- The Figma `New here? Create an account` line is omitted until a real registration flow exists.
-- **States:** default, field-level validation, submitting, invalid credentials, success redirect, network error.
+- Under the primary Log in button, an `or` divider separates a secondary full-width `Try the demo` button. A supporting line reads `Explore NEUming with shared sample data. No account needed.`
+- The card footer reads `New here? Create an account` and links to `/register`.
+- **States:** default, field-level validation, submitting, opening the demo, invalid credentials, pending/rejected approval message, success redirect, network error.
+- **Implemented (Phase 13):** the demo button pauses on `Opening the demo…` while the session starts, then redirects like a normal sign-in. The registration entry point replaces the earlier omission.
 
-### Manual account creation
-- There is no public Register screen. `/register` redirects to `/login`.
-- The owner creates accounts with `npm run cf:account:create`; the script collects a display name, unique username, email, and password.
-- A new account receives no automatic session and signs in through the Login screen.
+### Registration
+- **Entry:** `Create an account` on Login, or `/register` directly. Anonymous visitors only; a signed-in account is redirected to Home.
+- **Fields, in order:** display name, username, email, password, confirm password. Username and both password fields carry short hints. Password fields reuse the visibility toggle.
+- **Validation:** display name 1–80 characters; username 3–32 characters using letters, numbers, dots, underscores, or hyphens; valid email up to 254 characters; password 8–128 characters; confirmation must match. Field errors appear inline and block submission.
+- **Submit:** primary full-width `Request account`, changing to `Sending request…` while the request is in flight. A taken email or username shows the server message in the error banner without clearing the form.
+- **Request-received state:** the form is replaced by the title `Request received`, the description `The NEUming owner reviews every new account before it can log in.`, a success message, and a full-width `Back to sign in` button.
+- **Copy:** the form description states that the owner approves every new account before it can log in. No password is collected for an account the visitor does not yet own a session for beyond this request.
+- **Phone:** same single-column card as Login, with the mascot header above it. **Desktop:** the two-panel auth layout.
+- **States:** default, field-level validation, submitting, request received, taken email/username, network error.
+- **Implemented (Phase 13):** the page, validation, success state, and owner-approval copy are live. The client normalizes the email and username to lowercase before sending.
+
+### Shared demo account
+- The `Try the demo` button posts to `/api/auth/demo`, which opens a session for the single `is_demo = 1` account without exposing a password.
+- The demo account is a normal writable student account. Its seeded semester shows Home, Subjects, Schedule, and Settings populated with sample subjects, scores, and classes.
+- While signed in, every page shows a persistent soft-orange banner above the content: `You are exploring the shared demo account. Changes are visible to everyone and may be reset.`
+- The demo never sees owner controls. `npm run cf:demo:reset` restores the sample semester after visitors change it.
+- If the demo account is missing, demo login returns `503` and the Login error banner says the demo is unavailable.
+
+### Owner account administration
+- The owner is an ordinary account with `role = 'owner'`, granted only by `npm run cf:account:promote`.
+- The owner-only `Account requests` card in Settings lists pending registrations and approves or rejects them. It is never shown to students or the demo.
+- Manual provisioning with `npm run cf:account:create` remains available for owner-created accounts; it creates an active student directly.
 
 ### Forgot Password / reset
 - **Approved baseline:** reuse the Auth layout.
@@ -404,7 +425,15 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 
 ### Settings — approved baseline (Phase 10)
 - **Entry:** the existing `Settings` navigation item. One scrolling page of stacked cards, no tabs and no sub-routes.
-- **Sections, in order:** Semester, Grade scale, Account.
+- **Sections, in order:** Semester, Account requests (owner only), Grade scale, Account.
+- **Account requests card (owner only):**
+  - Heading `Account requests` with a `N waiting` warning badge when requests exist.
+  - Helper line: `New registrations wait here until you approve them. Only the owner sees this card.`
+  - Rows show display name, email, and username. Each row has a secondary `Reject` action and a primary `Approve` action; both are disabled while offline or while another decision is saving.
+  - Approving removes the row and confirms with `<name> can now log in.` Rejecting removes the row and confirms `Request from <name> was rejected.`
+  - Empty state: `No account requests` with `When someone registers, their request appears here for approval.`
+  - Loading uses the shared list skeleton. A failed load shows an inline error with `Try again`.
+  - Students and the demo never see this card. The server independently enforces `role = 'owner'` on every admin route.
 - **Semester card:**
   - Rows list every semester the account owns, newest first: label (`1st Semester 2026–2027`), term, `<units> units · <n> subjects`, and an `Active` badge on the current one.
   - Only inactive rows show a secondary `Activate` action. It opens the shared confirmation modal: `Switch to <label>? Home, Subjects, and Schedule will show this semester.` with Cancel and `Switch semester`.

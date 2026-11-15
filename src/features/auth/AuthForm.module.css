@@ -37,6 +37,23 @@
   font-weight: var(--weight-semibold);
 }
 
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: var(--text-small-line);
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: var(--color-border);
+}
+
 .stack {
   display: flex;
   flex-direction: column;

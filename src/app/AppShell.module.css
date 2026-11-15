@@ -45,6 +45,18 @@
   animation: global(rise-in) var(--duration-base) var(--ease-out) both;
 }
 
+.demoBanner {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-tile);
+  background-color: var(--color-primary-soft);
+  color: var(--color-text);
+  font-size: var(--text-small);
+  line-height: var(--text-small-line);
+  animation: global(rise-in) var(--duration-base) var(--ease-out) both;
+}
+
 .bottomNav {
   position: fixed;
   right: 0;

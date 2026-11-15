@@ -179,6 +179,12 @@ export function AppShell() {
         </header>
 
         <div className={styles.content}>
+          {user?.isDemo ? (
+            <p className={styles.demoBanner} role="status">
+              You are exploring the shared demo account. Changes are visible to
+              everyone and may be reset.
+            </p>
+          ) : null}
           {!online ? (
             <p className={styles.offlineBanner} role="status" aria-live="polite">
               You are offline. Saved data is read-only until the connection
