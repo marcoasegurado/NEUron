@@ -230,7 +230,7 @@ Business rules stay out of components: grading lives in `src/lib/grading/`, and 
 
 - The shared grade scale is empty until verified NEU thresholds are loaded, so grades and GWA stay pending.
 - Password hashing uses 10,000 PBKDF2 iterations to fit the Workers Free CPU budget, which is below common OWASP guidance. Login, registration, and demo requests are throttled per client IP to offset that, and the iteration count should be revisited if the Workers plan changes.
-- Rate limits are approximate and counted per Cloudflare location, and they fail open if a binding is missing, so they blunt scripted abuse rather than enforcing an exact global quota.
+- Rate limits are approximate and counted per Cloudflare location, and they fail open if a binding is missing. Counts sync in the background, so a first short burst can briefly exceed the threshold before a sustained run is blocked; the limiter blunts scripted abuse rather than enforcing an exact global quota.
 - The demo account is shared and writable: every visitor sees the same data, and `npm run cf:demo:reset` is the only way to restore it.
 - Approved or rejected applicants are not emailed; Resend is unconfigured, so they must try logging in to learn the outcome.
 - The owner role is granted only with `npm run cf:account:promote`; no account is an owner by default.
