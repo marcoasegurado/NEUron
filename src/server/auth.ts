@@ -15,6 +15,7 @@ import {
   noContent,
   readJson,
 } from './http'
+import { enforceAuthRateLimit } from './rate-limit'
 import {
   isValidEmail,
   isValidUsername,
@@ -226,6 +227,15 @@ async function handleLogin(
       : ''
   const password = typeof body.password === 'string' ? body.password : ''
 
+  // Count every attempt for this account, including malformed ones, so a
+  // scripted brute-force run cannot dodge the counter with invalid input.
+  await enforceAuthRateLimit(
+    env.AUTH_LOGIN_LIMITER,
+    request,
+    'login',
+    identifier || 'unknown',
+  )
+
   const validIdentifier = identifier.includes('@')
     ? isValidEmail(identifier)
     : isValidUsername(identifier)
@@ -274,6 +284,7 @@ async function handleRegister(
   env: Env,
 ): Promise<Response> {
   assertSameOrigin(request)
+  await enforceAuthRateLimit(env.AUTH_REGISTER_LIMITER, request, 'register')
   const body = await readJson(request)
   const email = requireEmail(body.email)
   const username = requireUsername(body.username)
@@ -326,6 +337,7 @@ async function handleDemoLogin(
   env: Env,
 ): Promise<Response> {
   assertSameOrigin(request)
+  await enforceAuthRateLimit(env.AUTH_DEMO_LIMITER, request, 'demo')
 
   const demo = await env.DB.prepare(
     `SELECT id, email, display_name, role, is_demo

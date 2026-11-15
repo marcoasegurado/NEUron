@@ -71,7 +71,7 @@ The official NEU percentage-to-grade thresholds have **not** been verified, so t
 | Styling | CSS modules, design tokens from `DESIGN.md` |
 | API | Cloudflare Worker (`src/worker.ts`) |
 | Database | Cloudflare D1 (`neuron`, binding `DB`) |
-| Auth | Custom email/password, PBKDF2-HMAC-SHA256, D1 sessions; self-registration with owner approval; one-click shared demo |
+| Auth | Custom email/password, PBKDF2-HMAC-SHA256, D1 sessions; self-registration with owner approval; one-click shared demo; per-IP rate limiting on login, registration, and demo |
 | Email | Resend for password resets |
 | Hosting | Cloudflare Workers with static assets |
 | Testing | Vitest, Testing Library, jsdom |
@@ -158,6 +158,18 @@ Anyone can request an account from the public `/register` screen. A request is s
 
 The demo seeds 1 semester, 4 subjects, 15 scores, and 7 class meetings. It is excluded from the owner's account requests list and cannot be promoted.
 
+### Auth rate limiting
+
+Login, registration, and demo sign-in are throttled with Cloudflare's Rate Limiting binding, so the counters live in Cloudflare rather than D1.
+
+| Endpoint | Limit | Key |
+|---|---|---|
+| `POST /api/auth/login` | 10 requests per 60 s | client IP + identifier |
+| `POST /api/auth/register` | 10 requests per 60 s | client IP |
+| `POST /api/auth/demo` | 30 requests per 60 s | client IP |
+
+Exceeding a limit returns `429` with `Retry-After: 60` and the message `Too many attempts. Wait a minute, then try again.` Counting the login identifier alongside the IP keeps one student's failed attempts from locking out classmates who share a network. Limits are approximate and applied per Cloudflare location, and the helper fails open when a binding is not configured. The bindings are declared in `wrangler.jsonc`; no migration is involved.
+
 ### Load the shared grade scale
 
 Only after the thresholds have been verified against an official NEU source:
@@ -217,8 +229,8 @@ Business rules stay out of components: grading lives in `src/lib/grading/`, and 
 ## Known limitations
 
 - The shared grade scale is empty until verified NEU thresholds are loaded, so grades and GWA stay pending.
-- Password hashing uses 10,000 PBKDF2 iterations to fit the Workers Free CPU budget, which is below common OWASP guidance; login rate limiting is still required before real accounts are relied on.
-- Public registration and the demo endpoint are not rate limited yet.
+- Password hashing uses 10,000 PBKDF2 iterations to fit the Workers Free CPU budget, which is below common OWASP guidance. Login, registration, and demo requests are throttled per client IP to offset that, and the iteration count should be revisited if the Workers plan changes.
+- Rate limits are approximate and counted per Cloudflare location, and they fail open if a binding is missing, so they blunt scripted abuse rather than enforcing an exact global quota.
 - The demo account is shared and writable: every visitor sees the same data, and `npm run cf:demo:reset` is the only way to restore it.
 - Approved or rejected applicants are not emailed; Resend is unconfigured, so they must try logging in to learn the outcome.
 - The owner role is granted only with `npm run cf:account:promote`; no account is an owner by default.

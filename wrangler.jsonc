@@ -18,5 +18,31 @@
       "database_name": "neuron",
       "database_id": "ec834211-aaea-44ce-8711-432b3421bd29"
     }
+  ],
+  "ratelimits": [
+    {
+      "name": "AUTH_LOGIN_LIMITER",
+      "namespace_id": "4101",
+      "simple": {
+        "limit": 10,
+        "period": 60
+      }
+    },
+    {
+      "name": "AUTH_REGISTER_LIMITER",
+      "namespace_id": "4102",
+      "simple": {
+        "limit": 10,
+        "period": 60
+      }
+    },
+    {
+      "name": "AUTH_DEMO_LIMITER",
+      "namespace_id": "4103",
+      "simple": {
+        "limit": 30,
+        "period": 60
+      }
+    }
   ]
 }

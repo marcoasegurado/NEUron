@@ -40,7 +40,7 @@ Accounts are created in one of three ways (Phase 13):
 
 Each account is separate and owns its own student data; D1 does not need to be resized for the current single-user scope. Login accepts either `username` or `email`. The owner role is granted only by `npm run cf:account:promote`, never by the app.
 
-Do not store plaintext passwords. The current custom provider stores only the encoded PBKDF2 hash with a per-user random salt. The baseline is 10,000 iterations, chosen by the user to fit the Workers Free CPU budget; this is below common OWASP guidance, so add login rate limiting and revisit the cost if the plan changes. Changing the iteration count requires a documented migration or rehash-on-login strategy.
+Do not store plaintext passwords. The current custom provider stores only the encoded PBKDF2 hash with a per-user random salt. The baseline is 10,000 iterations, chosen by the user to fit the Workers Free CPU budget; this is below common OWASP guidance, so auth requests are throttled (Phase 14) and the cost should be revisited if the plan changes. Changing the iteration count requires a documented migration or rehash-on-login strategy.
 
 **Shared demo account (Phase 13).** Exactly one row may have `is_demo = 1`, enforced by a partial unique index on `users (is_demo) WHERE is_demo = 1`. The demo is an ordinary `active`, `student` account that owns its own sample semester, subjects, scores, and classes. `POST /api/auth/demo` looks up that row and opens a normal session; no password is stored for public use and none is exposed. `npm run cf:demo:reset` (`scripts/seed-demo.mjs`) deletes and recreates the demo account, its sample semester (1 semester, 4 subjects, 15 scores, 7 class meetings), and its sessions in one ordered statement file. The demo row is excluded from every admin listing and cannot be promoted or approved.
 
@@ -51,7 +51,7 @@ Do not store plaintext passwords. The current custom provider stores only the en
 3. `GET /api/admin/accounts` lists `pending` students for the owner. `POST /api/admin/accounts/:id/approve` and `/reject` require `role = 'owner'`, reject the demo row, return `404` for an unknown or already-decided request, and delete any sessions on rejection.
 4. `getSessionUser` joins only `users.status = 'active'`, so a session for a non-active account is treated as signed out on the next request.
 
-Public registration and the demo endpoint have no rate limiting yet; see §5.
+**Auth rate limiting (Phase 14).** Counters live in Cloudflare's Rate Limiting binding, not in D1, so this adds no table, no column, and no write per attempt. `wrangler.jsonc` declares `AUTH_LOGIN_LIMITER` (namespace `4101`, 10 requests per 60 s), `AUTH_REGISTER_LIMITER` (`4102`, 10 per 60 s), and `AUTH_DEMO_LIMITER` (`4103`, 30 per 60 s). `src/server/rate-limit.ts` composes each key as `scope:client-ip` plus `:identifier` for login, using `cf-connecting-ip`, then the first `X-Forwarded-For` entry, then `unknown`. The counter runs after `assertSameOrigin` and before any credential check; registration and demo count before the body is read, while login counts after parsing so the identifier can join the key. Invalid login credentials and bodies that fail field validation still count, though unparseable JSON fails earlier with `400`. Exceeding a limit throws `HttpError(429)` with `Retry-After: 60`; the bindings are optional in `Env` and the helper fails open when one is missing, which keeps local tooling and older deployments working. Limits are approximate and counted per Cloudflare location, so they blunt scripted abuse rather than enforcing an exact global quota.
 
 ### 2.2 Session
 
@@ -185,8 +185,8 @@ When designing concrete tables and migrations:
 - Normalize and validate emails and usernames before lookup or insert; enforce uniqueness in the Worker and D1 indexes.
 - Use same-origin checks for state-changing auth requests in addition to `SameSite=Lax` cookies. Registration, demo login, and admin decisions all call `assertSameOrigin`.
 - Enforce `role = 'owner'` in the Worker for every admin route; the Settings card is a convenience, not a security boundary. The shared demo row is excluded from admin listings and decisions.
-- Auth rate limiting and account lockout are not implemented yet; add Cloudflare rate limiting or equivalent before production if brute-force protection is required.
-- Public registration and the demo endpoint are not rate limited yet. A visitor can submit repeated registration requests or open repeated demo sessions; add rate limiting or a Cloudflare Turnstile-style challenge before a public launch.
+- Auth rate limiting uses Cloudflare's Rate Limiting binding (Phase 14) and account lockout is still absent; counters are approximate and per location, so they throttle brute force rather than guaranteeing an exact quota.
+- Login, registration, and demo are throttled per client IP (login also per identifier), returning `429` with `Retry-After: 60`. A shared network can still exhaust its own budget, and the binding fails open if it is not configured.
 - Manual provisioning relies on the owner-supplied email and does not prove ownership of the mailbox. Add email verification if that risk must be closed.
 
 ## 5. Unresolved data decisions
@@ -199,12 +199,13 @@ These must be resolved with the user before the dependent implementation work:
 | Exact D1/SQL schema and migrations | Auth, academic-structure, activity, and schedule schemas are defined in `0001`–`0005`; the conversion table and subject dropped-status column are defined in `0006`; account status, role, and `is_demo` are defined in `0007` | Resolved for Phase 13 |
 | Authentication provider and stable user ID | Resolved: custom email/password with UUID user IDs and D1 sessions | Resolved |
 | Password hashing and session lifetime | Resolved baseline: PBKDF2-HMAC-SHA256 at 10,000 iterations; 7-day sessions; 1-hour reset tokens | Resolved |
-| Workers plan and hashing CPU cost | Lower-iteration path chosen for Workers Free; production login succeeded with 10,000 iterations. Add rate limiting before relying on it for real accounts | Resolved for Phase 2; rate limiting remains a hardening task |
+| Workers plan and hashing CPU cost | Lower-iteration path chosen for Workers Free; production login succeeded with 10,000 iterations. Phase 14 added per-IP throttling on login, registration, and demo | Resolved for Phase 2; hardened in Phase 14 |
 | Account provisioning | Resolved (Phase 13): self-registration creates a `pending` account that the owner approves in Settings; `npm run cf:account:create` remains for manual active provisioning; `npm run cf:account:promote` grants the owner role | Resolved (Phase 13) |
 | Shared demo account | Resolved (Phase 13): one writable `is_demo = 1` account, no exposed password, one-click `POST /api/auth/demo`, reset with `npm run cf:demo:reset` | Resolved (Phase 13) |
 | Approval/rejection notification email | Not implemented; Resend is unconfigured, so the owner and applicant are not emailed | Optional before public launch |
 | Resend account and sender | API key and verified `AUTH_EMAIL_FROM` are not configured | Before password-reset production test |
-| Auth rate limiting / email ownership verification | Not specified or implemented; registration and demo are public and unthrottled | Before hardening / public launch |
+| Auth rate limiting | Resolved (Phase 14): Cloudflare Rate Limiting bindings store the counters outside D1. Login 10/min per IP + identifier, registration 10/min per IP, demo 30/min per IP; `429` with `Retry-After: 60`. Approximate and per location | Resolved (Phase 14) |
+| Email ownership verification | Not implemented; registration does not prove the applicant owns the mailbox | Optional before public launch |
 | Conversion table ownership | Resolved: one application-wide table read by every account, read-only to students, changed only by owner tooling | Resolved (Phase 10) |
 | Historical conversion table changes | Resolved: one live table with no snapshot; changes recalculate past semesters too | Resolved (Phase 10) |
 | Dropped/withdrawn subjects | Resolved: `subjects.is_active = 0` means dropped; excluded from GWA units and grades, scores stay visible | Resolved (Phase 10) |

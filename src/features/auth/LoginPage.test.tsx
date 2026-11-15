@@ -78,4 +78,20 @@ describe('login page', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent(message)
   })
+
+  it('shows the rate-limit message when too many attempts are made', async () => {
+    const user = userEvent.setup()
+    const message = 'Too many attempts. Wait a minute, then try again.'
+    const value = authValue({
+      login: vi.fn().mockRejectedValue(new ApiError(message, 429)),
+    })
+    renderPage(value)
+
+    await user.type(screen.getByLabelText('Email or username'), 'ada.student')
+    await user.type(screen.getByLabelText('Password'), 'Approval-2026')
+    await user.click(screen.getByRole('button', { name: 'Log in' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(message)
+    expect(screen.getByRole('button', { name: 'Log in' })).toBeEnabled()
+  })
 })

@@ -357,8 +357,9 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 - **Desktop:** the two-panel auth layout above, with the form card centered on the cream side.
 - Under the primary Log in button, an `or` divider separates a secondary full-width `Try the demo` button. A supporting line reads `Explore NEUming with shared sample data. No account needed.`
 - The card footer reads `New here? Create an account` and links to `/register`.
-- **States:** default, field-level validation, submitting, opening the demo, invalid credentials, pending/rejected approval message, success redirect, network error.
+- **States:** default, field-level validation, submitting, opening the demo, invalid credentials, pending/rejected approval message, rate limited, success redirect, network error.
 - **Implemented (Phase 13):** the demo button pauses on `Opening the demo…` while the session starts, then redirects like a normal sign-in. The registration entry point replaces the earlier omission.
+- **Rate limited (Phase 14):** `429` from login keeps the user on the card and shows `Too many attempts. Wait a minute, then try again.` in the standard danger error banner above the fields. The primary button returns to its normal enabled state and the form keeps its values, so the only required action is to wait. The same treatment applies when the demo button or a registration submit is throttled.
 
 ### Registration
 - **Entry:** `Create an account` on Login, or `/register` directly. Anonymous visitors only; a signed-in account is redirected to Home.
@@ -368,8 +369,9 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 - **Request-received state:** the form is replaced by the title `Request received`, the description `The NEUming owner reviews every new account before it can log in.`, a success message, and a full-width `Back to sign in` button.
 - **Copy:** the form description states that the owner approves every new account before it can log in. No password is collected for an account the visitor does not yet own a session for beyond this request.
 - **Phone:** same single-column card as Login, with the mascot header above it. **Desktop:** the two-panel auth layout.
-- **States:** default, field-level validation, submitting, request received, taken email/username, network error.
+- **States:** default, field-level validation, submitting, request received, taken email/username, rate limited, network error.
 - **Implemented (Phase 13):** the page, validation, success state, and owner-approval copy are live. The client normalizes the email and username to lowercase before sending.
+- **Rate limited (Phase 14):** a throttled `Request account` submit shows `Too many attempts. Wait a minute, then try again.` in the error banner, keeps every field value, and re-enables the button.
 
 ### Shared demo account
 - The `Try the demo` button posts to `/api/auth/demo`, which opens a session for the single `is_demo = 1` account without exposing a password.
@@ -377,6 +379,7 @@ Each screen must be implemented for the listed layouts and states. Screens marke
 - While signed in, every page shows a persistent soft-orange banner above the content: `You are exploring the shared demo account. Changes are visible to everyone and may be reset.`
 - The demo never sees owner controls. `npm run cf:demo:reset` restores the sample semester after visitors change it.
 - If the demo account is missing, demo login returns `503` and the Login error banner says the demo is unavailable.
+- Demo login is throttled at 30 requests per minute per IP (Phase 14); a throttled click shows the shared `Too many attempts. Wait a minute, then try again.` banner instead of opening a session.
 
 ### Owner account administration
 - The owner is an ordinary account with `role = 'owner'`, granted only by `npm run cf:account:promote`.

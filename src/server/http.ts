@@ -1,10 +1,16 @@
 export class HttpError extends Error {
   status: number
+  headers?: Record<string, string>
 
-  constructor(status: number, message: string) {
+  constructor(
+    status: number,
+    message: string,
+    headers?: Record<string, string>,
+  ) {
     super(message)
     this.name = 'HttpError'
     this.status = status
+    this.headers = headers
   }
 }
 
@@ -32,12 +38,17 @@ export async function readJson(
   return body as Record<string, unknown>
 }
 
-export function json(data: unknown, status = 200): Response {
+export function json(
+  data: unknown,
+  status = 200,
+  headers: Record<string, string> = {},
+): Response {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'no-store',
+      ...headers,
     },
   })
 }

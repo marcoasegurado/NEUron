@@ -87,7 +87,7 @@ export default {
         return json({ error: 'API route not found.' }, 404)
       } catch (error) {
         if (error instanceof HttpError) {
-          return json({ error: error.message }, error.status)
+          return json({ error: error.message }, error.status, error.headers)
         }
 
         console.error('Unhandled API error:', error)
